@@ -1,4 +1,4 @@
-# ScrapingHelper
+# DataJuggler
 
 This library provides utility classes and helper functions.
 This is spin-off project from [scrapinghelper](https://github.com/iisaka51/scrapinghelper).
