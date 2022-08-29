@@ -44,29 +44,58 @@ class DictFactory(dict):
 
     def fromkeys(self,
             seq: Sequence,
-            value: Any
-        ):
-        return type(self)(dict(self).fromkeys(seq, value))
+            value: Any,
+            inplace: bool=False,
+        ) ->Optional[dict]:
+        """Create a new dictionary with keys from iterable and values set to value. """
+        new = type(self)(dict(self).fromkeys(seq, value))
+        if inplace:
+            self.update(new)
+        else:
+            return new
 
     def fromvalues(self,
             seq: Sequence,
-            base: int=1
-        ):
-        return type(self)({base+x: seq[x] for x in range(len(seq))})
+            base: int=1,
+            inplace: bool=False,
+        ) ->Optional[dict]:
+        """Create a new dictionary from list of values.
+           keys automaticaly generate as interger.
+           `base` is the number of base.
+        """
+        new = type(self)({base+x: seq[x] for x in range(len(seq))})
+        if inplace:
+            self.update(new)
+        else:
+            return new
 
     def fromlists(self,
             keys: Sequence,
             values: Sequence,
-        ):
+            inplace: bool=False,
+        ) ->Optional[dict]:
+        """Create a new dictionary from two list as keys and values."""
         zipobj = zip(keys, values)
-        return type(self)(dict(zipobj))
+        new = type(self)(dict(zipobj))
+        if inplace:
+            self.update(new)
+        else:
+            return new
 
-    def to_json(self, **options):
+    def to_json(self, **options) ->str:
+        """Generate a new json strings. """
         return json.dumps(self, **options)
 
-    def from_json(self, stream, *args, **kwargs):
-        self.update(json.loads(stream))
-        return self
+    def from_json(self,
+        stream: str,
+        inplace: bool=False,
+        **options: Any):
+        """Create a new dictionary from json strings."""
+        if inplace:
+            self.update(json.loads(stream, **options))
+        else:
+            return type(self)(json.loads(stream, **options))
+
 
 class aDict(DictFactory):
     def __init__(self, *args:Any, **kwargs:Any):
@@ -234,8 +263,7 @@ class iDict(DictFactory):
         return None
 
     def __getattr__(self, attribute):
-        if attribute in ('clear', 'update', 'pop', 'popitem',
-                         'setdefault', 'from_json'):
+        if attribute in ('clear', 'update', 'pop', 'popitem', 'setdefault'):
             raise AttributeError(
                 r"{} object has no attribute {}"
                 .format(type(self).__name__, attribute) )
@@ -251,8 +279,7 @@ class iDict(DictFactory):
             .format(type(self).__name__) )
 
     def __getattribute__(self, attribute):
-        if attribute in ('clear', 'update', 'pop', 'popitem',
-                         'setdefault', 'from_json'):
+        if attribute in ('clear', 'update', 'pop', 'popitem', 'setdefault'):
             raise AttributeError(
                 r"{} object has no attribute {}"
                 .format(type(self).__name__, attribute) )
@@ -260,6 +287,57 @@ class iDict(DictFactory):
 
     def __hash__(self):
         return hash(tuple(sorted(self.items())))
+
+
+    def fromkeys(self,
+            seq: Sequence,
+            value: Any,
+            inplace: bool=False,
+        ) ->Optional[dict]:
+        """Create a new dictionary with keys from iterable and values set to value.
+           `inplace` parameter will be alway ignored.
+        """
+        return type(self)(dict(self).fromkeys(seq, value))
+
+    def fromvalues(self,
+            seq: Sequence,
+            base: int=1,
+            inplace: bool=False,
+        ) ->Optional[dict]:
+        """Create a new dictionary from list of values.
+           keys automaticaly generate as interger.
+           `base` is the number of base.
+           `inplace` parameter will be alway ignored.
+        """
+        return type(self)({base+x: seq[x] for x in range(len(seq))})
+
+    def fromlists(self,
+            keys: Sequence,
+            values: Sequence,
+            inplace: bool=False,
+        ) ->Optional[dict]:
+        """Create a new dictionary from two list as keys and values.
+           `inplace` parameter will be alway ignored.
+        """
+        zipobj = zip(keys, values)
+        return type(self)(dict(zipobj))
+
+    def to_json(self,
+            inplace: bool=False,
+            **options) ->str:
+        """Generate a new json strings.
+           `inplace` parameter alway ignore.
+        """
+        return json.dumps(self, **options)
+
+    def from_json(self,
+            stream: str,
+            inplace: bool=False,
+            **options: Any):
+        """Create a new dictionary from json strings.
+           `inplace` parameter will be alway ignored.
+        """
+        return type(self)(json.loads(stream, **options))
 
 
 @multidispatch

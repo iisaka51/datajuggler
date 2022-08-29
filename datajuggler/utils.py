@@ -99,7 +99,7 @@ class StrCase(object):
 
     @origin.setter
     def origin(self, val):
-        self.__origin = self.validate(val)
+        self.__origin = self.__validate(val)
 
     def show_supported_case(self, verbose=False):
         header = { "case":  "sample" }
