@@ -134,6 +134,24 @@ data = { 'one': { 'two': { 'three': { 'four': 4 }}}}
 expect = "aDict({'one': aDict({'two': aDict({'three': aDict({'four': 4})})})})"
 result = aDict(data)
 assert result.__repr__() == expect
+
+data = {"console": "Nintendo Switch",
+        "games": ["The Legend of Zelda", "Mario Golf"]}
+expect = ( '{"console": "Nintendo Switch", '
+           '"games": ["The Legend of Zelda", "Mario Golf"]}' )
+obj = aDict(data)
+assert obj.to_json() == expect
+
+json_data = ( '{"console": "Nintendo Switch", '
+              '"games": ["The Legend of Zelda", "Mario Golf"]}' )
+expect = ( "aDict({'console': 'Nintendo Switch', "
+           "'games': ['The Legend of Zelda', 'Mario Golf']})" )
+obj = aDict()
+obj.from_json(json_data)
+assert obj.__repr__() == expect
+
+obj = aDict().from_json(json_data)
+assert obj.__repr__() == expect
 ```
 
 ### class uDict
@@ -169,6 +187,24 @@ expect = { 'Jan': 1, 'Feb': 2, 'March': 3, 'April': 4 }
 saved = data.copy()
 data.replace_key_map(replace, inplace=True)
 assert ( data == expect and data != saved )
+
+data = {"console": "Nintendo Switch",
+        "games": ["The Legend of Zelda", "Mario Golf"]}
+expect = ( '{"console": "Nintendo Switch", '
+           '"games": ["The Legend of Zelda", "Mario Golf"]}' )
+obj = uDict(data)
+assert obj.to_json() == expect
+
+json_data = ( '{"console": "Nintendo Switch", '
+              '"games": ["The Legend of Zelda", "Mario Golf"]}' )
+expect = ( "uDict({'console': 'Nintendo Switch', "
+           "'games': ['The Legend of Zelda', 'Mario Golf']})" )
+obj = uDict()
+obj.from_json(json_data)
+assert obj.__repr__() == expect
+
+obj = aDict().from_json(json_data)
+assert obj.__repr__() == expect
 ```
 
 ### class iDict
@@ -202,6 +238,24 @@ In [8]: d[data]
 Out[8]: 2
 
 In [9]:
+```
+
+### ordereddict_to_dict()
+
+Convert objects from OrderedDict to Dict.
+
+```python
+data = OrderedDict([('month', 'January'), ('day', 13 )])
+expect = dict({'month': 'January', 'day': 13})
+result = ordereddict_to_dict(data)
+assert result == expect
+
+data = OrderedDict([('month', 'January'), ('day', 13 ),
+                    ('time', OrderedDict([('hours', 7), ('minutes', 30)]))])
+expect = dict({'month': 'January', 'day': 13,
+               'time': {'hours': 7, 'minutes': 30}})
+result = ordereddict_to_dict(data)
+assert result == expect
 ```
 
 ### chnage_dict_keys()
