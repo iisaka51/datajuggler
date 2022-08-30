@@ -47,7 +47,9 @@ class DictFactory(dict):
             value: Any,
             inplace: bool=False,
         ) ->Optional[dict]:
-        """Create a new dictionary with keys from iterable and values set to value. """
+        """Create a new dictionary with keys from iterable and values set to value.
+           If set `True` to `inplace`, perform operation in-place.
+        """
         new = type(self)(dict(self).fromkeys(seq, value))
         if inplace:
             self.update(new)
@@ -61,7 +63,8 @@ class DictFactory(dict):
         ) ->Optional[dict]:
         """Create a new dictionary from list of values.
            keys automaticaly generate as interger.
-           `base` is the number of base.
+           `base` is the starting number.
+           If set `True` to `inplace`, perform operation in-place.
         """
         new = type(self)({base+x: seq[x] for x in range(len(seq))})
         if inplace:
@@ -74,7 +77,10 @@ class DictFactory(dict):
             values: Sequence,
             inplace: bool=False,
         ) ->Optional[dict]:
-        """Create a new dictionary from two list as keys and values."""
+        """Create a new dictionary from two list as keys and values.
+           Only the number of elements in the shorter of the two lists is processed.
+           If set `True` to `inplace`, perform operation in-place.
+        """
         zipobj = zip(keys, values)
         new = type(self)(dict(zipobj))
         if inplace:
@@ -295,9 +301,10 @@ class iDict(DictFactory):
             inplace: bool=False,
         ) ->Optional[dict]:
         """Create a new dictionary with keys from iterable and values set to value.
-           `inplace` parameter will be alway ignored.
+           `inplace` parameter will alway be ignored.
         """
-        return type(self)(dict(self).fromkeys(seq, value))
+        if not inplace:
+            return type(self)(dict(self).fromkeys(seq, value))
 
     def fromvalues(self,
             seq: Sequence,
@@ -307,9 +314,10 @@ class iDict(DictFactory):
         """Create a new dictionary from list of values.
            keys automaticaly generate as interger.
            `base` is the number of base.
-           `inplace` parameter will be alway ignored.
+           `inplace` parameter will alway be ignored.
         """
-        return type(self)({base+x: seq[x] for x in range(len(seq))})
+        if not inplace:
+            return type(self)({base+x: seq[x] for x in range(len(seq))})
 
     def fromlists(self,
             keys: Sequence,
@@ -317,16 +325,15 @@ class iDict(DictFactory):
             inplace: bool=False,
         ) ->Optional[dict]:
         """Create a new dictionary from two list as keys and values.
-           `inplace` parameter will be alway ignored.
+           `inplace` parameter will alway be ignored.
         """
-        zipobj = zip(keys, values)
-        return type(self)(dict(zipobj))
+        if not inplace:
+            zipobj = zip(keys, values)
+            return type(self)(dict(zipobj))
 
     def to_json(self,
-            inplace: bool=False,
             **options) ->str:
         """Generate a new json strings.
-           `inplace` parameter alway ignore.
         """
         return json.dumps(self, **options)
 
@@ -335,9 +342,10 @@ class iDict(DictFactory):
             inplace: bool=False,
             **options: Any):
         """Create a new dictionary from json strings.
-           `inplace` parameter will be alway ignored.
+           `inplace` parameter will alway be ignored.
         """
-        return type(self)(json.loads(stream, **options))
+        if not inplace:
+            return type(self)(json.loads(stream, **options))
 
 
 @multidispatch

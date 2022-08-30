@@ -1,5 +1,4 @@
 pytest
 mypy
-types-requests
 twine
 wheel

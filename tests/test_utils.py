@@ -12,46 +12,52 @@ from datajuggler import (
 import pandas as pd
 
 class TestClass:
-    def test_is_alpha_alphabet(self):
+    def test_is_alpha_case01(self):
         assert ( is_alpha('iisaka')
                  == True )
 
-    def test_is_alpha_alphabet_with_number(self):
+    def test_is_alpha_case02(self):
         assert ( is_alpha('iisaka51')
                  == False )
 
-    def test_is_alpha_alphabet_with_symbol(self):
+    def test_is_alpha_case03(self):
         assert ( is_alpha('@iisaka51')
-                 == is_alpha('Goichi (iisaka) Yukawa')
                  == False )
 
-    def test_is_alpha_kanji(self):
+    def test_is_alpha_case04(self):
+        assert ( is_alpha('Goichi (iisaka) Yukawa')
+                 == False )
+
+    def test_is_alpha_case05(self):
         assert ( is_alpha('京都市')
                  == False )
 
-    def test_is_alpha_kanji_num(self):
+    def test_is_alpha_case06(self):
         assert ( is_alpha('１２３')
                  == False )
 
-    def test_is_alnum_alphabet(self):
+    def test_is_alnum_case01(self):
         assert ( is_alnum('iisaka')
                  == True )
 
-    def test_is_alnum_alphabet_with_number(self):
+    def test_is_alnum_case02(self):
         assert ( is_alnum('iisaka51')
                  == True )
 
-    def test_is_alnum_alphabet_with_symbol(self):
+    def test_is_alnum_case03(self):
         assert ( is_alnum('@iisaka51')
-                 == is_alnum('Goichi (iisaka) Yukawa')
                  == False )
 
-    def test_is_alnum_kanji(self):
+    def test_is_alnum_case04(self):
+        assert ( is_alnum('Goichi (iisaka) Yukawa')
+                 == False )
+
+    def test_is_alnum_case05(self):
         assert ( is_alnum('京都市')
                  == False )
 
-    def test_is_alnum_kanji_num(self):
-        assert ( is_alpha('１２３')
+    def test_is_alnum_case06(self):
+        assert ( is_alnum('１２３')
                  == False )
 
     def test_df_compare(self):
@@ -100,24 +106,47 @@ class TestClass:
         result = omit_values(data, omits)
         assert result == expect
 
-    def test_replace_values_list(self):
-        data = ['January', 'February', 'March', 'April' ]
-        replace = { 'February': 'february', 'April': 'april' }
-        expect = ['January', 'february', 'March', 'april' ]
-        result = replace_values( data, replace)
+    def test_replace_values_case01(self):
+        data = "JanuaryFebruaryMarchApril"
+        old = [ 'March', 'April' ]
+        replace_to = ""
+        expect = "JanuaryFebruary"
+        result = replace_values( data, old, replace_to )
         assert result == expect
 
-    def convert_func(self, matchobj):
-        map = {'January': '1',
-               'February': '2' }
-        return map[matchobj.group(0)]
+    def test_replace_values_case02(self):
+        data = "JanuaryFebruaryMarchApril"
+        replace = { 'March': '3', 'April': '4' }
+        expect = "JanuaryFebruary34"
+        result = replace_values( data, replace )
+        assert result == expect
 
-    def test_replace_values_with_regexp(self):
+    def test_replace_values_case03(self):
+        data = "JanuaryFebruaryMarchApril"
+        replace = { 'March': 3, 'April': 4 }
+        expect = "JanuaryFebruary34"
+        result = replace_values( data, replace )
+        assert result == expect
+
+    def test_replace_values_case04(self):
+        data = ['January', 'February', 'March', 'April' ]
+        replace = { 'March': '3', 'April': '4' }
+        expect = ['January', 'February', '3', '4' ]
+        result = replace_values( data, replace )
+        assert result == expect
+
+    def test_replace_values_case05(self):
+
+        def convert_func(matchobj):
+            map = {'January': '1',
+                   'February': '2' }
+            return map[matchobj.group(0)]
+
         data = ['January', 'February', 'March', 'April',
                 'May', 'June', 'July', 'August',
                 'September', 'October', 'November', 'December']
 
-        replace = { '.*ary': self.convert_func, '.*ber': 'BER' }
+        replace = { '.*ary': convert_func, '.*ber': 'BER' }
 
         expect = ['1', '2', 'March', 'April',
                 'May', 'June', 'July', 'August',
@@ -125,105 +154,60 @@ class TestClass:
         result = replace_values( data, replace)
         assert result == expect
 
-    def test_replace_values_ignore_case(self):
-        data = ['January', 'February', 'March', 'April',
-                'May', 'June', 'July', 'August',
-                'September', 'October', 'November', 'December']
+    def test_replace_values_case06(self):
+        data = ['January', 'February', 'March', 'April']
+        replace = {'march': '3', 'april': '4' }
 
-        replace = {'april': '4', 'september': '9' }
-
-        expect = ['January', 'February', 'March', '4',
-                'May', 'June', 'July', 'August',
-                '9', 'October', 'November', 'December']
+        expect = ['January', 'February', '3', '4' ]
         result = replace_values( data, replace, ignore_case=True)
         assert result == expect
 
-    def test_replace_values_list_inplace(self):
-        data = ['January', 'February', 'March', 'April',
-                'May', 'June', 'July', 'August',
-                'September', 'October', 'November', 'December']
-
-        replace = {'April': 'april', 'September': 'september' }
-
-        expect = ['January', 'February', 'March', 'april',
-                  'May', 'June', 'July', 'August',
-                  'september', 'October', 'November', 'December']
-        replace_values( data, replace, inplace=True)
+    def test_replace_values_case07(self):
+        data = ['January', 'February', 'March', 'April']
+        replace = {'march': '3', 'april': '4' }
+        expect = ['January', 'February', '3', '4' ]
+        replace_values( data, replace, ignore_case=True, inplace=True)
         assert data == expect
 
-    def test_replace_values_dict_val_default(self):
-        data = { 1: 'January', 2: 'February', 3: 'March', 4: 'April',
-                 5: 'May', 6: 'June', 7: 'July', 8: 'August',
-                9: 'September', 10: 'October', 11: 'November', 12: 'December'}
-
-        replace = {'April': 'april', 'September': 'september' }
-
-        expect = { 1: 'January', 2: 'February', 3: 'March', 4: 'april',
-                 5: 'May', 6: 'June', 7: 'July', 8: 'August',
-                9: 'september', 10: 'October', 11: 'November', 12: 'December'}
-
+    def test_replace_values_case08(self):
+        data = { 1: 'January', 2: 'February', 3: 'March', 4: 'April' }
+        replace = { 'March': 3, 'April': 4 }
+        expect = { 1: 'January', 2: 'February', 3: 3, 4: 4 }
         result = replace_values( data, replace )
         assert result == expect
 
-    def test_replace_values_dict_val_explicit(self):
-        data = { 1: 'January', 2: 'February', 3: 'March', 4: 'April',
-                 5: 'May', 6: 'June', 7: 'July', 8: 'August',
-                9: 'September', 10: 'October', 11: 'November', 12: 'December'}
-
-        replace = {'April': 'april', 'September': 'september' }
-
-        expect = { 1: 'January', 2: 'February', 3: 'March', 4: 'april',
-                 5: 'May', 6: 'June', 7: 'July', 8: 'August',
-                9: 'september', 10: 'October', 11: 'November', 12: 'December'}
-
+    def test_replace_values_case09(self):
+        data = { 1: 'January', 2: 'February', 3: 'March', 4: 'April' }
+        replace = { 'March': 3, 'April': 4 }
+        expect = { 1: 'January', 2: 'February', 3: 3, 4: 4 }
         result = replace_values( data, replace, replace_for='value' )
         assert result == expect
 
-    def test_replace_values_dict_val_ignore_case(self):
-        data = { 1: 'January', 2: 'February', 3: 'March', 4: 'April',
-                 5: 'May', 6: 'June', 7: 'July', 8: 'August',
-                9: 'September', 10: 'October', 11: 'November', 12: 'December'}
-
-        replace = {'APRIL': 'april', 'SEPTEMBER': 'september' }
-
-        expect = { 1: 'January', 2: 'February', 3: 'March', 4: 'april',
-                 5: 'May', 6: 'June', 7: 'July', 8: 'August',
-                9: 'september', 10: 'October', 11: 'November', 12: 'December'}
-
+    def test_replace_values_case10(self):
+        data = { 1: 'January', 2: 'February', 3: 'March', 4: 'April' }
+        replace = { 'march': 3, 'april': 4 }
+        expect = { 1: 'January', 2: 'February', 3: 3, 4: 4 }
         result = replace_values( data, replace, ignore_case=True )
         assert result == expect
 
-    def test_replace_values_dict_inplace(self):
-        data = { 1: 'January', 2: 'February', 3: 'March', 4: 'April',
-                 5: 'May', 6: 'June', 7: 'July', 8: 'August',
-                 9: 'September', 10: 'October', 11: 'November', 12: 'December'}
-
-        replace = {'April': 'april', 'September': 'september' }
-
-        expect = { 1: 'January', 2: 'February', 3: 'March', 4: 'april',
-                 5: 'May', 6: 'June', 7: 'July', 8: 'August',
-                 9: 'september', 10: 'October', 11: 'November', 12: 'December'}
-
-        replace_values( data, replace, inplace=True )
+    def test_replace_values_case11(self):
+        data = { 1: 'January', 2: 'February', 3: 'March', 4: 'April' }
+        replace = { 'march': 3, 'april': 4 }
+        expect = { 1: 'January', 2: 'February', 3: 3, 4: 4 }
+        replace_values( data, replace, ignore_case=True, inplace=True )
         assert data == expect
 
-    def test_replace_values_dict_keys(self):
+    def test_replace_values_case12(self):
         data = { 1: 'one', 2: 'two', 3: 'three', 4: 'four' }
-
         replace = {1: 'one',  2: 'two', 3: 'three'}
-
         expect = { 'one': 'one', 'two': 'two', 'three': 'three', 4: 'four' }
-
         result = replace_values( data, replace, replace_for='key')
         assert result == expect
 
-    def test_replace_values_dict_val_obj(self):
+    def test_replace_values_case13(self):
         data = { 1: 'one', 2: 'two', 3: 'three', 4: 'four' }
-
         replace = {'one': 1, 'two': [2, 'two'], 'three': { 3: 'three'}}
-
         expect = { 1: 1, 2: [2, 'two'] , 3: {3: 'three'}, 4: 'four' }
-
         result = replace_values( data, replace )
         assert result == expect
 
