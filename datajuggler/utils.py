@@ -4,7 +4,6 @@ from typing import (
     Literal, get_args
 )
 from collections.abc import Mapping
-from collections import OrderedDict
 from functools import partial
 from unicodedata import normalize
 from enum import Enum
@@ -227,9 +226,9 @@ class StrCase(object):
 
 class urange(object):
     def __init__(self,
-        *args: int,
-        **kwargs: Any
-    ):
+            *args: int,
+            **kwargs: Any
+        ):
         """Return an object that produces a sequence of integes
 
         range(stop) -> range object
@@ -328,10 +327,14 @@ def is_alpha(word: str)-> bool:
 
 def is_alnum(word: str)-> bool:
     """ Check word is alphabet and digits.
-    :param word: str
+    Parameters
+    ----------
+    word: str
         any string
 
-    "returns:  validate result
+    Returns
+    -------
+    validate result: bool
         if all characters of word, return ``True`` otherwise return ``False``
     """
     try:
@@ -387,15 +390,15 @@ def _replace_values_multi(
         **kwargs: Any,
     )-> Optional[list]:
 
-        if not inplace:
-            values = values.copy()
+   if not inplace:
+       values = values.copy()
 
-        for n in range(len(values)):
-            for old, new in replace.items():
-                values[n] = re.sub(old, new,  values[n],
-                                   flags = __RE_FLAGS[ignore_case])
-        if not inplace:
-            return values
+   for n in range(len(values)):
+       for old, new in replace.items():
+           values[n] = re.sub(old, new,  values[n],
+                              flags = __RE_FLAGS[ignore_case])
+   if not inplace:
+       return values
 
 @replace_values.register(dict, dict)
 def _replace_values_dict_multi(
@@ -406,55 +409,54 @@ def _replace_values_dict_multi(
         inplace: bool=False,
         replace_for: ReplaceForType = ReplaceFor.VALUE
     )-> Optional[list]:
-        """replace values of dict
-        Parameters
-        ----------
-        values: dict
-           to replace data
-        replace: dict
-           replace map. { old: new,....}
-        replace_for: avaiable 'key', 'value'.
-           If replace_for set 'value', replace 'value' of dict.
-           If replace_value set 'key', replace 'key' of dict.
-           default is 'value'
-        """
+   """replace values of dict
+   Parameters
+   ----------
+   values: dict
+      to replace data
+   replace: dict
+      replace map. { old: new,....}
+   replace_for: avaiable 'key', 'value'.
+      If replace_for set 'value', replace 'value' of dict.
+      If replace_value set 'key', replace 'key' of dict.
+      default is 'value'
+   """
 
-        def replace_val(value, replace, ignore_case):
-            for old, new in replace.items():
-                if ignore_case :
-                    if value.lower() == old.lower():
-                        return new
-                    else:
-                        value
-                else:
-                    if value == old:
-                        return new
-                    else:
-                        value
-            return value
+   def replace_val(value, replace, ignore_case):
+       for old, new in replace.items():
+           if ignore_case :
+               if value.lower() == old.lower():
+                   return new
+               else:
+                   value
+           else:
+               if value == old:
+                   return new
+               else:
+                   value
+       return value
 
+   if replace_for not in get_args(ReplaceForType):
+       raise ValueError("replace_for must be 'key' or 'value'.")
 
-        if replace_for not in get_args(ReplaceForType):
-            raise ValueError("replace_for must be 'key' or 'value'.")
+   mapper={}
+   if replace_for == ReplaceFor.KEY:
+       keys = [ replace_val(x, replace, ignore_case)
+                for x in values.keys() ]
+       vals = list(values.values())
+   elif replace_for == ReplaceFor.VALUE:
+       keys = list(values.keys())
+       vals = [replace_val(x, replace, ignore_case)
+               for x in values.values() ]
+   else:
+       return None
 
-        mapper={}
-        if replace_for == ReplaceFor.KEY:
-            keys = [ replace_val(x, replace, ignore_case)
-                     for x in values.keys() ]
-            vals = list(values.values())
-        elif replace_for == ReplaceFor.VALUE:
-            keys = list(values.keys())
-            vals = [replace_val(x, replace, ignore_case)
-                    for x in values.values() ]
-        else:
-            return None
+   workdict = uDict().fromlists(keys, vals)
 
-        workdict = uDict().fromlists(keys, vals)
-
-        if inplace:
-            values.update(workdict)
-        else:
-            return workdict
+   if inplace:
+       values.update(workdict)
+   else:
+       return workdict
 
 @replace_values.register(list, list, str)
 def _replace_values_single_str(
@@ -467,15 +469,15 @@ def _replace_values_single_str(
         **kwargs: Any,
     )-> Optional[list]:
 
-        if not inplace:
-            values = values.copy()
+   if not inplace:
+       values = values.copy()
 
-        for n in range(len(values)):
-            for old in replace_from:
-                values[n] = re.sub( old, replace_to, values[n],
-                                   flags = __RE_FLAGS[ignore_case])
-        if not inplace:
-            return values
+   for n in range(len(values)):
+       for old in replace_from:
+           values[n] = re.sub( old, replace_to, values[n],
+                              flags = __RE_FLAGS[ignore_case])
+   if not inplace:
+       return values
 
 @replace_values.register(list, list, Any)
 def _replace_values_single_obj(
@@ -488,18 +490,18 @@ def _replace_values_single_obj(
         **kwargs: Any,
     )-> Optional[list]:
 
-        if not inplace:
-            values = values.copy()
+   if not inplace:
+       values = values.copy()
 
-        for n in range(len(values)):
-            for old in replace_from:
-                if isinstance(values[n], str) and ignore_case:
-                    new = replace_values(values[n], [old], replace_to)
-                if values[n] ==  old:
-                    values[n] = new
+   for n in range(len(values)):
+       for old in replace_from:
+           if isinstance(values[n], str) and ignore_case:
+               new = replace_values(values[n], [old], replace_to)
+           if values[n] ==  old:
+               values[n] = new
 
-        if not inplace:
-            return values
+   if not inplace:
+       return values
 
 
 @replace_values.register(str, list, Hashable)
@@ -512,17 +514,17 @@ def _replace_values_text(
         **kwargs: Any,
     )-> Hashable:
 
-        for old in replace_from:
-            if isinstance(old, str):
-                if not isinstance(replace_to, str):
-                    replace_to = str(replace_to)
-                values = re.sub(old, replace_to, values,
-                              flags = __RE_FLAGS[ignore_case])
-            else:
-                if values == old:
-                    values = replace_to
+   for old in replace_from:
+       if isinstance(old, str):
+           if not isinstance(replace_to, str):
+               replace_to = str(replace_to)
+           values = re.sub(old, replace_to, values,
+                         flags = __RE_FLAGS[ignore_case])
+       else:
+           if values == old:
+               values = replace_to
 
-        return values
+   return values
 
 @replace_values.register(str, dict)
 def _replace_values_text_multi(
@@ -533,19 +535,17 @@ def _replace_values_text_multi(
         **kwargs: Any,
     )-> Hashable:
 
-        for old, replace_to in replace.items():
-            if isinstance(old, str):
-                if not isinstance(replace_to, str):
-                    replace_to = str(replace_to)
-                values = re.sub(old, replace_to, values,
-                              flags = __RE_FLAGS[ignore_case])
-            else:
-                if values == old:
-                    values = replace_to
+   for old, replace_to in replace.items():
+       if isinstance(old, str):
+           if not isinstance(replace_to, str):
+               replace_to = str(replace_to)
+           values = re.sub(old, replace_to, values,
+                         flags = __RE_FLAGS[ignore_case])
+       else:
+           if values == old:
+               values = replace_to
 
-        return values
-
-
+   return values
 
 @replace_values.register(Union[int, float], list, Any)
 def _replace_values_number(
@@ -554,10 +554,10 @@ def _replace_values_number(
         replace_to: Any,
         **kwargs: Any,
     )-> str:
-        if values in replace_from:
-            return replace_to
-        else:
-            return values
+   if values in replace_from:
+       return replace_to
+   else:
+       return values
 
 
 @multidispatch
@@ -575,17 +575,18 @@ def _omit_values_multi(
         ignore_case: bool=False,
         drop: bool=False
     )-> list:
-        if not inplace:
-            values = values.copy()
 
-        values =  replace_values(values, omits, '', ignore_case=ignore_case)
-        if drop:
-            count = values.count('')
-            for _ in range(count):
-                values.remove('')
+   if not inplace:
+       values = values.copy()
 
-        if not inplace:
-            return values
+   values =  replace_values(values, omits, '', ignore_case=ignore_case)
+   if drop:
+       count = values.count('')
+       for _ in range(count):
+           values.remove('')
+
+   if not inplace:
+       return values
 
 @omit_values.register(str, list)
 def omit_values_single(
@@ -594,7 +595,7 @@ def omit_values_single(
         *,
         ignore_case: bool=False,
     )-> str:
-        return replace_values(values, omits, '', ignore_case=ignore_case)
+    return replace_values(values, omits, '', ignore_case=ignore_case)
 
 
 def add_df(
@@ -603,13 +604,13 @@ def add_df(
         omits: list=[]
     ) ->pd.DataFrame:
 
-        if omits:
-            values = omit_values(values,omits)
-            columns = omit_values(columns,omits)
+   if omits:
+       values = omit_values(values,omits)
+       columns = omit_values(columns,omits)
 
-        # Since Pandas 1.3.0
-        df = pd.DataFrame(values,index=columns)._maybe_depup_names(columns)
-        self.df = pd.concat([self.df,df.T])
+   # Since Pandas 1.3.0
+   df = pd.DataFrame(values,index=columns)._maybe_depup_names(columns)
+   self.df = pd.concat([self.df,df.T])
 
 def df_compare(
         df1: pd.DataFrame,

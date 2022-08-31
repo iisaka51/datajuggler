@@ -8,18 +8,23 @@ from collections import OrderedDict
 import json
 from enum import Enum
 from multimethod import multidispatch
+from .yaml import yaml_initializer, to_yaml, from_yaml
 
 class DictFactory(dict):
+    yaml_initializer = classmethod(yaml_initializer)
+    to_yaml = to_yaml
+    from_yaml = from_yaml
+
     """ Factory class for custom dictionary """
+    def __init__(self, *args, **kwargs):
+        self.yaml_initializer()
+        super().__init__(*args, **kwargs)
 
     def __repr__(self):
         return '{0}({1})'.format(self.__class__.__name__, dict.__repr__(self))
 
     def __str__(self):
         return '{}'.format(dict.__repr__(self))
-
-    def __dir__(self):
-        return list(self.items())
 
     def __getstate__(self):
         return {k: v for k, v in self.items()}
