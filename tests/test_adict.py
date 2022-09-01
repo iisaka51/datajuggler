@@ -133,7 +133,10 @@ class TestClass:
 
     def test_adict_features_case04(self):
         data = {'one': aDict({'two': aDict({'three': aDict({'four': 4 })})})}
-        expect = "aDict({'one': aDict({'two': aDict({'three': aDict({'four': 4})})})})"
+        expect = ( "aDict({'one': "
+                     "aDict({'two': "
+                       "aDict({'three': "
+                         "aDict({'four': 4})})})})" )
         obj = aDict(data)
         assert obj.__repr__() == expect
 
@@ -142,3 +145,19 @@ class TestClass:
         expect = 4
         obj = aDict(data)
         assert obj.one.two.three.four == expect
+
+    def test_adict_features_case06(self):
+        data = { 'one': { 'two': { 'three': { 'four': 4 }}}}
+        expect = ( "aDict({'one': "
+                     "aDict({'two': "
+                       "aDict({'three': "
+                         "aDict({'four': 4})})})})" )
+        obj = aDict(data, as_default_dict=True)
+        assert obj.__repr__() == expect
+
+    def test_adict_features_case06(self):
+        data = { 'one': { 'two': { 'three': { 'four': 4 }}}}
+        expect = 4
+        obj = aDict(data, as_default_dict=True)
+        assert obj.one.two.three.four == expect
+

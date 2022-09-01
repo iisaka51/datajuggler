@@ -37,12 +37,12 @@ class DictFactory(dict):
         for key, val in dict(*args, **kwargs).items():
             self[key] = val
 
-    def get(self, key, default=None):
+    def get(self, key: Hashable, default=None):
         if key not in self:
             return default
         return self[key]
 
-    def setdefault(self, key, default=None):
+    def setdefault(self, key: Hashable, default=None):
         if key not in self:
             self[key] = default
         return self[key]
@@ -205,6 +205,13 @@ class DictFactory(dict):
 
 class aDict(DictFactory):
 
+    def __init__(self, *args, as_default_dict: bool=False, **kwargs):
+        if as_default_dict:
+            self.update(*args, **kwargs)
+        else:
+            super().__init__(*args, **kwargs)
+        self.yaml_initializer()
+
     def __getattr__(self, k):
         try:
             return object.__getattribute__(self, k)
@@ -215,7 +222,8 @@ class aDict(DictFactory):
                 raise AttributeError(k)
 
     def __str__(self):
-        return '{}'.format(self.__dict__)
+        #return '{}'.format(self.__dict__)
+        return '{}'.format(self.to_dict(self))
 
     def __setattr__(self, k, v):
         try:

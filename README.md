@@ -4,6 +4,8 @@ This library provides utility classes and helper functions for data processing.
 This is spin-off project from [scrapinghelper](https://github.com/iisaka51/scrapinghelper).
 
 
+ - class DictFactory
+   Factory class for custom dictionary.
  - class aDict
    Allow to access using dot notation for dictionary.
  - class uDict
@@ -26,17 +28,29 @@ utilities for string manupulate helper functions.
  -  `split_chunks()` - Split iterable object into chunks.
  -  `urange()` - Return an object that produces a sequence of integes.
 
+
+## class DictFactory
+
+DictFactory is internal base class for custom dictionary.
+this class has follows methods.
+
+ - `update(*args, **kwargs)`
+ - `get(key: Hashable, default=None))`
+ - `setdefault(key: Hashable, default=None)`
+ - `fromkeys(sequence, inplace:bool=False)`
+ - `fromvalues(sequence, inplace:bool=False)`
+ - `fromlists(keys: Sequence, values: Sequence, inplace:bool=False)`
+ - `to_dict(obj: Any)`
+ - `from_dict(obj: Any, factory=None, inplace: bool=False)`
+ - `to_json(**options: Any)`
+ - `from_json(json_data: str, inplace: bool=False, **options)`
+ - `to_yaml(**options: Any)`
+ - `from_yaml(stream, *args: Any, inplace: bool=False, **kwargs: Any)`
+
 ## class aDict
 Allow to access using dot notation for dictionary.
 This class inspired [munch](https://github.com/Infinidat/munch).
-
- - `fromkeys(sequence, inplace:bool=False)`
- - `fromvalues(sequence, inplace:bool=False)`
- - `fromlists(keys, values, inplace:bool=False)`
- - `to_json(**options)`
- - `from_json(json_data: str, inplace: bool=False, **options)`
- - `to_yaml(**options)`
- - `from_yaml(stream, *args, inplace: bool=False, **kwargs)`
+aDict is subclass of DictFactory.
 
 
 ```python
@@ -116,6 +130,24 @@ In [5]: data = {'one': aDict({'two': aDict({'three': aDict({'four': 4 })})})}
    ...: assert obj.one.two.three.four == expect
 
 In [6]:
+```
+
+if pass `as_default_dict=True` to custructor, use aDict insted of dict.
+
+```python
+In [1]: from datajuggler import aDict
+
+In [2]: data = { 'one': { 'two': { 'three': { 'four': 4 }}}}
+   ...: expect = ( "aDict({'one': "
+   ...:              "aDict({'two': "
+   ...:                "aDict({'three': "
+   ...:                  "aDict({'four': 4})})})})" )
+   ...: obj = aDict(data, as_default_dict=True)
+   ...: assert obj.__repr__() == expect
+
+In [3]: assert obj.one.two.three.four == 4
+
+In [4]:
 ```
 
 ### fromkeys()
