@@ -155,7 +155,16 @@ class TestClass:
         obj = aDict(data, as_default_dict=True)
         assert obj.__repr__() == expect
 
-    def test_adict_features_case06(self):
+    def test_adict_features_case07(self):
+        expect = ( "aDict({'one': "
+                     "aDict({'two': "
+                       "aDict({'three': "
+                         "aDict({'four': 4})})})})" )
+        obj = aDict(as_default_dict=True,
+                    one={ 'two': { 'three': { 'four': 4 }}} )
+        assert obj.__repr__() == expect
+
+    def test_adict_features_case08(self):
         data = { 'one': { 'two': { 'three': { 'four': 4 }}}}
         expect = 4
         obj = aDict(data, as_default_dict=True)
