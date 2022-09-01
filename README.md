@@ -75,6 +75,49 @@ In [6]: data = { 'one': { 'two': { 'three': { 'four': 4 }}}}
 In [7]:
 ```
 
+```python
+In [1]: from datajuggler import aDict
+   ...:
+   ...: data = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
+   ...: expect = 2
+   ...: obj = aDict(data)
+   ...: assert obj.February == expect
+
+In [2]: data = { 'one': { 'two': { 'three': { 'four': 4 }}}}
+   ...: expect = { 'two': { 'three': { 'four': 4 }}}
+   ...: obj = aDict(data)
+   ...: assert obj.one == expect
+
+In [3]: data = { 'one': { 'two': { 'three': { 'four': 4 }}}}
+   ...: expect = "{'one': {'two': {'three': {'four': 4}}}}"
+   ...: obj = aDict(data)
+   ...: try:
+   ...:     result = obj.one.two
+   ...: except AttributeError as e:
+   ...:     print('Error')
+   ...:     assert str(e) == "'dict' object has no attribute 'two'"
+   ...:
+Error
+
+In [4]: data = {'one': aDict({'two': aDict({'three': aDict({'four': 4 })})})}
+   ...: expect = ( "aDict({'one': "
+   ...:             "aDict({'two': "
+   ...:              "aDict({'three': "
+   ...:               "aDict({'four': 4})"
+   ...:              "})"
+   ...:             "})"
+   ...:            "})" )
+   ...: obj = aDict(data)
+   ...: assert obj.__repr__() == expect
+
+In [5]: data = {'one': aDict({'two': aDict({'three': aDict({'four': 4 })})})}
+   ...: expect = 4
+   ...: obj = aDict(data)
+   ...: assert obj.one.two.three.four == expect
+
+In [6]:
+```
+
 ### fromkeys()
 
 Create a new dictionary with keys from iterable and values set to value.
@@ -385,6 +428,34 @@ In [6]: data = { 'one': { 'two': { 'three': { 'four': 4 }}}}
 In [7]:
 ```
 
+```python
+In [1]: from datajuggler import uDict
+   ...:
+   ...: data = uDict({ 'January': 1, 'February': 2, 'March': 3, 'April': 4 })
+   ...: expect = { 'January': 1, 'February': 2, 'March': 3, 'Apr': 4 }
+   ...:
+   ...: saved = data.copy()
+   ...: result = data.replace_key('April', 'Apr')
+   ...: assert ( result == expect
+   ...:          and data == saved )
+
+In [2]: data = uDict({ 'January': 1, 'February': 2, 'March': 3, 'April': 4 })
+   ...: replace = {'January': 'Jan', 'February': 'Feb' }
+   ...: expect = { 'Jan': 1, 'Feb': 2, 'March': 3, 'April': 4 }
+   ...: saved = data.copy()
+   ...: result = data.replace_key_map(replace)
+   ...: assert ( result == expect
+   ...:          and data == saved )
+
+In [3]: data = uDict({ 'January': 1, 'February': 2, 'March': 3, 'April': 4 })
+   ...: replace = {'January': 'Jan', 'February': 'Feb' }
+   ...: expect = { 'Jan': 1, 'Feb': 2, 'March': 3, 'April': 4 }
+   ...: saved = data.copy()
+   ...: data.replace_key_map(replace, inplace=True)
+   ...: assert ( data == expect
+   ...:          and data != saved )
+```
+
 ### fromkeys()
 
 Create a new dictionary with keys from iterable and values set to value.
@@ -652,83 +723,89 @@ In [1]: from datajuggler import iDict
    ...:
    ...: data = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
    ...: expect = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
-   ...: result = iDict(data)
-   ...: assert result == data
+   ...:
+   ...: obj = iDict(data)
+   ...: assert obj == data
 
-In [2]: expect = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
-   ...: result = iDict(January=1, February=2, March=3, April=4)
-   ...: assert result == expect
+In [2]: expect = "{'January': 1, 'February': 2, 'March': 3, 'April': 4}"
+   ...: obj = iDict(data)
+   ...: assert obj.__str__() == expect
 
-In [3]: data = iDict({ 'January': 1, 'February': 2, 'March': 3, 'April': 4 })
+In [3]: expect = "iDict({'January': 1, 'February': 2, 'March': 3, 'April': 4})"
+   ...:
+   ...: obj = iDict(data)
+   ...: assert obj.__repr__() == expect
+
+In [4]: expect = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
+   ...: obj = iDict(January=1, February=2, March=3, April=4)
+   ...: assert obj == expect
+
+In [5]: data = iDict({ 'January': 1, 'February': 2, 'March': 3, 'April': 4 })
    ...: expect = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
    ...: assert data == expect
 
-In [4]: data = iDict({ 'January': 1, 'February': 2, 'March': 3, 'April': 4 })
-   ...: try:
-   ...:     data['January'] = 'Jan'
-   ...: except TypeError as e:
-   ...:     assert str(e) == 'iDict object does not support item assignment'
-   ...:     print(e)
-   ...:
-iDict object does not support item assignment
-
-In [5]: data = iDict({ 'January': 1, 'February': 2, 'March': 3, 'April': 4 })
-   ...: try:
-   ...:     result  = data.pop(0)
-   ...: except AttributeError as e:
-   ...:     assert str(e) == 'iDict object has no attribute pop'
-   ...:     print(e)
-   ...:
-iDict object has no attribute pop
-
-In [6]: data = iDict({ 'January': 1, 'February': 2, 'March': 3, 'April': 4 })
-   ...: try:
-   ...:     data.clear()
-   ...: except AttributeError as e:
-   ...:     assert str(e) == 'iDict object has no attribute clear'
-   ...:     print(e)
-   ...:
-iDict object has no attribute clear
-
-In [7]: data = iDict({ 'January': 1, 'February': 2, 'March': 3, 'April': 4 })
-   ...: try:
-   ...:     data.update({ 'January': 1, 'February': 2, 'March': 3, 'April': 4
-   ...: })
-   ...: except AttributeError as e:
-   ...:     assert str(e) == 'iDict object has no attribute update'
-   ...:     print(e)
-   ...:
-iDict object has no attribute update
-
-In [8]: data = iDict({ 'January': 1, 'February': 2, 'March': 3, 'April': 4 })
-   ...: try:
-   ...:     data.setdefault('March', 3)
-   ...: except AttributeError as e:
-   ...:     assert str(e) == 'iDict object has no attribute setdefault'
-   ...:     print(e)
-   ...:
-iDict object has no attribute setdefault
+In [6]:
 ```
-
-iDict object is hashable.
 
 ```python
 In [1]: from datajuggler import iDict
    ...:
-   ...: data = iDict({'January': 1, 'February': 2, 'March': 3, 'April': 4})
+   ...: data = iDict({ 'January': 1, 'February': 2, 'March': 3, 'April': 4 })
+   ...:
    ...: assert hasattr(data, '__hash__') == True
 
-In [2]: data = iDict({'January': 1, 'February': 2, 'March': 3, 'April': 4})
-   ...: result = dict({data: 1})
-   ...: assert  result[data]  == 1
+In [2]: obj = dict({data: 1})
+   ...: assert  obj[data]  == 1
 
-In [3]: result
+In [3]: obj
 Out[3]: {iDict({'January': 1, 'February': 2, 'March': 3, 'April': 4}): 1}
 
-In [4]: type(result)
-Out[4]: dict
+In [4]: try:
+   ...:     data['January'] = 'Jan'
+   ...: except TypeError as e:
+   ...:     print('Error')
+   ...:     assert str(e) == 'iDict object does not support item assignment'
+   ...:
+Error
 
+In [5]: try:
+   ...:     result  = data.pop(0)
+   ...: except AttributeError as e:
+   ...:     print('Error')
+   ...:     assert str(e) == 'iDict object has no attribute pop'
+   ...:
+Error
+
+In [6]: try:
+   ...:     data.clear()
+   ...: except AttributeError as e:
+   ...:     print('Error')
+   ...:     assert str(e) == 'iDict object has no attribute clear'
+   ...:
+Error
+
+In [7]: try:
+   ...:     data.update({ 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
+   ...: )
+   ...: except AttributeError as e:
+   ...:     print('Error')
+   ...:     assert str(e) == 'iDict object has no attribute update'
+   ...:
+Error
+
+In [8]: try:
+   ...:     data.setdefault('March', 3)
+   ...: except AttributeError as e:
+   ...:     print('Error')
+   ...:     assert str(e) == 'iDict object has no attribute setdefault'
+   ...:
+Error
+
+In [9]:
 ```
+
+
+
 
 ### fromkeys()
 
