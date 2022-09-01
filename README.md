@@ -15,16 +15,16 @@ This is spin-off project from [scrapinghelper](https://github.com/iisaka51/scrap
 
 utilities for string manupulate helper functions.
 
- -  is_alpha() - Check word is alphabet.
- -  is_alnum() - Check word is alphabet and digits.
- -  ordereddict_to_dict() - convert object from OrderedDict to Dict.
- -  change_dict_keys() - Change keys of Dict.
- -  replace_values() - Replace objects for object(s).
- -  omit_values() - Omit values for object(s).
- -  add_df() - Add data into DataFrame.
- -  df_compare() - Check DataFrame is equals.
- -  split_chunks() - Split iterable object into chunks.
- -  urange() - Return an object that produces a sequence of integes.
+ -  `is_alpha()` - Check word is alphabet.
+ -  `is_alnum()` - Check word is alphabet and digits.
+ -  `ordereddict_to_dict()` - convert object from OrderedDict to Dict.
+ -  `change_dict_keys()` - Change keys of Dict.
+ -  `replace_values()` - Replace objects for object(s).
+ -  `omit_values()` - Omit values for object(s).
+ -  `add_df()` - Add data into DataFrame.
+ -  `df_compare()` - Check DataFrame is equals.
+ -  `split_chunks()` - Split iterable object into chunks.
+ -  `urange()` - Return an object that produces a sequence of integes.
 
 ## class aDict
 Allow to access using dot notation for dictionary.
@@ -37,6 +37,7 @@ This class inspired [munch](https://github.com/Infinidat/munch).
  - `from_json(json_data: str, inplace: bool=False, **options)`
  - `to_yaml(**options)`
  - `from_yaml(stream, *args, inplace: bool=False, **kwargs)`
+
 
 ```python
 In [1]: from datajuggler import aDict
@@ -79,16 +80,19 @@ In [7]:
 Create a new dictionary with keys from iterable and values set to value.
 If set `True` to `inplace`, perform operation in-place.
 
+
 ```python
 In [9]: data = [ 'January', 'February', 'March', 'April' ]
-   ...: expect = "aDict({'January': 2, 'February': 2, 'March': 2, 'April': 2})
-   ...: "
+   ...: expect = ( "aDict("
+   ...:            "{'January': 2, 'February': 2, 'March': 2, 'April': 2}"
+   ...:            ")" )
    ...: obj = aDict().fromkeys(data, 2)
    ...: assert obj.__repr__() == expect
 
 In [10]: data = [ 'January', 'February', 'March', 'April' ]
-    ...: expect = "aDict({'January': 2, 'February': 2, 'March': 2, 'April': 2}
-    ...: )"
+    ...: expect = ( "aDict("
+    ...:            "{'January': 2, 'February': 2, 'March': 2, 'April': 2}"
+    ...:            ")" )
     ...: obj = aDict()
     ...: obj.fromkeys(data, 2, inplace=True)
     ...: assert obj.__repr__() == expect
@@ -103,20 +107,23 @@ If set `True` to `inplace`, perform operation in-place.
 
 ```python
 In [11]: data = [ 'January', 'February', 'March', 'April' ]
-    ...: expect = "aDict({1: 'January', 2: 'February', 3: 'March', 4: 'April'}
-    ...: )"
+    ...: expect = ( "aDict("
+    ...:            "{1: 'January', 2: 'February', 3: 'March', 4: 'April'}"
+    ...:            ")" )
     ...: obj = aDict().fromvalues(data)
     ...: assert obj.__repr__() == expect
 
 In [12]: data = [ 'January', 'February', 'March', 'April' ]
-    ...: expect = "aDict({0: 'January', 1: 'February', 2: 'March', 3: 'April'}
-    ...: )"
+    ...: expect = ( "aDict("
+    ...:            "{0: 'January', 1: 'February', 2: 'March', 3: 'April'}"
+    ...:            ")" )
     ...: obj = aDict().fromvalues(data, base=0)
     ...: assert obj.__repr__() == expect
 
 In [13]: data = [ 'January', 'February', 'March', 'April' ]
-    ...: expect = "aDict({1: 'January', 2: 'February', 3: 'March', 4: 'April'}
-    ...: )"
+    ...: expect = ( "aDict("
+    ...:            "{1: 'January', 2: 'February', 3: 'March', 4: 'April'}"
+    ...:            ")" )
     ...: obj = aDict()
     ...: obj.fromvalues(data, base=1, inplace=True)
     ...: assert obj.__repr__() == expect
@@ -128,18 +135,21 @@ Create a new dictionary from two list as keys and values.
 Only the number of elements in the shorter of the two lists is processed.
 If set `True` to `inplace`, perform operation in-place.
 
+
 ```python
 In [14]: keys = [ 'January', 'February', 'March', 'April' ]
     ...: values = [ 1, 2, 3, 4 ]
-    ...: expect = "aDict({'January': 1, 'February': 2, 'March': 3, 'April': 4}
-    ...: )"
+    ...: expect = ( "aDict("
+    ...:            "{'January': 1, 'February': 2, 'March': 3, 'April': 4}"
+    ...:            ")" )
     ...: obj = aDict().fromlists(keys, values)
     ...: assert obj.__repr__() == expect
 
 In [15]: keys = [ 'January', 'February', 'March', 'April' ]
     ...: values = [ 1, 2, 3, 4 ]
-    ...: expect = "aDict({'January': 1, 'February': 2, 'March': 3, 'April': 4}
-    ...: )"
+    ...: expect = ( "aDict("
+    ...:            "{'January': 1, 'February': 2, 'March': 3, 'April': 4}"
+    ...:            ")" )
     ...: obj = aDict()
     ...: obj.fromlists(keys, values, inplace=True)
     ...: assert obj.__repr__() == expect
@@ -161,6 +171,7 @@ In [17]: keys = [ 'January', 'February', 'March', 'April' ]
 
 to_json() and from_json().
 If set `True` to `inplace`, perform operation in-place.
+
 
 ```python
 In [6]: data = {"console": "Nintendo Switch",
@@ -257,32 +268,36 @@ In [10]: expect = ( "!datajuggler.aDict "
 
 In [11]: yaml_str = ( "!datajuggler.aDict "
     ...:              "{April: 4, February: 2, January: 1, March: 3}\n" )
-    ...: expect = "aDict({'April': 4, 'February': 2, 'January': 1, 'March': 3})
-    ...: "
+    ...: expect = ( "aDict("
+    ...:            "{'April': 4, 'February': 2, 'January': 1, 'March': 3}"
+    ...:            ")" )
     ...: obj = aDict()
     ...: result = obj.from_yaml(yaml_str)
     ...: assert result.__repr__() == expect
 
 In [12]: yaml_str = ( "!python/object:datajuggler.aDict "
     ...:              "{April: 4, February: 2, January: 1, March: 3}\n" )
-    ...: expect = "aDict({'April': 4, 'February': 2, 'January': 1, 'March': 3})
-    ...: "
+    ...: expect = ( "aDict("
+    ...:            "{'April': 4, 'February': 2, 'January': 1, 'March': 3}"
+    ...:            ")" )
     ...: obj = aDict()
     ...: result = obj.from_yaml(yaml_str)
     ...: assert result.__repr__() == expect
 
 In [13]: yaml_str = ( "!datajuggler.aDict "
     ...:              "{January: 1, February: 2, March: 3, April: 4}\n" )
-    ...: expect = "aDict({'January': 1, 'February': 2, 'March': 3, 'April': 4})
-    ...: "
+    ...: expect = ( "aDict("
+    ...:            "{'January': 1, 'February': 2, 'March': 3, 'April': 4}"
+    ...:            ")" )
     ...: obj = aDict()
     ...: result = obj.from_yaml(yaml_str)
     ...: assert result.__repr__() == expect
 
 In [14]: yaml_str = ( "!python/object:datajuggler.aDict "
     ...:              "{January: 1, February: 2, March: 3, April: 4}\n" )
-    ...: expect = "aDict({'January': 1, 'February': 2, 'March': 3, 'April': 4})
-    ...: "
+    ...: expect = ( "aDict("
+    ...:            "{'January': 1, 'February': 2, 'March': 3, 'April': 4}"
+    ...:            ")" )
     ...: obj = aDict()
     ...: result = obj.from_yaml(yaml_str)
     ...: assert result.__repr__() == expect
@@ -303,16 +318,18 @@ In [16]: yaml_str = ( "!python/object:datajuggler.aDict "
 
 In [17]: yaml_str = ( "!datajuggler.aDict "
     ...:              "{April: 4, February: 2, January: 1, March: 3}\n" )
-    ...: expect = "aDict({'April': 4, 'February': 2, 'January': 1, 'March': 3})
-    ...: "
+    ...: expect = ( "aDict("
+    ...:            "{'April': 4, 'February': 2, 'January': 1, 'March': 3}"
+    ...:            ")" )
     ...: obj = aDict()
     ...: obj.from_yaml(yaml_str, inplace=True)
     ...: assert obj.__repr__() == expect
 
 In [18]: yaml_str = ( "!python/object:datajuggler.aDict "
     ...:              "{January: 1, February: 2, March: 3, April: 4}\n" )
-    ...: expect = "aDict({'January': 1, 'February': 2, 'March': 3, 'April': 4})
-    ...: "
+    ...: expect = ( "aDict("
+    ...:            "{'January': 1, 'February': 2, 'March': 3, 'April': 4}"
+    ...:            ")" )
     ...: obj = aDict()
     ...: obj.from_yaml(yaml_str, inplace=True)
     ...: assert obj.__repr__() == expect
@@ -375,8 +392,9 @@ If set `True` to `inplace`, perform operation in-place.
 
 ```python
 In [9]: data = [ 'January', 'February', 'March', 'April' ]
-   ...: expect = "uDict({'January': 2, 'February': 2, 'March': 2, 'April': 2})
-   ...: "
+   ...: expect = ( "uDict("
+   ...:            "{'January': 2, 'February': 2, 'March': 2, 'April': 2}"
+   ...:            ")" )
    ...: obj = uDict().fromkeys(data, 2)
    ...: assert obj.__repr__() == expect
 
@@ -395,8 +413,9 @@ If set `True` to `inplace`, perform operation in-place.
 
 ```python
 In [11]: data = [ 'January', 'February', 'March', 'April' ]
-    ...: expect = "uDict({1: 'January', 2: 'February', 3: 'March', 4: 'April'}
-    ...: )"
+    ...: expect = ( "uDict("
+    ...:            "{1: 'January', 2: 'February', 3: 'March', 4: 'April'}"
+    ...:            ")" )
     ...: obj = uDict().fromvalues(data)
     ...: assert obj.__repr__() == expect
 
@@ -404,8 +423,9 @@ In [12]: obj = uDict()
     ...: obj.fromvalues(data, base=1, inplace=True)
     ...: assert obj.__repr__() == expect
 
-In [13]: expect = "uDict({0: 'January', 1: 'February', 2: 'March', 3: 'April'}
-    ...: )"
+In [13]: expect = ( "uDict("
+    ...:            "{0: 'January', 1: 'February', 2: 'March', 3: 'April'}"
+    ...:            ")" )
     ...: obj = uDict().fromvalues(data, base=0)
     ...: assert obj.__repr__() == expect
 
@@ -420,8 +440,9 @@ If set `True` to `inplace`, perform operation in-place.
 ```python
 In [14]: keys = [ 'January', 'February', 'March', 'April' ]
     ...: values = [ 1, 2, 3, 4 ]
-    ...: expect = "uDict({'January': 1, 'February': 2, 'March': 3, 'April': 4}
-    ...: )"
+    ...: expect = ( "uDict("
+    ...:            "{'January': 1, 'February': 2, 'March': 3, 'April': 4}"
+    ...:            ")" )
     ...: obj = uDict().fromlists(keys, values)
     ...: assert obj.__repr__() == expect
 
@@ -542,34 +563,36 @@ In [10]: expect = ( "!datajuggler.uDict "
 
 In [11]: yaml_str = ( "!datajuggler.uDict "
     ...:              "{April: 4, February: 2, January: 1, March: 3}\n" )
-    ...: expect = "uDict({'April': 4, 'February': 2, 'January': 1, 'March': 3})
-    ...: "
+    ...: expect = ( "uDict("
+    ...:            "{'April': 4, 'February': 2, 'January': 1, 'March': 3}"
+    ...:            ")" )
     ...: obj = uDict()
     ...: result = obj.from_yaml(yaml_str)
     ...: assert result.__repr__() == expect
 
 In [12]: yaml_str = ( "!python/object:datajuggler.uDict "
     ...:              "{April: 4, February: 2, January: 1, March: 3}\n" )
-    ...: expect = "uDict({'April': 4, 'February': 2, 'January': 1, 'March': 3})
-    ...: "
+    ...: expect = ( "uDict("
+    ...:            "{'April': 4, 'February': 2, 'January': 1, 'March': 3}"
+    ...:            ")" )
     ...: obj = uDict()
     ...: result = obj.from_yaml(yaml_str)
     ...: assert result.__repr__() == expect
 
 In [13]: yaml_str = ( "!datajuggler.uDict "
     ...:              "{January: 1, February: 2, March: 3, April: 4}\n" )
-    ...: expect = "uDict({'April': 4, 'February': 2, 'January': 1, 'March': 3})
-    ...: "
+    ...: expect = ( "uDict("
+    ...:            "{'January': 1, 'February': 2, 'March': 3, 'April': 4}"
+    ...:            ")" )
     ...: obj = uDict()
-    ...: expect = "uDict({'January': 1, 'February': 2, 'March': 3, 'April': 4})
-    ...: "
     ...: result = obj.from_yaml(yaml_str)
     ...: assert result.__repr__() == expect
 
 In [14]: yaml_str = ( "!python/object:datajuggler.uDict "
     ...:              "{January: 1, February: 2, March: 3, April: 4}\n" )
-    ...: expect = "uDict({'January': 1, 'February': 2, 'March': 3, 'April': 4})
-    ...: "
+    ...: expect = ( "uDict("
+    ...:            "{'January': 1, 'February': 2, 'March': 3, 'April': 4}"
+    ...:            ")" )
     ...: obj = uDict()
     ...: result = obj.from_yaml(yaml_str)
     ...: assert result.__repr__() == expect
@@ -590,16 +613,18 @@ In [16]: yaml_str = ( "!python/object:datajuggler.uDict "
 
 In [17]: yaml_str = ( "!datajuggler.uDict "
     ...:              "{April: 4, February: 2, January: 1, March: 3}\n" )
-    ...: expect = "uDict({'April': 4, 'February': 2, 'January': 1, 'March': 3})
-    ...: "
+    ...: expect = ( "uDict("
+    ...:            "{'April': 4, 'February': 2, 'January': 1, 'March': 3}"
+    ...:            ")" )
     ...: obj = uDict()
     ...: obj.from_yaml(yaml_str, inplace=True)
     ...: assert obj.__repr__() == expect
 
 In [18]: yaml_str = ( "!python/object:datajuggler.uDict "
     ...:              "{January: 1, February: 2, March: 3, April: 4}\n" )
-    ...: expect = "uDict({'January': 1, 'February': 2, 'March': 3, 'April': 4})
-    ...: "
+    ...: expect = ( "uDict("
+    ...:            "{'January': 1, 'February': 2, 'March': 3, 'April': 4}"
+    ...:            ")" )
     ...: obj = uDict()
     ...: obj.from_yaml(yaml_str, inplace=True)
     ...: assert obj.__repr__() == expect
@@ -713,8 +738,9 @@ but will always be ignored.
 
 ```python
 In [4]: data = [ 'January', 'February', 'March', 'April' ]
-   ...: expect = "iDict({'January': 2, 'February': 2, 'March': 2, 'April': 2})
-   ...: "
+   ...: expect = ( "iDict("
+   ...:            "{'January': 2, 'February': 2, 'March': 2, 'April': 2}"
+   ...:            ")" )
    ...: obj = iDict().fromkeys(data, 2)
    ...: assert obj.__repr__() == expect
 
@@ -736,14 +762,16 @@ but will always be ignored.
 
 ```python
 In [6]: data = [ 'January', 'February', 'March', 'April' ]
-   ...: expect = "iDict({1: 'January', 2: 'February', 3: 'March', 4: 'April'})
-   ...: "
+   ...: expect = ( "iDict("
+   ...:            "{1: 'January', 2: 'February', 3: 'March', 4: 'April'}"
+   ...:            ")" )
    ...: obj = iDict().fromvalues(data)
    ...: assert obj.__repr__() == expect
 
 In [7]: data = [ 'January', 'February', 'March', 'April' ]
-   ...: expect = "iDict({0: 'January', 1: 'February', 2: 'March', 3: 'April'})
-   ...: "
+   ...: expect = ( "iDict("
+   ...:            "{0: 'January', 1: 'February', 2: 'March', 3: 'April'}"
+   ...:            ")" )
    ...: obj = iDict().fromvalues(data, base=0)
    ...: assert obj.__repr__() == expect
 
@@ -767,8 +795,9 @@ In [1]: from datajuggler import iDict
    ...:
    ...: keys = [ 'January', 'February', 'March', 'April' ]
    ...: values = [ 1, 2, 3, 4 ]
-   ...: expect = "iDict({'January': 1, 'February': 2, 'March': 3, 'April': 4})
-   ...: "
+   ...: expect = ( "iDict("
+   ...:            "{'January': 1, 'February': 2, 'March': 3, 'April': 4}"
+   ...:            ")" )
    ...: obj = iDict().fromlists(keys, values)
    ...: assert obj.__repr__() == expect
 
@@ -894,35 +923,35 @@ In [10]: expect = ( "!datajuggler.iDict "
 
 In [11]: yaml_str = ( "!datajuggler.iDict "
     ...:              "{April: 4, February: 2, January: 1, March: 3}\n" )
-    ...: expect = "iDict({'April': 4, 'February': 2, 'January': 1, 'March': 3})
-    ...: "
+    ...: expect = ( "iDict("
+    ...:            "{'April': 4, 'February': 2, 'January': 1, 'March': 3}"
+    ...:            ")" )
     ...: obj = iDict()
     ...: result = obj.from_yaml(yaml_str)
     ...: assert result.__repr__() == expect
 
 In [12]: yaml_str = ( "!python/object:datajuggler.iDict "
     ...:              "{April: 4, February: 2, January: 1, March: 3}\n" )
-    ...: expect = "iDict({'April': 4, 'February': 2, 'January': 1, 'March': 3})
-    ...: "
     ...: obj = iDict()
     ...: result = obj.from_yaml(yaml_str)
     ...: assert result.__repr__() == expect
 
 In [13]: yaml_str = ( "!datajuggler.iDict "
-    ...:              "{January: 1, February: 2, March: 3, April: 4}\n" )
-    ...: expect = "iDict({'April': 4, 'February': 2, 'January': 1, 'March': 3})
-    ...: "
+    ...:              "{January: 1, February: 2, March: 3, April: 4}\n"
+    ...:             ")" )
     ...: obj = iDict()
-    ...: expect = "iDict({'January': 1, 'February': 2, 'March': 3, 'April': 4})
-    ...: "
+    ...: expect = ( "iDict("
+    ...:            "{'January': 1, 'February': 2, 'March': 3, 'April': 4}"
+    ...:            ")" )
     ...: result = obj.from_yaml(yaml_str)
     ...: assert result.__repr__() == expect
 
 In [14]: data = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
     ...: yaml_str = ( "!python/object:datajuggler.iDict "
     ...:              "{January: 1, February: 2, March: 3, April: 4}\n" )
-    ...: expect = "iDict({'January': 1, 'February': 2, 'March': 3, 'April': 4})
-    ...: "
+    ...: expect = ( "iDict("
+    ...:            "{'January': 1, 'February': 2, 'March': 3, 'April': 4}"
+    ...:            ")" )
     ...: obj = iDict()
     ...: result = obj.from_yaml(yaml_str)
     ...: assert result.__repr__() == expect
