@@ -17,8 +17,8 @@ class DictFactory(dict):
 
     """ Factory class for custom dictionary """
     def __init__(self, *args, **kwargs):
-        self.yaml_initializer()
         super().__init__(*args, **kwargs)
+        self.yaml_initializer()
 
     def __repr__(self):
         return '{0}({1})'.format(self.__class__.__name__, dict.__repr__(self))
@@ -107,10 +107,103 @@ class DictFactory(dict):
         else:
             return type(self)(json.loads(stream, **options))
 
+    def to_dict(self, obj):
+        """ Recursively converts DictFactory to dict.  """
+        holding_obj = dict()
+
+        def convert_loop(obj):
+            try:
+                return holding_obj[id(obj)]
+            except KeyError:
+                pass
+
+            holding_obj[id(obj)] = partial = pre_convert(obj)
+            return post_convert(partial, obj)
+
+        def pre_convert(obj):
+            if isinstance(obj, Mapping):
+                return dict()
+            elif isinstance(obj, list):
+                return type(obj)()
+            elif isinstance(obj, tuple):
+                type_factory = getattr(obj, "_make", type(obj))
+                return type_factory(convert_loop(item) for item in obj)
+            else:
+                return obj
+
+        def post_convert(partial, obj):
+            if isinstance(obj, Mapping):
+                partial.update((k, convert_loop(obj[k])) for k in obj.keys())
+            elif isinstance(obj, list):
+                partial.extend(convert_loop(v) for v in obj)
+            elif isinstance(obj, tuple):
+                for (value_partial, value) in zip(partial, obj):
+                    post_convert(value_partial, value)
+
+            return partial
+
+        return convert_loop(obj)
+
+    def from_dict(self, obj, factory=None, inplace: bool=False):
+        """ Recursively converts from dict to DictFactory. """
+        factory = factory or type(self)
+        holding_obj = dict()
+        workdict = type(self)()
+
+        def convert_loop(obj):
+            try:
+                return holding_obj[id(obj)]
+            except KeyError:
+                pass
+
+            holding_obj[id(obj)] = partial = pre_convert(obj)
+            return post_convert(partial, obj)
+
+        def pre_convert(obj):
+            if isinstance(obj, Mapping):
+                return factory({})
+            elif isinstance(obj, list):
+                return type(obj)()
+            elif isinstance(obj, tuple):
+                type_factory = getattr(obj, "_make", type(obj))
+                return type_factory(convert_loop(item) for item in obj)
+            else:
+                return obj
+
+        def post_convert(partial, obj):
+            if isinstance(obj, iDict):
+                partial = iDict((key, convert_loop(obj[key]))
+                                for key in obj.keys() )
+            elif isinstance(obj, Mapping):
+                partial.update((key, convert_loop(obj[key]))
+                                for key in obj.keys() )
+            elif isinstance(obj, list):
+                partial.extend(convert_loop(item) for item in obj)
+            elif isinstance(obj, tuple):
+                for (item_partial, item) in zip(partial, obj):
+                    post_convert(item_partial, item)
+
+            return partial
+
+        obj = convert_loop(obj)
+        try:
+            if isinstance(self, iDict):
+                workdict = iDict((key, convert_loop(obj[key]))
+                                 for key in obj.keys() )
+            else:
+                if inplace:
+                    self.update(obj)
+                else:
+                    workdict.update(obj)
+
+        except AttributeError:
+            pass   # obj is not Mapping and/or may be iDict.
+
+        if not inplace:
+            return workdict
+
 
 class aDict(DictFactory):
-    def __init__(self, *args:Any, **kwargs:Any):
-         self.update(*args, **kwargs)
 
     def __getattr__(self, k):
         try:
@@ -163,83 +256,6 @@ class aDict(DictFactory):
     def copy(self):
         return self.from_dict(self)
 
-    def to_dict(self, obj):
-        """ Recursively converts aDict to dict.  """
-        holding_obj = dict()
-
-        def convert_loop(obj):
-            try:
-                return holding_obj[id(obj)]
-            except KeyError:
-                pass
-
-            holding_obj[id(obj)] = partial = pre_convert(obj)
-            return post_convert(partial, obj)
-
-        def pre_convert(obj):
-            if isinstance(obj, Mapping):
-                return dict()
-            elif isinstance(obj, list):
-                return type(obj)()
-            elif isinstance(obj, tuple):
-                type_factory = getattr(obj, "_make", type(obj))
-                return type_factory(convert_loop(item) for item in obj)
-            else:
-                return obj
-
-        def post_convert(partial, obj):
-            if isinstance(obj, Mapping):
-                partial.update((k, convert_loop(obj[k])) for k in obj.keys())
-            elif isinstance(obj, list):
-                partial.extend(convert_loop(v) for v in obj)
-            elif isinstance(obj, tuple):
-                for (value_partial, value) in zip(partial, obj):
-                    post_convert(value_partial, value)
-
-            return partial
-
-        return convert_loop(obj)
-
-    @classmethod
-    def from_dict(cls, obj, factory=None):
-        """ Recursively converts from dict to aDict. """
-        factory = factory or cls
-        holding_obj = dict()
-
-        def convert_loop(obj):
-            try:
-                return holding_obj[id(obj)]
-            except KeyError:
-                pass
-
-            holding_obj[id(obj)] = partial = pre_convert(obj)
-            return post_convert(partial, obj)
-
-        def pre_convert(obj):
-            if isinstance(obj, Mapping):
-                return factory({})
-            elif isinstance(obj, list):
-                return type(obj)()
-            elif isinstance(obj, tuple):
-                type_factory = getattr(obj, "_make", type(obj))
-                return type_factory(convert_loop(item) for item in obj)
-            else:
-                return obj
-
-        def post_convert(partial, obj):
-            if isinstance(obj, Mapping):
-                partial.update((key, convert_loop(obj[key]))
-                                for key in obj.keys() )
-            elif isinstance(obj, list):
-                partial.extend(convert_loop(item) for item in obj)
-            elif isinstance(obj, tuple):
-                for (item_partial, item) in zip(partial, obj):
-                    post_convert(item_partial, item)
-
-            return partial
-
-        return convert_loop(obj)
-
 
 class uDict(DictFactory):
     __hash__ = None
@@ -267,8 +283,6 @@ class uDict(DictFactory):
             return work_dict
 
 class iDict(DictFactory):
-    def __init__(self, *args:Any, **kwargs:Any):
-         super().__init__(*args, **kwargs)
 
     def __missing__(self, key):
         return None
@@ -306,7 +320,7 @@ class iDict(DictFactory):
             inplace: bool=False,
         ) ->Optional[dict]:
         """Create a new dictionary with keys from iterable and values set to value.
-           `inplace` parameter will alway be ignored.
+           If `inplace` parameter set `True`, It will alway be ignored.
         """
         if not inplace:
             return type(self)(dict(self).fromkeys(seq, value))
@@ -319,7 +333,7 @@ class iDict(DictFactory):
         """Create a new dictionary from list of values.
            keys automaticaly generate as interger.
            `base` is the number of base.
-           `inplace` parameter will alway be ignored.
+           If `inplace` parameter set `True`, It will alway be ignored.
         """
         if not inplace:
             return type(self)({base+x: seq[x] for x in range(len(seq))})
@@ -330,7 +344,7 @@ class iDict(DictFactory):
             inplace: bool=False,
         ) ->Optional[dict]:
         """Create a new dictionary from two list as keys and values.
-           `inplace` parameter will alway be ignored.
+           If `inplace` parameter set `True`, It will alway be ignored.
         """
         if not inplace:
             zipobj = zip(keys, values)
@@ -347,7 +361,7 @@ class iDict(DictFactory):
             inplace: bool=False,
             **options: Any):
         """Create a new dictionary from json strings.
-           `inplace` parameter will alway be ignored.
+           If `inplace` parameter set `True`, It will alway be ignored.
         """
         if not inplace:
             return type(self)(json.loads(stream, **options))

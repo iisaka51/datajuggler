@@ -1,30 +1,28 @@
-import snoop
-from pathlib import Path
-
 try:
     import yaml
     from yaml.representer import Representer, SafeRepresenter
 
     def yaml_initializer(cls, factory=None):
+        from pathlib import Path
+
         """class method to initialize for YAML"""
 
         def _from_yaml(loader, node):
             nonlocal factory
-            data = factory()
-            yield data
             value = loader.construct_mapping(node)
-            data.update(value)
+            data = factory(value)
+            yield data
 
         def _to_yaml_safe(dumper, data):
             return dumper.represent_dict(data)
 
         def _to_yaml(dumper, data):
-            nonlocal factory_name
-            return dumper.represent_mapping(
-                           '!{}'.format(factory_name), data)
+            nonlocal module_name, factory_name
+            return dumper.represent_mapping(u'!{}.{}'.format(module_name, factory_name), data)
 
         factory = factory or cls
-        factory_name=cls.__name__
+        factory_name=factory.__name__
+        module_name = Path(__file__).parent.name
 
         for loader_name in ( "BaseLoader", "FullLoader", "SafeLoader",
                              "Loader", "UnsafeLoader", "DangerLoader" ):
@@ -32,10 +30,15 @@ try:
             if LoaderCls is None:
                 # This code supports both PyYAML 4.x and 5.x versions
                 continue
-            package_name = Path(__file__).parent
-            yaml.add_constructor('!{}'.format( package_name ),
+            yaml.add_constructor(u'!{}'.format( module_name ),
                                   _from_yaml, Loader=LoaderCls)
-            yaml.add_constructor('!{}.{}'.format( package_name, factory_name),
+            yaml.add_constructor(u'!{}.{}'.format( module_name, factory_name ),
+                                  _from_yaml, Loader=LoaderCls)
+            yaml.add_constructor(u'!python/object:{}.{}'.format(
+                                           module_name, factory_name),
+                                  _from_yaml, Loader=LoaderCls)
+            yaml.add_constructor(u'!python/object/new:{}.{}'.format(
+                                           module_name, factory_name),
                                   _from_yaml, Loader=LoaderCls)
 
         SafeRepresenter.add_representer(cls, _to_yaml_safe)
@@ -46,21 +49,19 @@ try:
 
     def to_yaml(self, **options):
         """instance method for convert to YAML"""
-        opts = dict(indent=4, default_flow_style=False)
+        opts = dict(indent=4, default_flow_style=False, allow_unicode=True)
         opts.update(options)
         if 'Dumper' not in opts:
             return yaml.safe_dump(self, **opts)
         else:
             return yaml.dump(self, **opts)
 
-    @snoop
-    def from_yaml(self, stream, *args, **kwargs):
+    def from_yaml(self, stream, *args, inplace: bool=False, **kwargs):
         """instance method for convert from YAML"""
-        factory = lambda d: cls(*(args + (d,)), **kwargs)
+        factory = lambda d: type(self)(*(args + (d,)), **kwargs)
         loader_class = kwargs.pop('Loader', yaml.FullLoader)
         return self.from_dict(yaml.load(stream, Loader=loader_class),
-                              factory=type(self))
-
+                              factory=factory, inplace=inplace)
 
 except ImportError:
     def to_yaml(self, **options):

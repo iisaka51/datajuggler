@@ -26,78 +26,52 @@ utilities for string manupulate helper functions.
  -  split_chunks() - Split iterable object into chunks.
  -  urange() - Return an object that produces a sequence of integes.
 
-### class aDict
+## class aDict
 Allow to access using dot notation for dictionary.
 This class inspired [munch](https://github.com/Infinidat/munch).
 
- - `fromkeys(sequence, inplace:bool=False)
- - `fromvalues(sequence, inplace:bool=False)
- - `fromlists(keys, values, inplace:bool=False)
- - `to_json(**options)
- - `from_json(json_data: str, inplace: bool=False, **options),
+ - `fromkeys(sequence, inplace:bool=False)`
+ - `fromvalues(sequence, inplace:bool=False)`
+ - `fromlists(keys, values, inplace:bool=False)`
+ - `to_json(**options)`
+ - `from_json(json_data: str, inplace: bool=False, **options)`
+ - `to_yaml(**options)`
+ - `from_yaml(stream, *args, inplace: bool=False, **kwargs)`
 
 ```python
 In [1]: from datajuggler import aDict
    ...:
    ...: data = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
    ...: expect = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
-   ...: result = aDict(data)
-   ...: assert result == data
-
-In [2]: data = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
-   ...: expect = 2
-   ...: result = aDict(data)
-   ...: assert result.February == expect
-
-In [3]: data = { 'one': { 'two': { 'three': { 'four': 4 }}}}
-   ...: expect = 4
-   ...: result = aDict(data)
-   ...: assert result.one.two.three.four == expect
-
-In [4]: data = { 'one': { 'two': { 'three': { 'four': 4 }}}}
-   ...: expect = "{'one': {'two': {'three': {'four': 4}}}}"
-   ...: result = aDict(data)
-   ...: assert result.__str__() == expect
-
-
-In [5]: data = { 'one': { 'two': { 'three': { 'four': 4 }}}}
-   ...: expect = ( "aDict({'one': "
-   ...:                   "aDict({'two': "
-   ...:                          "aDict({'three': "
-   ...:                                 "aDict({'four': 4})"
-   ...:                         "})"
-   ...:                   "})"
-   ...:            "})" )
-   ...: result = aDict(data)
-   ...: assert result.__repr__() == expect
-```
-
-#### to_json()
-
-```python
-In [6]: data = {"console": "Nintendo Switch",
-   ...:         "games": ["The Legend of Zelda", "Mario Golf"]}
-   ...: json_data = ( '{"console": "Nintendo Switch", '
-   ...:            '"games": ["The Legend of Zelda", "Mario Golf"]}' )
+   ...:
    ...: obj = aDict(data)
-   ...: assert obj.to_json() == json_data
-```
+   ...: assert obj == data
 
-#### to_json() and from_json()
+In [2]: expect = "{'January': 1, 'February': 2, 'March': 3, 'April': 4}"
+   ...: obj = aDict(data)
+   ...: assert obj.__str__() == expect
 
-If set `True` to `inplace`, perform operation in-place.
-
-
-```python
-In [7]: expect = ( "aDict({'console': 'Nintendo Switch', "
-   ...:            "'games': ['The Legend of Zelda', 'Mario Golf']})" )
-   ...: obj = aDict().from_json(json_data)
+In [3]: expect = "aDict({'January': 1, 'February': 2, 'March': 3, 'April': 4})"
+   ...:
+   ...: obj = aDict(data)
    ...: assert obj.__repr__() == expect
 
-In [8]: obj = aDict()
-   ...: obj.from_json(json_data, inplace=True)
+In [4]: expect = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
+   ...: obj = aDict(January=1, February=2, March=3, April=4)
+   ...: assert obj == expect
+
+In [5]: data = aDict({ 'January': 1, 'February': 2, 'March': 3, 'April': 4 })
+   ...: expect = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
+   ...: assert data == expect
+
+In [6]: data = { 'one': { 'two': { 'three': { 'four': 4 }}}}
+   ...: expect = ( "aDict("
+   ...:            "{'one': {'two': {'three': {'four': 4}}}}"
+   ...:            ")" )
+   ...: obj = aDict(data)
    ...: assert obj.__repr__() == expect
 
+In [7]:
 ```
 
 ### fromkeys()
@@ -183,72 +157,215 @@ In [17]: keys = [ 'January', 'February', 'March', 'April' ]
     ...: assert obj.__repr__() == expect
 ```
 
-### class uDict
-Support change keys  for dict.
+### JSON
+
+to_json() and from_json().
+If set `True` to `inplace`, perform operation in-place.
+
+```python
+In [6]: data = {"console": "Nintendo Switch",
+   ...:         "games": ["The Legend of Zelda", "Mario Golf"]}
+   ...: json_data = ( '{"console": "Nintendo Switch", '
+   ...:            '"games": ["The Legend of Zelda", "Mario Golf"]}' )
+   ...: obj = aDict(data)
+   ...: assert obj.to_json() == json_data
+```
+
+If set `True` to `inplace`, perform operation in-place.
+
+
+```python
+In [7]: expect = ( "aDict({'console': 'Nintendo Switch', "
+   ...:            "'games': ['The Legend of Zelda', 'Mario Golf']})" )
+   ...: obj = aDict().from_json(json_data)
+   ...: assert obj.__repr__() == expect
+
+In [8]: obj = aDict()
+   ...: obj.from_json(json_data, inplace=True)
+   ...: assert obj.__repr__() == expect
+
+```
+
+### YAML
+
+if PyYAML is installed, enable `to_yaml()` and `from_yaml()` method.
+otherwise raise NotImplementedError.
+
+```python
+In [1]: from datajuggler import aDict
+   ...: import yaml
+   ...:
+   ...: data = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
+   ...: expect = "{April: 4, February: 2, January: 1, March: 3}\n"
+   ...:
+   ...: obj = aDict(data)
+   ...: result = yaml.safe_dump(obj, default_flow_style=True)
+   ...: assert result == expect
+
+In [2]: expect = "{January: 1, February: 2, March: 3, April: 4}\n"
+   ...: obj = aDict(data)
+   ...: result = yaml.safe_dump(obj, default_flow_style=True,sort_keys=False)
+   ...: assert result == expect
+
+In [3]: expect = "{April: 4, February: 2, January: 1, March: 3}\n"
+   ...: obj = aDict(data)
+   ...: result = obj.to_yaml(default_flow_style=True)
+   ...: assert result == expect
+
+In [4]: expect = "{January: 1, February: 2, March: 3, April: 4}\n"
+   ...: obj = aDict(data)
+   ...: result = obj.to_yaml(default_flow_style=True,sort_keys=False)
+   ...: assert result == expect
+
+In [5]: expect = ( "!datajuggler.aDict "
+   ...:            "{April: 4, February: 2, January: 1, March: 3}\n" )
+   ...: obj = aDict(data)
+   ...: result = yaml.dump(obj, default_flow_style=True)
+   ...: assert result == expect
+
+In [6]: expect = ( "!datajuggler.aDict "
+   ...:            "{January: 1, February: 2, March: 3, April: 4}\n" )
+   ...: obj = aDict(data)
+   ...: result = yaml.dump(obj, default_flow_style=True,sort_keys=False)
+   ...: assert result == expect
+
+In [7]: expect = ( "!datajuggler.aDict "
+   ...:            "{April: 4, February: 2, January: 1, March: 3}\n" )
+   ...: obj = aDict(data)
+   ...: result = obj.to_yaml(Dumper=yaml.Dumper,  default_flow_style=True)
+   ...: assert result == expect
+
+In [8]: expect = ( "!datajuggler.aDict "
+   ...:            "{January: 1, February: 2, March: 3, April: 4}\n" )
+   ...: obj = aDict(data)
+   ...: result = obj.to_yaml(Dumper=yaml.Dumper,
+   ...:                      default_flow_style=True, sort_keys=False)
+   ...: assert result == expect
+
+In [9]: data = { 'one': { 'two': { 'three': { 'four': 4 }}}}
+   ...: expect = "{one: {two: {three: {four: 4}}}}\n"
+   ...: obj = aDict(data)
+   ...: result = obj.to_yaml(default_flow_style=True,sort_keys=False)
+   ...: assert result  == expect
+
+In [10]: expect = ( "!datajuggler.aDict "
+    ...:            "{one: {two: {three: {four: 4}}}}\n" )
+    ...: obj = aDict(data)
+    ...: result = obj.to_yaml(Dumper=yaml.Dumper,
+    ...:                      default_flow_style=True, sort_keys=False)
+    ...: assert result  == expect
+
+In [11]: yaml_str = ( "!datajuggler.aDict "
+    ...:              "{April: 4, February: 2, January: 1, March: 3}\n" )
+    ...: expect = "aDict({'April': 4, 'February': 2, 'January': 1, 'March': 3})
+    ...: "
+    ...: obj = aDict()
+    ...: result = obj.from_yaml(yaml_str)
+    ...: assert result.__repr__() == expect
+
+In [12]: yaml_str = ( "!python/object:datajuggler.aDict "
+    ...:              "{April: 4, February: 2, January: 1, March: 3}\n" )
+    ...: expect = "aDict({'April': 4, 'February': 2, 'January': 1, 'March': 3})
+    ...: "
+    ...: obj = aDict()
+    ...: result = obj.from_yaml(yaml_str)
+    ...: assert result.__repr__() == expect
+
+In [13]: yaml_str = ( "!datajuggler.aDict "
+    ...:              "{January: 1, February: 2, March: 3, April: 4}\n" )
+    ...: expect = "aDict({'January': 1, 'February': 2, 'March': 3, 'April': 4})
+    ...: "
+    ...: obj = aDict()
+    ...: result = obj.from_yaml(yaml_str)
+    ...: assert result.__repr__() == expect
+
+In [14]: yaml_str = ( "!python/object:datajuggler.aDict "
+    ...:              "{January: 1, February: 2, March: 3, April: 4}\n" )
+    ...: expect = "aDict({'January': 1, 'February': 2, 'March': 3, 'April': 4})
+    ...: "
+    ...: obj = aDict()
+    ...: result = obj.from_yaml(yaml_str)
+    ...: assert result.__repr__() == expect
+
+In [15]: yaml_str = ( "!datajuggler.aDict "
+    ...:              "{April: 4, February: 2, January: 1, March: 3}\n" )
+    ...: expect = "aDict({})"
+    ...: obj = aDict()
+    ...: _ = obj.from_yaml(yaml_str)
+    ...: assert obj.__repr__() == expect
+
+In [16]: yaml_str = ( "!python/object:datajuggler.aDict "
+    ...:              "{January: 1, February: 2, March: 3, April: 4}\n" )
+    ...: expect = "aDict({})"
+    ...: obj = aDict()
+    ...: _ = obj.from_yaml(yaml_str)
+    ...: assert obj.__repr__() == expect
+
+In [17]: yaml_str = ( "!datajuggler.aDict "
+    ...:              "{April: 4, February: 2, January: 1, March: 3}\n" )
+    ...: expect = "aDict({'April': 4, 'February': 2, 'January': 1, 'March': 3})
+    ...: "
+    ...: obj = aDict()
+    ...: obj.from_yaml(yaml_str, inplace=True)
+    ...: assert obj.__repr__() == expect
+
+In [18]: yaml_str = ( "!python/object:datajuggler.aDict "
+    ...:              "{January: 1, February: 2, March: 3, April: 4}\n" )
+    ...: expect = "aDict({'January': 1, 'February': 2, 'March': 3, 'April': 4})
+    ...: "
+    ...: obj = aDict()
+    ...: obj.from_yaml(yaml_str, inplace=True)
+    ...: assert obj.__repr__() == expect
+
+In [19]:
+```
+
+
+## class uDict
+Support change keys for dict.
 
  - `fromkeys(sequence, inplace:bool=False)
  - `fromvalues(sequence, inplace:bool=False)
  - `fromlists(keys, values, inplace:bool=False)
  - `to_json(**options)
  - `from_json(json_data: str, inplace: bool=False, **options),
+ - `to_yaml(**options)`
+ - `from_yaml(stream, *args, inplace: bool=False, **kwargs)`
 
 ```python
 In [1]: from datajuggler import uDict
    ...:
-   ...: data = uDict({ 'January': 1, 'February': 2, 'March': 3, 'April': 4 })
-   ...: expect = { 'January': 1, 'February': 2, 'March': 3, 'Apr': 4 }
-   ...: saved = data.copy()
-   ...: result = data.replace_key('April', 'Apr')
-   ...: assert ( result == expect and data == saved )
-
-In [2]: data = uDict({ 'January': 1, 'February': 2, 'March': 3, 'April': 4 })
-   ...: replace = {'January': 'Jan', 'February': 'Feb' }
-   ...: expect = { 'Jan': 1, 'Feb': 2, 'March': 3, 'April': 4 }
-   ...: saved = data.copy()
-   ...: result = data.replace_key_map(replace)
-   ...: assert ( result == expect
-   ...:          and data == saved )
-
-In [3]: data = uDict({ 'January': 1, 'February': 2, 'March': 3, 'April': 4 })
-   ...: replace = {'January': 'Jan', 'February': 'Feb' }
-   ...: expect = { 'Jan': 1, 'Feb': 2, 'March': 3, 'April': 4 }
-   ...: saved = data.copy()
-   ...: result = data.replace_key_map(replace)
-   ...: assert ( result == expect and data == saved )
-
-In [4]: data = uDict({ 'January': 1, 'February': 2, 'March': 3, 'April': 4 })
-   ...: replace = {'January': 'Jan', 'February': 'Feb' }
-   ...: expect = { 'Jan': 1, 'Feb': 2, 'March': 3, 'April': 4 }
-   ...: saved = data.copy()
-   ...: data.replace_key_map(replace, inplace=True)
-   ...: assert ( data == expect and data != saved )
-```
-
-#### to_json() and from_json()
-
-If set `True` to `inplace`, perform operation in-place.
-
-
-```python
-In [5]: from datajuggler import uDict
+   ...: data = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
+   ...: expect = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
    ...:
-   ...: data = {"console": "Nintendo Switch",
-   ...:         "games": ["The Legend of Zelda", "Mario Golf"]}
-   ...: json_data = ( '{"console": "Nintendo Switch", '
-   ...:            '"games": ["The Legend of Zelda", "Mario Golf"]}' )
-   ...: repr  = ( "uDict({'console': 'Nintendo Switch', "
-   ...:            "'games': ['The Legend of Zelda', 'Mario Golf']})" )
+   ...: obj = uDict(data)
+   ...: assert obj == data
 
-In [6]: obj = uDict(data)
-   ...: assert obj.to_json() == json_data
+In [2]: expect = "{'January': 1, 'February': 2, 'March': 3, 'April': 4}"
+   ...: obj = uDict(data)
+   ...: assert obj.__str__() == expect
 
-In [7]: new = uDict().from_json(json_data)
-   ...: assert new.__repr__() == repr
+In [3]: expect = "uDict({'January': 1, 'February': 2, 'March': 3, 'April': 4})"
+   ...:
+   ...: obj = uDict(data)
+   ...: assert obj.__repr__() == expect
 
-In [8]: obj = uDict()
-   ...: obj.from_json(json_data, inplace=True)
-   ...: assert obj.__repr__() == repr
+In [4]: expect = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
+   ...: result = uDict(January=1, February=2, March=3, April=4)
+   ...: assert result == expect
 
+In [5]: data = uDict({ 'January': 1, 'February': 2, 'March': 3, 'April': 4 })
+   ...: expect = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
+   ...: assert data == expect
+
+In [6]: data = { 'one': { 'two': { 'three': { 'four': 4 }}}}
+   ...: expect = ( "uDict("
+   ...:            "{'one': {'two': {'three': {'four': 4}}}}"
+   ...:            ")" )
+   ...: obj = uDict(data)
+   ...: assert obj.__repr__() == expect
+
+In [7]:
 ```
 
 ### fromkeys()
@@ -326,6 +443,170 @@ In [17]: keys = [ 'January', 'February', 'March', 'April' ]
 
 ```
 
+### JSON
+
+to_json() and from_json().
+If set `True` to `inplace`, perform operation in-place.
+
+
+```python
+In [5]: from datajuggler import uDict
+   ...:
+   ...: data = {"console": "Nintendo Switch",
+   ...:         "games": ["The Legend of Zelda", "Mario Golf"]}
+   ...: json_data = ( '{"console": "Nintendo Switch", '
+   ...:            '"games": ["The Legend of Zelda", "Mario Golf"]}' )
+   ...: repr  = ( "uDict({'console': 'Nintendo Switch', "
+   ...:            "'games': ['The Legend of Zelda', 'Mario Golf']})" )
+
+In [6]: obj = uDict(data)
+   ...: assert obj.to_json() == json_data
+
+In [7]: new = uDict().from_json(json_data)
+   ...: assert new.__repr__() == repr
+
+In [8]: obj = uDict()
+   ...: obj.from_json(json_data, inplace=True)
+   ...: assert obj.__repr__() == repr
+
+```
+
+### YAML
+
+if PyYAML is installed, enable `to_yaml()` and `from_yaml()` method.
+
+```python
+In [1]: from datajuggler import uDict
+   ...: import yaml
+   ...:
+   ...: data = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
+   ...: expect = "{April: 4, February: 2, January: 1, March: 3}\n"
+   ...:
+   ...: obj = uDict(data)
+   ...: result = yaml.safe_dump(obj, default_flow_style=True)
+   ...: assert result == expect
+
+In [2]: expect = "{January: 1, February: 2, March: 3, April: 4}\n"
+   ...: obj = uDict(data)
+   ...: result = yaml.safe_dump(obj, default_flow_style=True,sort_keys=False)
+   ...: assert result == expect
+
+In [3]: expect = "{April: 4, February: 2, January: 1, March: 3}\n"
+   ...: obj = uDict(data)
+   ...: result = obj.to_yaml(default_flow_style=True)
+   ...: assert result == expect
+
+In [4]: expect = "{January: 1, February: 2, March: 3, April: 4}\n"
+   ...: obj = uDict(data)
+   ...: result = obj.to_yaml(default_flow_style=True,sort_keys=False)
+   ...: assert result == expect
+
+In [5]: expect = ( "!datajuggler.uDict "
+   ...:            "{April: 4, February: 2, January: 1, March: 3}\n" )
+   ...: obj = uDict(data)
+   ...: result = yaml.dump(obj, default_flow_style=True)
+   ...: assert result == expect
+
+In [6]: expect = ( "!datajuggler.uDict "
+   ...:            "{January: 1, February: 2, March: 3, April: 4}\n" )
+   ...: obj = uDict(data)
+   ...: result = yaml.dump(obj,default_flow_style=True,sort_keys=False)
+   ...: assert result == expect
+
+In [7]: expect = ( "!datajuggler.uDict "
+   ...:            "{April: 4, February: 2, January: 1, March: 3}\n" )
+   ...: obj = uDict(data)
+   ...: result = obj.to_yaml(Dumper=yaml.Dumper,  default_flow_style=True)
+   ...: assert result == expect
+
+In [8]: expect = ( "!datajuggler.uDict "
+   ...:            "{January: 1, February: 2, March: 3, April: 4}\n" )
+   ...: obj = uDict(data)
+   ...: result = obj.to_yaml(Dumper=yaml.Dumper,
+   ...:                      default_flow_style=True, sort_keys=False)
+   ...: assert result == expect
+
+In [9]: data = { 'one': { 'two': { 'three': { 'four': 4 }}}}
+   ...: expect = "{one: {two: {three: {four: 4}}}}\n"
+   ...:
+   ...: obj = uDict(data)
+   ...: result = obj.to_yaml(default_flow_style=True,sort_keys=False)
+   ...: assert result  == expect
+
+In [10]: expect = ( "!datajuggler.uDict "
+    ...:            "{one: {two: {three: {four: 4}}}}\n" )
+    ...: obj = uDict(data)
+    ...: result = obj.to_yaml(Dumper=yaml.Dumper,
+    ...:                      default_flow_style=True, sort_keys=False)
+    ...: assert result  == expect
+
+In [11]: yaml_str = ( "!datajuggler.uDict "
+    ...:              "{April: 4, February: 2, January: 1, March: 3}\n" )
+    ...: expect = "uDict({'April': 4, 'February': 2, 'January': 1, 'March': 3})
+    ...: "
+    ...: obj = uDict()
+    ...: result = obj.from_yaml(yaml_str)
+    ...: assert result.__repr__() == expect
+
+In [12]: yaml_str = ( "!python/object:datajuggler.uDict "
+    ...:              "{April: 4, February: 2, January: 1, March: 3}\n" )
+    ...: expect = "uDict({'April': 4, 'February': 2, 'January': 1, 'March': 3})
+    ...: "
+    ...: obj = uDict()
+    ...: result = obj.from_yaml(yaml_str)
+    ...: assert result.__repr__() == expect
+
+In [13]: yaml_str = ( "!datajuggler.uDict "
+    ...:              "{January: 1, February: 2, March: 3, April: 4}\n" )
+    ...: expect = "uDict({'April': 4, 'February': 2, 'January': 1, 'March': 3})
+    ...: "
+    ...: obj = uDict()
+    ...: expect = "uDict({'January': 1, 'February': 2, 'March': 3, 'April': 4})
+    ...: "
+    ...: result = obj.from_yaml(yaml_str)
+    ...: assert result.__repr__() == expect
+
+In [14]: yaml_str = ( "!python/object:datajuggler.uDict "
+    ...:              "{January: 1, February: 2, March: 3, April: 4}\n" )
+    ...: expect = "uDict({'January': 1, 'February': 2, 'March': 3, 'April': 4})
+    ...: "
+    ...: obj = uDict()
+    ...: result = obj.from_yaml(yaml_str)
+    ...: assert result.__repr__() == expect
+
+In [15]: yaml_str = ( "!datajuggler.uDict "
+    ...:              "{April: 4, February: 2, January: 1, March: 3}\n" )
+    ...: expect = "uDict({})"
+    ...: obj = uDict()
+    ...: _ = obj.from_yaml(yaml_str)
+    ...: assert obj.__repr__() == expect
+
+In [16]: yaml_str = ( "!python/object:datajuggler.uDict "
+    ...:              "{January: 1, February: 2, March: 3, April: 4}\n" )
+    ...: expect = "uDict({})"
+    ...: obj = uDict()
+    ...: _ = obj.from_yaml(yaml_str)
+    ...: assert obj.__repr__() == expect
+
+In [17]: yaml_str = ( "!datajuggler.uDict "
+    ...:              "{April: 4, February: 2, January: 1, March: 3}\n" )
+    ...: expect = "uDict({'April': 4, 'February': 2, 'January': 1, 'March': 3})
+    ...: "
+    ...: obj = uDict()
+    ...: obj.from_yaml(yaml_str, inplace=True)
+    ...: assert obj.__repr__() == expect
+
+In [18]: yaml_str = ( "!python/object:datajuggler.uDict "
+    ...:              "{January: 1, February: 2, March: 3, April: 4}\n" )
+    ...: expect = "uDict({'January': 1, 'February': 2, 'March': 3, 'April': 4})
+    ...: "
+    ...: obj = uDict()
+    ...: obj.from_yaml(yaml_str, inplace=True)
+    ...: assert obj.__repr__() == expect
+
+In [19]:
+```
+
 ### class iDict
 
 Immutable Dict. iDict is hashable object.
@@ -335,6 +616,8 @@ Immutable Dict. iDict is hashable object.
  - `fromlists(keys, values, inplace:bool=False)
  - `to_json(**options)
  - `from_json(json_data: str, inplace: bool=False, **options),
+ - `to_yaml(**options)`
+ - `from_yaml(stream, *args, inplace: bool=False, **kwargs)`
 
 if set `iplace` parameter, it will not cause an error.
 but will always be ignored.
@@ -419,36 +702,6 @@ Out[3]: {iDict({'January': 1, 'February': 2, 'March': 3, 'April': 4}): 1}
 
 In [4]: type(result)
 Out[4]: dict
-
-```
-
-#### to_json() and from_json()
-
-Generate JSON strings from the dictionary.
-Generate new dictionary from JSON strings.
-
-if set `iplace` parameter, it will not cause an error.
-but will always be ignored.
-
-```python
-In [1]: from datajuggler import iDict
-   ...:
-   ...: data = {"console": "Nintendo Switch",
-   ...:         "games": ["The Legend of Zelda", "Mario Golf"]}
-   ...: json_data = ( '{"console": "Nintendo Switch", '
-   ...:               '"games": ["The Legend of Zelda", "Mario Golf"]}' )
-   ...: obj = iDict(data)
-   ...: assert obj.to_json() == json_data
-
-In [2]: expect = ( "iDict({'console': 'Nintendo Switch', "
-   ...:            "'games': ['The Legend of Zelda', 'Mario Golf']})" )
-   ...: result = iDict().from_json(json_data)
-   ...: assert result.__repr__() == expect
-
-In [3]: expect = "iDict({})"
-   ...: obj = iDict()
-   ...: obj.from_json(json_data, inplace=True)
-   ...: assert obj.__repr__() == expect
 
 ```
 
@@ -540,8 +793,173 @@ In [4]: keys = [ 'January', 'February', 'March', 'April' ]
 
 ```
 
+### to_json() and from_json()
 
-### class StrCase
+Generate JSON strings from the dictionary.
+Generate new dictionary from JSON strings.
+
+if set `iplace` parameter, it will not cause an error.
+but will always be ignored.
+
+```python
+In [1]: from datajuggler import iDict
+   ...:
+   ...: data = {"console": "Nintendo Switch",
+   ...:         "games": ["The Legend of Zelda", "Mario Golf"]}
+   ...: json_data = ( '{"console": "Nintendo Switch", '
+   ...:               '"games": ["The Legend of Zelda", "Mario Golf"]}' )
+   ...: obj = iDict(data)
+   ...: assert obj.to_json() == json_data
+
+In [2]: expect = ( "iDict({'console': 'Nintendo Switch', "
+   ...:            "'games': ['The Legend of Zelda', 'Mario Golf']})" )
+   ...: result = iDict().from_json(json_data)
+   ...: assert result.__repr__() == expect
+
+In [3]: expect = "iDict({})"
+   ...: obj = iDict()
+   ...: obj.from_json(json_data, inplace=True)
+   ...: assert obj.__repr__() == expect
+
+```
+
+### YAML
+
+if PyYAML is installed, enable `to_yaml()` and `from_yaml()` method.
+otherwise raise NotImplementedError.
+
+```python
+In [1]: from datajuggler import iDict
+   ...: import yaml
+   ...:
+   ...: data = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
+   ...: expect = "{April: 4, February: 2, January: 1, March: 3}\n"
+   ...:
+   ...: obj = iDict(data)
+   ...: result = yaml.safe_dump(obj, default_flow_style=True)
+   ...: assert result == expect
+
+In [2]: expect = "{January: 1, February: 2, March: 3, April: 4}\n"
+   ...: obj = iDict(data)
+   ...: result = yaml.safe_dump(obj, default_flow_style=True,sort_keys=False)
+   ...: assert result == expect
+
+In [3]: expect = "{April: 4, February: 2, January: 1, March: 3}\n"
+   ...: obj = iDict(data)
+   ...: result = obj.to_yaml(default_flow_style=True)
+   ...: assert result == expect
+
+In [4]: expect = "{January: 1, February: 2, March: 3, April: 4}\n"
+   ...: obj = iDict(data)
+   ...: result = obj.to_yaml(default_flow_style=True,sort_keys=False)
+   ...: assert result == expect
+
+In [5]: expect = ( "!datajuggler.iDict "
+   ...:            "{April: 4, February: 2, January: 1, March: 3}\n" )
+   ...: obj = iDict(data)
+   ...: result = yaml.dump(obj, default_flow_style=True)
+   ...: assert result == expect
+
+In [6]: expect = ( "!datajuggler.iDict "
+   ...:            "{January: 1, February: 2, March: 3, April: 4}\n" )
+   ...: obj = iDict(data)
+   ...: result = yaml.dump(obj, default_flow_style=True,sort_keys=False)
+   ...: assert result == expect
+
+In [7]: expect = ( "!datajuggler.iDict "
+   ...:            "{April: 4, February: 2, January: 1, March: 3}\n" )
+   ...: obj = iDict(data)
+   ...: result = obj.to_yaml(Dumper=yaml.Dumper,  default_flow_style=True)
+   ...: assert result == expect
+
+In [8]: expect = ( "!datajuggler.iDict "
+   ...:            "{January: 1, February: 2, March: 3, April: 4}\n" )
+   ...: obj = iDict(data)
+   ...: result = obj.to_yaml(Dumper=yaml.Dumper,
+   ...:                      default_flow_style=True, sort_keys=False)
+   ...: assert result == expect
+
+In [9]: data = { 'one': { 'two': { 'three': { 'four': 4 }}}}
+   ...: expect = "{one: {two: {three: {four: 4}}}}\n"
+   ...: obj = iDict(data)
+   ...: result = obj.to_yaml(default_flow_style=True,sort_keys=False)
+   ...: assert result  == expect
+
+In [10]: expect = ( "!datajuggler.iDict "
+    ...:            "{one: {two: {three: {four: 4}}}}\n" )
+    ...: obj = iDict(data)
+    ...: result = obj.to_yaml(Dumper=yaml.Dumper,
+    ...:                      default_flow_style=True, sort_keys=False)
+    ...: assert result  == expect
+
+In [11]: yaml_str = ( "!datajuggler.iDict "
+    ...:              "{April: 4, February: 2, January: 1, March: 3}\n" )
+    ...: expect = "iDict({'April': 4, 'February': 2, 'January': 1, 'March': 3})
+    ...: "
+    ...: obj = iDict()
+    ...: result = obj.from_yaml(yaml_str)
+    ...: assert result.__repr__() == expect
+
+In [12]: yaml_str = ( "!python/object:datajuggler.iDict "
+    ...:              "{April: 4, February: 2, January: 1, March: 3}\n" )
+    ...: expect = "iDict({'April': 4, 'February': 2, 'January': 1, 'March': 3})
+    ...: "
+    ...: obj = iDict()
+    ...: result = obj.from_yaml(yaml_str)
+    ...: assert result.__repr__() == expect
+
+In [13]: yaml_str = ( "!datajuggler.iDict "
+    ...:              "{January: 1, February: 2, March: 3, April: 4}\n" )
+    ...: expect = "iDict({'April': 4, 'February': 2, 'January': 1, 'March': 3})
+    ...: "
+    ...: obj = iDict()
+    ...: expect = "iDict({'January': 1, 'February': 2, 'March': 3, 'April': 4})
+    ...: "
+    ...: result = obj.from_yaml(yaml_str)
+    ...: assert result.__repr__() == expect
+
+In [14]: data = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
+    ...: yaml_str = ( "!python/object:datajuggler.iDict "
+    ...:              "{January: 1, February: 2, March: 3, April: 4}\n" )
+    ...: expect = "iDict({'January': 1, 'February': 2, 'March': 3, 'April': 4})
+    ...: "
+    ...: obj = iDict()
+    ...: result = obj.from_yaml(yaml_str)
+    ...: assert result.__repr__() == expect
+
+In [15]: yaml_str = ( "!datajuggler.iDict "
+    ...:              "{April: 4, February: 2, January: 1, March: 3}\n" )
+    ...: expect = "iDict({})"
+    ...: obj = iDict()
+    ...: _ = obj.from_yaml(yaml_str)
+    ...: assert obj.__repr__() == expect
+
+In [16]: yaml_str = ( "!python/object:datajuggler.iDict "
+    ...:              "{January: 1, February: 2, March: 3, April: 4}\n" )
+    ...: expect = "iDict({})"
+    ...: obj = iDict()
+    ...: _ = obj.from_yaml(yaml_str)
+    ...: assert obj.__repr__() == expect
+
+In [17]: yaml_str = ( "!datajuggler.iDict "
+    ...:              "{April: 4, February: 2, January: 1, March: 3}\n" )
+    ...: expect = "iDict({})"
+    ...: obj = iDict()
+    ...: obj.from_yaml(yaml_str, inplace=True)
+    ...: assert obj.__repr__() == expect
+
+In [18]: yaml_str = ( "!python/object:datajuggler.iDict "
+    ...:              "{January: 1, February: 2, March: 3, April: 4}\n" )
+    ...: expect = "iDict({})"
+    ...: obj = iDict()
+    ...: obj.from_yaml(yaml_str, inplace=True)
+    ...: assert obj.__repr__() == expect
+
+In [19]:
+```
+
+
+## class StrCase
 
 `strCase` class support convert case.
 
