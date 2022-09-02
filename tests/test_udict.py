@@ -160,3 +160,129 @@ class TestClass:
             result = dict({data: 1})
         assert str(e.value) == "unhashable type: 'uDict'"
 
+    def test_udict_features_case05(self):
+        data = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
+        expect = uDict({ 'JANUARY': 1, 'FEBRUARY': 2, 'MARCH': 3, 'APRIL': 4 })
+        obj = uDict(data)
+        saved = obj.copy()
+        result = obj.map_keys(str.upper)
+        assert ( result == expect and data == saved )
+
+    def test_udict_features_case06(self):
+        data = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
+        expect = uDict({ 'JANUARY': 1, 'FEBRUARY': 2, 'MARCH': 3, 'APRIL': 4 })
+        result = uDict().map_keys(str.upper, data)
+        assert result == expect
+
+    def test_udict_features_case07(self):
+        data = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
+        expect = iDict({ 'JANUARY': 1, 'FEBRUARY': 2, 'MARCH': 3, 'APRIL': 4 })
+        result = uDict().map_keys(str.upper, data, factory=iDict)
+        assert result == expect
+
+    def test_udict_features_case08(self):
+        data = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
+        expect = uDict({ 'JANUARY': 1, 'FEBRUARY': 2, 'MARCH': 3, 'APRIL': 4 })
+        obj = uDict(data)
+        obj.map_keys(str.upper, inplace=True)
+        assert ( obj == expect )
+
+    def test_udict_features_case09(self):
+        data = { 'Jack': [10, 11, 12], 'John': [8, 15, 3] }
+        expect = { 'Jack': 33, 'John': 26 }
+        obj = uDict(data)
+        saved = obj.copy()
+        result = obj.map_values(sum)
+        assert ( result == expect and data == saved )
+
+    def test_udict_features_case10(self):
+        data = { 'Jack': [10, 11, 12], 'John': [8, 15, 3] }
+        expect = { 'Jack': 33, 'John': 26 }
+        obj = uDict(data)
+        saved = obj.copy()
+        obj.map_values(sum, inplace=True)
+        assert ( obj == expect )
+
+    def test_udict_features_case11(self):
+        data = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
+        expect = uDict({ 1: 'January', 2: 'February', 3: 'March', 4: 'April' })
+        obj = uDict(data)
+        saved = obj.copy()
+        result = obj.map_items(reversed)
+        assert ( result == expect and obj == saved )
+
+    def test_udict_features_case12(self):
+        data = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
+        expect = uDict({ 1: 'January', 2: 'February', 3: 'March', 4: 'April' })
+        result = uDict().map_items(reversed, data)
+        assert result == expect
+
+    def test_udict_features_case13(self):
+        data = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
+        expect = aDict({ 1: 'January', 2: 'February', 3: 'March', 4: 'April' })
+        result = uDict().map_items(reversed, data, factory=aDict)
+        assert result == expect
+
+    def test_udict_features_case14(self):
+        is_janfeb = lambda x: x.endswith('ary')
+        data = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
+        expect = uDict({ 'January': 1, 'February': 2 })
+        obj = uDict(data)
+        saved = obj.copy()
+        result = obj.filter_keys(is_janfeb)
+        assert ( result == expect and obj == saved )
+
+    def test_udict_features_case15(self):
+        is_janfeb = lambda x: x.endswith('ary')
+        data = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
+        expect = uDict({ 'January': 1, 'February': 2 })
+        obj = uDict(data)
+        obj.filter_keys(is_janfeb, inplace=True)
+        assert obj == expect
+
+    def test_udict_features_case16(self):
+        is_janfeb = lambda x: x.endswith('ary')
+        data = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
+        expect = uDict({ 'January': 1, 'February': 2 })
+        result = uDict().filter_keys(is_janfeb, data)
+        assert result == expect
+
+    def test_udict_features_case17(self):
+        is_janfeb = lambda x: x.endswith('ary')
+        data = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
+        expect = aDict({ 'January': 1, 'February': 2 })
+        result = uDict().filter_keys(is_janfeb, data, factory=aDict)
+        assert result == expect
+
+
+    def test_udict_features_case18(self):
+        is_even = lambda x: x % 2 == 0
+        data = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
+        expect = uDict({ 'February': 2, 'April': 4 })
+        obj = uDict(data)
+        saved = obj.copy()
+        result = obj.filter_values(is_even)
+        assert ( result == expect and obj == saved )
+
+    def test_udict_features_case19(self):
+        is_even = lambda x: x % 2 == 0
+        data = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
+        expect = uDict({ 'February': 2, 'April': 4 })
+        obj = uDict(data)
+        obj.filter_values(is_even, inplace=True)
+        assert obj == expect
+
+    def test_udict_features_case20(self):
+        is_even = lambda x: x % 2 == 0
+        data = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
+        expect = uDict({ 'February': 2, 'April': 4 })
+        result = uDict().filter_values(is_even, data)
+        assert result == expect
+
+    def test_udict_features_case21(self):
+        is_even = lambda x: x % 2 == 0
+        data = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
+        expect = aDict({ 'February': 2, 'April': 4 })
+        result = uDict().filter_values(is_even, data, factory=aDict)
+        assert result == expect
+

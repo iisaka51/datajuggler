@@ -1000,7 +1000,21 @@ In [4]:
 ```
 
 ## class uDict
-Support change keys for dict.
+uDict is utilized dictionary.
+uDict has followings  methods.
+
+ - replace_key(old, new, inplace=False)
+ - `replace_key_map(replace: Mapping, inplace=False)
+ - `map_keys( func, obj: Mapping, factory=None, inplace=False)`
+ - `map_values( func, obj: Mapping, factory=None, inplace=False)`
+ - `map_items( func, obj: Mapping, factory=None, inplace=Fals=Falsee)`
+ - `filter_keys( func, obj: Mapping, factory=None, inplace=False)`
+ - `filter_values( func, obj: Mapping, factory=None, inplace=False)`
+
+### replace_key()
+
+Create the new dictionary with changed keys.
+If set `True` to `inplace`, perform operation in-place.
 
 ```python
 In [1]: from datajuggler import uDict
@@ -1012,6 +1026,14 @@ In [1]: from datajuggler import uDict
    ...: result = data.replace_key('April', 'Apr')
    ...: assert ( result == expect
    ...:          and data == saved )
+```
+
+### replace_key_map()
+
+Create the new dictionary with changed keys using map dictionary..
+If set `True` to `inplace`, perform operation in-place.
+
+```python
 
 In [2]: data = uDict({ 'January': 1, 'February': 2, 'March': 3, 'April': 4 })
    ...: replace = {'January': 'Jan', 'February': 'Feb' }
@@ -1029,6 +1051,145 @@ In [3]: data = uDict({ 'January': 1, 'February': 2, 'March': 3, 'April': 4 })
    ...: assert ( data == expect
    ...:          and data != saved )
 ```
+
+### map_keys()
+Create a new dictionary with apply function to keys of dictionary.
+if not set `obj`, use self.
+If set `factory`, create instance of factory class.
+If set `True` to `inplace`, perform operation in-place.
+
+```python
+In [1]: from datajuggler import aDict, uDict, iDict
+   ...:
+   ...: data = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
+   ...: expect = uDict({ 'JANUARY': 1, 'FEBRUARY': 2, 'MARCH': 3, 'APRIL': 4 })
+   ...: obj = uDict(data)
+   ...: saved = obj.copy()
+   ...: result = obj.map_keys(str.upper)
+   ...: assert ( result == expect and data == saved )
+
+In [2]: data = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
+   ...: expect = uDict({ 'JANUARY': 1, 'FEBRUARY': 2, 'MARCH': 3, 'APRIL': 4 })
+   ...: result = uDict().map_keys(str.upper, data)
+   ...: assert result == expect
+
+In [3]: data = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
+   ...: expect = iDict({ 'JANUARY': 1, 'FEBRUARY': 2, 'MARCH': 3, 'APRIL': 4 })
+   ...: result = uDict().map_keys(str.upper, data, factory=iDict)
+   ...: assert result == expect
+
+In [4]: data = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
+   ...: expect = uDict({ 'JANUARY': 1, 'FEBRUARY': 2, 'MARCH': 3, 'APRIL': 4 })
+   ...: obj = uDict(data)
+   ...: obj.map_keys(str.upper, inplace=True)
+   ...: assert ( obj == expect )
+```
+
+### map_values()
+Create a new dictionary with apply function to values of dictionary.
+if not set `obj`, use self.
+If set `factory`, create instance of factory class.
+If set `True` to `inplace`, perform operation in-place.
+
+
+```python
+In [5]: data = { 'Jack': [10, 11, 12], 'John': [8, 15, 3] }
+   ...: expect = { 'Jack': 33, 'John': 26 }
+   ...: obj = uDict(data)
+   ...: saved = obj.copy()
+   ...: result = obj.map_values(sum)
+   ...: assert ( result == expect and data == saved )
+
+In [6]: data = { 'Jack': [10, 11, 12], 'John': [8, 15, 3] }
+   ...: expect = { 'Jack': 33, 'John': 26 }
+   ...: obj = uDict(data)
+   ...: saved = obj.copy()
+   ...: obj.map_values(sum, inplace=True)
+   ...: assert ( obj == expect )
+```
+
+### map_items()
+Create a new dictionary with apply function to items of dictionary.
+if not set `obj`, use self.
+If set `factory`, create instance of factory class.
+If set `True` to `inplace`, perform operation in-place.
+
+```python
+In [7]: data = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
+   ...: expect = uDict({ 1: 'January', 2: 'February', 3: 'March', 4: 'April' })
+   ...: obj = uDict(data)
+   ...: saved = obj.copy()
+   ...: result = obj.map_items(reversed)
+   ...: assert ( result == expect and obj == saved )
+
+In [8]: result = uDict().map_items(reversed, data)
+   ...: assert result == expect
+
+In [9]: expect = aDict({ 1: 'January', 2: 'February', 3: 'March', 4: 'April' })
+   ...: result = uDict().map_items(reversed, data, factory=aDict)
+   ...: assert result == expect
+
+```
+
+### filter_keys()
+Create a new dictionary with filter items in dictionary by keys.
+if not set `obj`, use self.
+If set `factory`, create instance of factory class.
+If set `True` to `inplace`, perform operation in-place.
+
+```python
+In [10]: is_janfeb = lambda x: x.endswith('ary')
+    ...: data = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
+    ...: expect = uDict({ 'January': 1, 'February': 2 })
+    ...:
+    ...: obj = uDict(data)
+    ...: saved = obj.copy()
+    ...: result = obj.filter_keys(is_janfeb)
+    ...: assert ( result == expect and obj == saved )
+
+In [11]: obj = uDict(data)
+    ...: obj.filter_keys(is_janfeb, inplace=True)
+    ...: assert obj == expect
+
+In [12]: result = uDict().filter_keys(is_janfeb, data)
+    ...: assert result == expect
+
+In [13]: expect = aDict({ 'January': 1, 'February': 2 })
+    ...: result = uDict().filter_keys(is_janfeb, data, factory=aDict)
+    ...: assert result == expect
+```
+
+### filter_values()
+Create a new dictionary with filter items in dictionary by values.
+if not set `obj`, use self.
+If set `factory`, create instance of factory class.
+If set `True` to `inplace`, perform operation in-place.
+
+```python
+In [14]: is_even = lambda x: x % 2 == 0
+    ...: data = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
+    ...: expect = uDict({ 'February': 2, 'April': 4 })
+    ...:
+    ...: obj = uDict(data)
+    ...: saved = obj.copy()
+    ...: result = obj.filter_values(is_even)
+    ...: assert ( result == expect and obj == saved )
+
+In [15]: obj = uDict(data)
+    ...: obj.filter_values(is_even, inplace=True)
+    ...: assert obj == expect
+
+In [16]: result = uDict().filter_values(is_even, data)
+    ...: assert result == expect
+
+In [17]: expect = aDict({ 'February': 2, 'April': 4 })
+    ...: result = uDict().filter_values(is_even, data, factory=aDict)
+    ...: assert result == expect
+
+In [18]:
+```
+
+
 
 ### class iDict
 

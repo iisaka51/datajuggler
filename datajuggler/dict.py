@@ -1,6 +1,6 @@
 import re
 from typing import (
-    Any, Dict, Union, Optional, Hashable, Iterable, Sequence,
+    Any, Dict, Union, Optional, Hashable, Iterable, Sequence, Callable,
     Literal, get_args
 )
 from collections.abc import Mapping
@@ -9,6 +9,7 @@ import json
 from enum import Enum
 from multimethod import multidispatch
 from .yaml import yaml_initializer, to_yaml, from_yaml
+import snoop
 
 class DictFactory(dict):
     yaml_initializer = classmethod(yaml_initializer)
@@ -303,6 +304,127 @@ class uDict(DictFactory):
             self.update(work_dict)
         else:
             return work_dict
+
+    def map_keys(self,
+            func: Callable,
+            obj: Optional[Mapping]=None,
+            factory: Optional[Any]=None,
+            inplace: bool=False
+        ):
+        """ Create a new dictionary with apply function to keys of dictionary.
+        if not set `obj`, use self.
+        If set `factory`, create instance of factory class.
+        If set `True` to `inplace`, perform operation in-place.
+        """
+
+        obj = obj or self
+        factory = factory or type(self)
+
+        new = dict(zip(map(func, obj.keys()), obj.values()))
+        if inplace:
+            self.clear()
+            self.update(new)
+        else:
+            return factory(new)
+
+    def map_values(self,
+            func: Callable,
+            obj: Optional[Mapping]=None,
+            factory: Optional[Any]=None,
+            inplace: bool=False
+        ):
+        """ Create a new dictionary with apply function to values of dictionary.
+        if not set `obj`, use self.
+        If set `factory`, create instance of factory class.
+        If set `True` to `inplace`, perform operation in-place.
+        """
+
+        obj = obj or self
+        factory = factory or type(self)
+
+        new = dict(zip(obj.keys(), map(func, obj.values())))
+        if inplace:
+            self.clear()
+            self.update(new)
+        else:
+            return factory(new)
+
+    def map_items(self,
+            func: Callable,
+            obj: Optional[Mapping]=None,
+            factory: Optional[Any]=None,
+            inplace: bool=False
+        ):
+        """ Create a new dictionary with apply function to items of dictionary.
+        if not set `obj`, use self.
+        If set `factory`, create instance of factory class.
+        If set `True` to `inplace`, perform operation in-place.
+        """
+
+        obj = obj or self
+        factory = factory or type(self)
+
+        new = map(func, obj.items())
+        if inplace:
+            self.clear()
+            self.update(new)
+        else:
+            return factory(new)
+
+    def filter_keys(self,
+            predicate: Callable,
+            obj: Optional[Mapping]=None,
+            factory: Optional[Any]=None,
+            inplace: bool=False
+        ):
+        """ Create a new dictionary with filter items in dictionary by keys.
+        if not set `obj`, use self.
+        If set `factory`, create instance of factory class.
+        If set `True` to `inplace`, perform operation in-place.
+        """
+
+        obj = obj or self
+        factory = factory or type(self)
+
+        new = factory()
+
+        for k, v in obj.items():
+            if predicate(k):
+                new[k] = v
+
+        if inplace:
+            self.clear()
+            self.update(new)
+        else:
+            return new
+
+    def filter_values(self,
+            predicate: Callable,
+            obj: Optional[Mapping]=None,
+            factory: Optional[Any]=None,
+            inplace: bool=False
+        ):
+        """ Create a new dictionary with filter items in dictionary by values.
+        if not set `obj`, use self.
+        If set `factory`, create instance of factory class.
+        If set `True` to `inplace`, perform operation in-place.
+        """
+
+        obj = obj or self
+        factory = factory or type(self)
+
+        new = factory()
+
+        for k, v in obj.items():
+            if predicate(v):
+                new[k] = v
+
+        if inplace:
+            self.clear()
+            self.update(new)
+        else:
+            return new
+
 
 class iDict(DictFactory):
 
