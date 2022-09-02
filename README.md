@@ -38,7 +38,8 @@ this class has follows methods.
  - `get(key: Hashable, default=None))`
  - `setdefault(key: Hashable, default=None)`
  - `fromkeys(sequence, inplace:bool=False)`
- - `fromvalues(sequence, inplace:bool=False)`
+ - `fromvalues(sequence, base: int=1,
+               prefix: Optional[str]=None,inplace:bool=False)`
  - `fromlists(keys: Sequence, values: Sequence, inplace:bool=False)`
  - `to_dict(obj: Any)`
  - `from_dict(obj: Any, factory=None, inplace: bool=False)`
@@ -47,11 +48,9 @@ this class has follows methods.
  - `to_yaml(**options: Any)`
  - `from_yaml(stream, *args: Any, inplace: bool=False, **kwargs: Any)`
 
-## class aDict
-Allow to access using dot notation for dictionary.
-This class inspired [munch](https://github.com/Infinidat/munch).
-aDict is subclass of DictFactory.
+aDict and uDict, iDict are subclass of DictFactory.
 
+### Common methods.
 
 ```python
 In [1]: from datajuggler import aDict
@@ -90,64 +89,68 @@ In [7]:
 ```
 
 ```python
-In [1]: from datajuggler import aDict
+In [1]: from datajuggler import uDict
    ...:
    ...: data = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
-   ...: expect = 2
-   ...: obj = aDict(data)
-   ...: assert obj.February == expect
-
-In [2]: data = { 'one': { 'two': { 'three': { 'four': 4 }}}}
-   ...: expect = { 'two': { 'three': { 'four': 4 }}}
-   ...: obj = aDict(data)
-   ...: assert obj.one == expect
-
-In [3]: data = { 'one': { 'two': { 'three': { 'four': 4 }}}}
-   ...: expect = "{'one': {'two': {'three': {'four': 4}}}}"
-   ...: obj = aDict(data)
-   ...: try:
-   ...:     result = obj.one.two
-   ...: except AttributeError as e:
-   ...:     print('Error')
-   ...:     assert str(e) == "'dict' object has no attribute 'two'"
+   ...: expect = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
    ...:
-Error
+   ...: obj = uDict(data)
+   ...: assert obj == data
 
-In [4]: data = {'one': aDict({'two': aDict({'three': aDict({'four': 4 })})})}
-   ...: expect = ( "aDict({'one': "
-   ...:             "aDict({'two': "
-   ...:              "aDict({'three': "
-   ...:               "aDict({'four': 4})"
-   ...:              "})"
-   ...:             "})"
-   ...:            "})" )
-   ...: obj = aDict(data)
+In [2]: expect = "{'January': 1, 'February': 2, 'March': 3, 'April': 4}"
+   ...: obj = uDict(data)
+   ...: assert obj.__str__() == expect
+
+In [3]: expect = "uDict({'January': 1, 'February': 2, 'March': 3, 'April': 4})"
+   ...:
+   ...: obj = uDict(data)
    ...: assert obj.__repr__() == expect
 
-In [5]: data = {'one': aDict({'two': aDict({'three': aDict({'four': 4 })})})}
-   ...: expect = 4
-   ...: obj = aDict(data)
-   ...: assert obj.one.two.three.four == expect
+In [4]: expect = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
+   ...: result = uDict(January=1, February=2, March=3, April=4)
+   ...: assert result == expect
 
-In [6]:
+In [5]: data = uDict({ 'January': 1, 'February': 2, 'March': 3, 'April': 4 })
+   ...: expect = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
+   ...: assert data == expect
+
+In [6]: data = { 'one': { 'two': { 'three': { 'four': 4 }}}}
+   ...: expect = ( "uDict("
+   ...:            "{'one': {'two': {'three': {'four': 4}}}}"
+   ...:            ")" )
+   ...: obj = uDict(data)
+   ...: assert obj.__repr__() == expect
+
+In [7]:
 ```
 
-if pass `as_default_dict=True` to custructor, use aDict insted of dict.
-
 ```python
-In [1]: from datajuggler import aDict
+In [1]: from datajuggler import iDict
+   ...:
+   ...: data = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
+   ...: expect = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
+   ...:
+   ...: obj = iDict(data)
+   ...: assert obj == data
 
-In [2]: data = { 'one': { 'two': { 'three': { 'four': 4 }}}}
-   ...: expect = ( "aDict({'one': "
-   ...:              "aDict({'two': "
-   ...:                "aDict({'three': "
-   ...:                  "aDict({'four': 4})})})})" )
-   ...: obj = aDict(data, as_default_dict=True)
+In [2]: expect = "{'January': 1, 'February': 2, 'March': 3, 'April': 4}"
+   ...: obj = iDict(data)
+   ...: assert obj.__str__() == expect
+
+In [3]: expect = "iDict({'January': 1, 'February': 2, 'March': 3, 'April': 4})"
+   ...:
+   ...: obj = iDict(data)
    ...: assert obj.__repr__() == expect
 
-In [3]: assert obj.one.two.three.four == 4
+In [4]: expect = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
+   ...: obj = iDict(January=1, February=2, March=3, April=4)
+   ...: assert obj == expect
 
-In [4]:
+In [5]: data = iDict({ 'January': 1, 'February': 2, 'March': 3, 'April': 4 })
+   ...: expect = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
+   ...: assert data == expect
+
+In [6]:
 ```
 
 ### fromkeys()
@@ -173,11 +176,47 @@ In [10]: data = [ 'January', 'February', 'March', 'April' ]
     ...: assert obj.__repr__() == expect
 ```
 
+```python
+In [9]: data = [ 'January', 'February', 'March', 'April' ]
+   ...: expect = ( "uDict("
+   ...:            "{'January': 2, 'February': 2, 'March': 2, 'April': 2}"
+   ...:            ")" )
+   ...: obj = uDict().fromkeys(data, 2)
+   ...: assert obj.__repr__() == expect
+
+In [10]: obj = uDict()
+    ...: obj.fromkeys(data, 2, inplace=True)
+    ...: assert obj.__repr__() == expect
+
+```
+
+In case of iDict, if set `iplace` parameter, it will not cause an error.
+but will always be ignored.
+
+```python
+In [4]: data = [ 'January', 'February', 'March', 'April' ]
+   ...: expect = ( "iDict("
+   ...:            "{'January': 2, 'February': 2, 'March': 2, 'April': 2}"
+   ...:            ")" )
+   ...: obj = iDict().fromkeys(data, 2)
+   ...: assert obj.__repr__() == expect
+
+In [5]: data = [ 'January', 'February', 'March', 'April' ]
+   ...: expect = "iDict({})"
+   ...: obj = iDict()
+   ...: obj.fromkeys(data, 2, inplace=True)
+   ...: assert obj.__repr__() == expect
+
+```
+
+
 ### fromvalues()
 
 Create a new dictionary from list of values.
-keys automaticaly generate as interger.
+keys automaticaly generate as interger or str.
 `base` is the starting number.
+if set 'name' to `prefix`, keys will be use 'name01'...
+So, set '' to `prefix`, key as str from interger.
 If set `True` to `inplace`, perform operation in-place.
 
 ```python
@@ -202,7 +241,107 @@ In [13]: data = [ 'January', 'February', 'March', 'April' ]
     ...: obj = aDict()
     ...: obj.fromvalues(data, base=1, inplace=True)
     ...: assert obj.__repr__() == expect
+
+In [14]: data = [ 'January', 'February', 'March', 'April' ]
+    ...:
+    ...: expect = ( "aDict("
+    ...:            "{'1': 'January', '2': 'February', "
+    ...:             "'3': 'March', '4': 'April'})" )
+    ...:
+    ...: obj = aDict().fromvalues(data, prefix='')
+    ...: assert obj.__repr__() == expect
+
+In [15]: expect = ( "aDict("
+    ...:            "{'month_1': 'January', 'month_2': 'February', "
+    ...:             "'month_3': 'March', 'month_4': 'April'})" )
+    ...:
+    ...: obj = aDict().fromvalues(data, prefix='month_')
+    ...: assert obj.__repr__() == expect
+
+In [16]:
 ```
+
+
+```python
+In [11]: data = [ 'January', 'February', 'March', 'April' ]
+    ...: expect = ( "uDict("
+    ...:            "{1: 'January', 2: 'February', 3: 'March', 4: 'April'}"
+    ...:            ")" )
+    ...: obj = uDict().fromvalues(data)
+    ...: assert obj.__repr__() == expect
+
+In [12]: obj = uDict()
+    ...: obj.fromvalues(data, base=1, inplace=True)
+    ...: assert obj.__repr__() == expect
+
+In [13]: expect = ( "uDict("
+    ...:            "{0: 'January', 1: 'February', 2: 'March', 3: 'April'}"
+    ...:            ")" )
+    ...: obj = uDict().fromvalues(data, base=0)
+    ...: assert obj.__repr__() == expect
+
+In [14]: data = [ 'January', 'February', 'March', 'April' ]
+    ...:
+    ...: expect = ( "uDict("
+    ...:            "{'1': 'January', '2': 'February', "
+    ...:             "'3': 'March', '4': 'April'})" )
+    ...:
+    ...: obj = uDict().fromvalues(data, prefix='')
+    ...: assert obj.__repr__() == expect
+
+In [15]: expect = ( "uDict("
+    ...:            "{'month_1': 'January', 'month_2': 'February', "
+    ...:             "'month_3': 'March', 'month_4': 'April'})" )
+    ...:
+    ...: obj = uDict().fromvalues(data, prefix='month_')
+    ...: assert obj.__repr__() == expect
+
+In [16]:
+```
+
+In case of iDict, if set `iplace` parameter, it will not cause an error.
+but will always be ignored.
+
+```python
+In [11]: data = [ 'January', 'February', 'March', 'April' ]
+    ...: expect = ( "iDict("
+    ...:            "{1: 'January', 2: 'February', 3: 'March', 4: 'April'}"
+    ...:            ")" )
+    ...: obj = iDict().fromvalues(data)
+    ...: assert obj.__repr__() == expect
+
+In [12]: data = [ 'January', 'February', 'March', 'April' ]
+    ...: expect = ( "iDict("
+    ...:            "{0: 'January', 1: 'February', 2: 'March', 3: 'April'}"
+    ...:            ")" )
+    ...: obj = iDict().fromvalues(data, base=0)
+    ...: assert obj.__repr__() == expect
+
+In [13]: data = [ 'January', 'February', 'March', 'April' ]
+    ...: expect = "iDict({})"
+    ...: obj = iDict()
+    ...: obj.fromvalues(data, base=1, inplace=True)
+    ...: assert obj.__repr__() == expect
+
+In [14]: data = [ 'January', 'February', 'March', 'April' ]
+    ...:
+    ...: expect = ( "iDict("
+    ...:            "{'1': 'January', '2': 'February', "
+    ...:             "'3': 'March', '4': 'April'})" )
+    ...:
+    ...: obj = iDict().fromvalues(data, prefix='')
+    ...: assert obj.__repr__() == expect
+
+In [15]: expect = ( "iDict("
+    ...:            "{'month_1': 'January', 'month_2': 'February', "
+    ...:             "'month_3': 'March', 'month_4': 'April'})" )
+    ...:
+    ...: obj = iDict().fromvalues(data, prefix='month_')
+    ...: assert obj.__repr__() == expect
+
+In [16]:
+```
+
 
 ### fromlists()
 
@@ -242,6 +381,71 @@ In [17]: keys = [ 'January', 'February', 'March', 'April' ]
     ...: assert obj.__repr__() == expect
 ```
 
+
+```python
+In [14]: keys = [ 'January', 'February', 'March', 'April' ]
+    ...: values = [ 1, 2, 3, 4 ]
+    ...: expect = ( "uDict("
+    ...:            "{'January': 1, 'February': 2, 'March': 3, 'April': 4}"
+    ...:            ")" )
+    ...: obj = uDict().fromlists(keys, values)
+    ...: assert obj.__repr__() == expect
+
+In [15]: obj = uDict()
+    ...: obj.fromlists(keys, values, inplace=True)
+    ...: assert obj.__repr__() == expect
+
+In [16]: keys = [ 'January', 'February' ]
+    ...: values = [ 1, 2, 3, 4 ]
+    ...: expect = "uDict({'January': 1, 'February': 2})"
+    ...: obj = uDict().fromlists(keys, values)
+    ...: assert obj.__repr__() == expect
+
+In [17]: keys = [ 'January', 'February', 'March', 'April' ]
+    ...: values = [ 1, 2 ]
+    ...: expect = "uDict({'January': 1, 'February': 2})"
+    ...: obj = uDict().fromlists(keys, values)
+    ...: assert obj.__repr__() == expect
+
+```
+
+In case of iDict, if set `iplace` parameter, it will not cause an error.
+but will always be ignored.
+
+```python
+In [1]: from datajuggler import iDict
+   ...:
+   ...: keys = [ 'January', 'February', 'March', 'April' ]
+   ...: values = [ 1, 2, 3, 4 ]
+   ...: expect = ( "iDict("
+   ...:            "{'January': 1, 'February': 2, 'March': 3, 'April': 4}"
+   ...:            ")" )
+   ...: obj = iDict().fromlists(keys, values)
+   ...: assert obj.__repr__() == expect
+
+In [2]: keys = [ 'January', 'February', 'March', 'April' ]
+   ...: values = [ 1, 2, 3, 4 ]
+   ...: expect = "iDict({})"
+   ...: obj = iDict()
+   ...: obj.fromlists(keys, values, inplace=True)
+   ...: assert obj.__repr__() == expect
+
+In [3]: keys = [ 'January', 'February' ]
+   ...: values = [ 1, 2, 3, 4 ]
+   ...: expect = "iDict({'January': 1, 'February': 2})"
+   ...: obj = iDict().fromlists(keys, values)
+   ...: assert obj.__repr__() == expect
+
+In [4]: keys = [ 'January', 'February', 'March', 'April' ]
+   ...: values = [ 1, 2 ]
+   ...: expect = "iDict({'January': 1, 'February': 2})"
+   ...: obj = iDict().fromlists(keys, values)
+   ...: assert obj.__repr__() == expect
+
+```
+
+## Serialization
+
 ### JSON
 
 to_json() and from_json().
@@ -267,6 +471,54 @@ In [7]: expect = ( "aDict({'console': 'Nintendo Switch', "
    ...: assert obj.__repr__() == expect
 
 In [8]: obj = aDict()
+   ...: obj.from_json(json_data, inplace=True)
+   ...: assert obj.__repr__() == expect
+
+```
+
+
+```python
+In [5]: from datajuggler import uDict
+   ...:
+   ...: data = {"console": "Nintendo Switch",
+   ...:         "games": ["The Legend of Zelda", "Mario Golf"]}
+   ...: json_data = ( '{"console": "Nintendo Switch", '
+   ...:            '"games": ["The Legend of Zelda", "Mario Golf"]}' )
+   ...: repr  = ( "uDict({'console': 'Nintendo Switch', "
+   ...:            "'games': ['The Legend of Zelda', 'Mario Golf']})" )
+
+In [6]: obj = uDict(data)
+   ...: assert obj.to_json() == json_data
+
+In [7]: new = uDict().from_json(json_data)
+   ...: assert new.__repr__() == repr
+
+In [8]: obj = uDict()
+   ...: obj.from_json(json_data, inplace=True)
+   ...: assert obj.__repr__() == repr
+
+```
+
+if set `iplace` parameter, it will not cause an error.
+but will always be ignored.
+
+```python
+In [1]: from datajuggler import iDict
+   ...:
+   ...: data = {"console": "Nintendo Switch",
+   ...:         "games": ["The Legend of Zelda", "Mario Golf"]}
+   ...: json_data = ( '{"console": "Nintendo Switch", '
+   ...:               '"games": ["The Legend of Zelda", "Mario Golf"]}' )
+   ...: obj = iDict(data)
+   ...: assert obj.to_json() == json_data
+
+In [2]: expect = ( "iDict({'console': 'Nintendo Switch', "
+   ...:            "'games': ['The Legend of Zelda', 'Mario Golf']})" )
+   ...: result = iDict().from_json(json_data)
+   ...: assert result.__repr__() == expect
+
+In [3]: expect = "iDict({})"
+   ...: obj = iDict()
    ...: obj.from_json(json_data, inplace=True)
    ...: assert obj.__repr__() == expect
 
@@ -413,192 +665,6 @@ In [19]:
 ```
 
 
-## class uDict
-Support change keys for dict.
-
- - `fromkeys(sequence, inplace:bool=False)
- - `fromvalues(sequence, inplace:bool=False)
- - `fromlists(keys, values, inplace:bool=False)
- - `to_json(**options)
- - `from_json(json_data: str, inplace: bool=False, **options),
- - `to_yaml(**options)`
- - `from_yaml(stream, *args, inplace: bool=False, **kwargs)`
-
-```python
-In [1]: from datajuggler import uDict
-   ...:
-   ...: data = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
-   ...: expect = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
-   ...:
-   ...: obj = uDict(data)
-   ...: assert obj == data
-
-In [2]: expect = "{'January': 1, 'February': 2, 'March': 3, 'April': 4}"
-   ...: obj = uDict(data)
-   ...: assert obj.__str__() == expect
-
-In [3]: expect = "uDict({'January': 1, 'February': 2, 'March': 3, 'April': 4})"
-   ...:
-   ...: obj = uDict(data)
-   ...: assert obj.__repr__() == expect
-
-In [4]: expect = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
-   ...: result = uDict(January=1, February=2, March=3, April=4)
-   ...: assert result == expect
-
-In [5]: data = uDict({ 'January': 1, 'February': 2, 'March': 3, 'April': 4 })
-   ...: expect = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
-   ...: assert data == expect
-
-In [6]: data = { 'one': { 'two': { 'three': { 'four': 4 }}}}
-   ...: expect = ( "uDict("
-   ...:            "{'one': {'two': {'three': {'four': 4}}}}"
-   ...:            ")" )
-   ...: obj = uDict(data)
-   ...: assert obj.__repr__() == expect
-
-In [7]:
-```
-
-```python
-In [1]: from datajuggler import uDict
-   ...:
-   ...: data = uDict({ 'January': 1, 'February': 2, 'March': 3, 'April': 4 })
-   ...: expect = { 'January': 1, 'February': 2, 'March': 3, 'Apr': 4 }
-   ...:
-   ...: saved = data.copy()
-   ...: result = data.replace_key('April', 'Apr')
-   ...: assert ( result == expect
-   ...:          and data == saved )
-
-In [2]: data = uDict({ 'January': 1, 'February': 2, 'March': 3, 'April': 4 })
-   ...: replace = {'January': 'Jan', 'February': 'Feb' }
-   ...: expect = { 'Jan': 1, 'Feb': 2, 'March': 3, 'April': 4 }
-   ...: saved = data.copy()
-   ...: result = data.replace_key_map(replace)
-   ...: assert ( result == expect
-   ...:          and data == saved )
-
-In [3]: data = uDict({ 'January': 1, 'February': 2, 'March': 3, 'April': 4 })
-   ...: replace = {'January': 'Jan', 'February': 'Feb' }
-   ...: expect = { 'Jan': 1, 'Feb': 2, 'March': 3, 'April': 4 }
-   ...: saved = data.copy()
-   ...: data.replace_key_map(replace, inplace=True)
-   ...: assert ( data == expect
-   ...:          and data != saved )
-```
-
-### fromkeys()
-
-Create a new dictionary with keys from iterable and values set to value.
-If set `True` to `inplace`, perform operation in-place.
-
-```python
-In [9]: data = [ 'January', 'February', 'March', 'April' ]
-   ...: expect = ( "uDict("
-   ...:            "{'January': 2, 'February': 2, 'March': 2, 'April': 2}"
-   ...:            ")" )
-   ...: obj = uDict().fromkeys(data, 2)
-   ...: assert obj.__repr__() == expect
-
-In [10]: obj = uDict()
-    ...: obj.fromkeys(data, 2, inplace=True)
-    ...: assert obj.__repr__() == expect
-
-```
-
-### fromvalues()
-
-Create a new dictionary from list of values.
-keys automaticaly generate as interger.
-`base` is the starting number.
-If set `True` to `inplace`, perform operation in-place.
-
-```python
-In [11]: data = [ 'January', 'February', 'March', 'April' ]
-    ...: expect = ( "uDict("
-    ...:            "{1: 'January', 2: 'February', 3: 'March', 4: 'April'}"
-    ...:            ")" )
-    ...: obj = uDict().fromvalues(data)
-    ...: assert obj.__repr__() == expect
-
-In [12]: obj = uDict()
-    ...: obj.fromvalues(data, base=1, inplace=True)
-    ...: assert obj.__repr__() == expect
-
-In [13]: expect = ( "uDict("
-    ...:            "{0: 'January', 1: 'February', 2: 'March', 3: 'April'}"
-    ...:            ")" )
-    ...: obj = uDict().fromvalues(data, base=0)
-    ...: assert obj.__repr__() == expect
-
-```
-
-### fromlists()
-
-Create a new dictionary from two list as keys and values.
-Only the number of elements in the shorter of the two lists is processed.
-If set `True` to `inplace`, perform operation in-place.
-
-```python
-In [14]: keys = [ 'January', 'February', 'March', 'April' ]
-    ...: values = [ 1, 2, 3, 4 ]
-    ...: expect = ( "uDict("
-    ...:            "{'January': 1, 'February': 2, 'March': 3, 'April': 4}"
-    ...:            ")" )
-    ...: obj = uDict().fromlists(keys, values)
-    ...: assert obj.__repr__() == expect
-
-In [15]: obj = uDict()
-    ...: obj.fromlists(keys, values, inplace=True)
-    ...: assert obj.__repr__() == expect
-
-In [16]: keys = [ 'January', 'February' ]
-    ...: values = [ 1, 2, 3, 4 ]
-    ...: expect = "uDict({'January': 1, 'February': 2})"
-    ...: obj = uDict().fromlists(keys, values)
-    ...: assert obj.__repr__() == expect
-
-In [17]: keys = [ 'January', 'February', 'March', 'April' ]
-    ...: values = [ 1, 2 ]
-    ...: expect = "uDict({'January': 1, 'February': 2})"
-    ...: obj = uDict().fromlists(keys, values)
-    ...: assert obj.__repr__() == expect
-
-```
-
-### JSON
-
-to_json() and from_json().
-If set `True` to `inplace`, perform operation in-place.
-
-
-```python
-In [5]: from datajuggler import uDict
-   ...:
-   ...: data = {"console": "Nintendo Switch",
-   ...:         "games": ["The Legend of Zelda", "Mario Golf"]}
-   ...: json_data = ( '{"console": "Nintendo Switch", '
-   ...:            '"games": ["The Legend of Zelda", "Mario Golf"]}' )
-   ...: repr  = ( "uDict({'console': 'Nintendo Switch', "
-   ...:            "'games': ['The Legend of Zelda', 'Mario Golf']})" )
-
-In [6]: obj = uDict(data)
-   ...: assert obj.to_json() == json_data
-
-In [7]: new = uDict().from_json(json_data)
-   ...: assert new.__repr__() == repr
-
-In [8]: obj = uDict()
-   ...: obj.from_json(json_data, inplace=True)
-   ...: assert obj.__repr__() == repr
-
-```
-
-### YAML
-
-if PyYAML is installed, enable `to_yaml()` and `from_yaml()` method.
-
 ```python
 In [1]: from datajuggler import uDict
    ...: import yaml
@@ -735,236 +801,8 @@ In [18]: yaml_str = ( "!python/object:datajuggler.uDict "
 In [19]:
 ```
 
-### class iDict
-
-Immutable Dict. iDict is hashable object.
-
- - `fromkeys(sequence, inplace:bool=False)
- - `fromvalues(sequence, inplace:bool=False)
- - `fromlists(keys, values, inplace:bool=False)
- - `to_json(**options)
- - `from_json(json_data: str, inplace: bool=False, **options),
- - `to_yaml(**options)`
- - `from_yaml(stream, *args, inplace: bool=False, **kwargs)`
-
-if set `iplace` parameter, it will not cause an error.
-but will always be ignored.
-
-```python
-In [1]: from datajuggler import iDict
-   ...:
-   ...: data = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
-   ...: expect = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
-   ...:
-   ...: obj = iDict(data)
-   ...: assert obj == data
-
-In [2]: expect = "{'January': 1, 'February': 2, 'March': 3, 'April': 4}"
-   ...: obj = iDict(data)
-   ...: assert obj.__str__() == expect
-
-In [3]: expect = "iDict({'January': 1, 'February': 2, 'March': 3, 'April': 4})"
-   ...:
-   ...: obj = iDict(data)
-   ...: assert obj.__repr__() == expect
-
-In [4]: expect = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
-   ...: obj = iDict(January=1, February=2, March=3, April=4)
-   ...: assert obj == expect
-
-In [5]: data = iDict({ 'January': 1, 'February': 2, 'March': 3, 'April': 4 })
-   ...: expect = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
-   ...: assert data == expect
-
-In [6]:
-```
-
-```python
-In [1]: from datajuggler import iDict
-   ...:
-   ...: data = iDict({ 'January': 1, 'February': 2, 'March': 3, 'April': 4 })
-   ...:
-   ...: assert hasattr(data, '__hash__') == True
-
-In [2]: obj = dict({data: 1})
-   ...: assert  obj[data]  == 1
-
-In [3]: obj
-Out[3]: {iDict({'January': 1, 'February': 2, 'March': 3, 'April': 4}): 1}
-
-In [4]: try:
-   ...:     data['January'] = 'Jan'
-   ...: except TypeError as e:
-   ...:     print('Error')
-   ...:     assert str(e) == 'iDict object does not support item assignment'
-   ...:
-Error
-
-In [5]: try:
-   ...:     result  = data.pop(0)
-   ...: except AttributeError as e:
-   ...:     print('Error')
-   ...:     assert str(e) == 'iDict object has no attribute pop'
-   ...:
-Error
-
-In [6]: try:
-   ...:     data.clear()
-   ...: except AttributeError as e:
-   ...:     print('Error')
-   ...:     assert str(e) == 'iDict object has no attribute clear'
-   ...:
-Error
-
-In [7]: try:
-   ...:     data.update({ 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
-   ...: )
-   ...: except AttributeError as e:
-   ...:     print('Error')
-   ...:     assert str(e) == 'iDict object has no attribute update'
-   ...:
-Error
-
-In [8]: try:
-   ...:     data.setdefault('March', 3)
-   ...: except AttributeError as e:
-   ...:     print('Error')
-   ...:     assert str(e) == 'iDict object has no attribute setdefault'
-   ...:
-Error
-
-In [9]:
-```
 
 
-
-
-### fromkeys()
-
-Create a new dictionary with keys from iterable and values set to value.
-if set `iplace` parameter, it will not cause an error.
-but will always be ignored.
-
-```python
-In [4]: data = [ 'January', 'February', 'March', 'April' ]
-   ...: expect = ( "iDict("
-   ...:            "{'January': 2, 'February': 2, 'March': 2, 'April': 2}"
-   ...:            ")" )
-   ...: obj = iDict().fromkeys(data, 2)
-   ...: assert obj.__repr__() == expect
-
-In [5]: data = [ 'January', 'February', 'March', 'April' ]
-   ...: expect = "iDict({})"
-   ...: obj = iDict()
-   ...: obj.fromkeys(data, 2, inplace=True)
-   ...: assert obj.__repr__() == expect
-
-```
-
-### fromvalues()
-
-Create a new dictionary from list of values.
-keys automaticaly generate as interger.
-`base` is the starting number.
-if set `iplace` parameter, it will not cause an error.
-but will always be ignored.
-
-```python
-In [6]: data = [ 'January', 'February', 'March', 'April' ]
-   ...: expect = ( "iDict("
-   ...:            "{1: 'January', 2: 'February', 3: 'March', 4: 'April'}"
-   ...:            ")" )
-   ...: obj = iDict().fromvalues(data)
-   ...: assert obj.__repr__() == expect
-
-In [7]: data = [ 'January', 'February', 'March', 'April' ]
-   ...: expect = ( "iDict("
-   ...:            "{0: 'January', 1: 'February', 2: 'March', 3: 'April'}"
-   ...:            ")" )
-   ...: obj = iDict().fromvalues(data, base=0)
-   ...: assert obj.__repr__() == expect
-
-In [8]: data = [ 'January', 'February', 'March', 'April' ]
-   ...: expect = "iDict({})"
-   ...: obj = iDict()
-   ...: obj.fromvalues(data, base=1, inplace=True)
-   ...: assert obj.__repr__() == expect
-
-```
-
-### fromlists()
-
-Create a new dictionary from two list as keys and values.
-Only the number of elements in the shorter of the two lists is processed.
-if set `iplace` parameter, it will not cause an error.
-but will always be ignored.
-
-```python
-In [1]: from datajuggler import iDict
-   ...:
-   ...: keys = [ 'January', 'February', 'March', 'April' ]
-   ...: values = [ 1, 2, 3, 4 ]
-   ...: expect = ( "iDict("
-   ...:            "{'January': 1, 'February': 2, 'March': 3, 'April': 4}"
-   ...:            ")" )
-   ...: obj = iDict().fromlists(keys, values)
-   ...: assert obj.__repr__() == expect
-
-In [2]: keys = [ 'January', 'February', 'March', 'April' ]
-   ...: values = [ 1, 2, 3, 4 ]
-   ...: expect = "iDict({})"
-   ...: obj = iDict()
-   ...: obj.fromlists(keys, values, inplace=True)
-   ...: assert obj.__repr__() == expect
-
-In [3]: keys = [ 'January', 'February' ]
-   ...: values = [ 1, 2, 3, 4 ]
-   ...: expect = "iDict({'January': 1, 'February': 2})"
-   ...: obj = iDict().fromlists(keys, values)
-   ...: assert obj.__repr__() == expect
-
-In [4]: keys = [ 'January', 'February', 'March', 'April' ]
-   ...: values = [ 1, 2 ]
-   ...: expect = "iDict({'January': 1, 'February': 2})"
-   ...: obj = iDict().fromlists(keys, values)
-   ...: assert obj.__repr__() == expect
-
-```
-
-### to_json() and from_json()
-
-Generate JSON strings from the dictionary.
-Generate new dictionary from JSON strings.
-
-if set `iplace` parameter, it will not cause an error.
-but will always be ignored.
-
-```python
-In [1]: from datajuggler import iDict
-   ...:
-   ...: data = {"console": "Nintendo Switch",
-   ...:         "games": ["The Legend of Zelda", "Mario Golf"]}
-   ...: json_data = ( '{"console": "Nintendo Switch", '
-   ...:               '"games": ["The Legend of Zelda", "Mario Golf"]}' )
-   ...: obj = iDict(data)
-   ...: assert obj.to_json() == json_data
-
-In [2]: expect = ( "iDict({'console': 'Nintendo Switch', "
-   ...:            "'games': ['The Legend of Zelda', 'Mario Golf']})" )
-   ...: result = iDict().from_json(json_data)
-   ...: assert result.__repr__() == expect
-
-In [3]: expect = "iDict({})"
-   ...: obj = iDict()
-   ...: obj.from_json(json_data, inplace=True)
-   ...: assert obj.__repr__() == expect
-
-```
-
-### YAML
-
-if PyYAML is installed, enable `to_yaml()` and `from_yaml()` method.
-otherwise raise NotImplementedError.
 
 ```python
 In [1]: from datajuggler import iDict
@@ -1094,6 +932,166 @@ In [18]: yaml_str = ( "!python/object:datajuggler.iDict "
     ...: assert obj.__repr__() == expect
 
 In [19]:
+```
+
+
+## class aDict
+Allow to access using dot notation for dictionary.
+This class inspired [munch](https://github.com/Infinidat/munch).
+aDict is subclass of DictFactory.
+
+
+```python
+In [1]: from datajuggler import aDict
+   ...:
+   ...: data = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
+   ...: expect = 2
+   ...: obj = aDict(data)
+   ...: assert obj.February == expect
+
+In [2]: data = { 'one': { 'two': { 'three': { 'four': 4 }}}}
+   ...: expect = { 'two': { 'three': { 'four': 4 }}}
+   ...: obj = aDict(data)
+   ...: assert obj.one == expect
+
+In [3]: data = { 'one': { 'two': { 'three': { 'four': 4 }}}}
+   ...: expect = "{'one': {'two': {'three': {'four': 4}}}}"
+   ...: obj = aDict(data)
+   ...: try:
+   ...:     result = obj.one.two
+   ...: except AttributeError as e:
+   ...:     print('Error')
+   ...:     assert str(e) == "'dict' object has no attribute 'two'"
+   ...:
+Error
+
+In [4]: data = {'one': aDict({'two': aDict({'three': aDict({'four': 4 })})})}
+   ...: expect = ( "aDict({'one': "
+   ...:              "aDict({'two': "
+   ...:                "aDict({'three': "
+   ...:                  "aDict({'four': 4})})})})" )
+   ...: obj = aDict(data)
+   ...: assert obj.__repr__() == expect
+
+In [5]: data = {'one': aDict({'two': aDict({'three': aDict({'four': 4 })})})}
+   ...: expect = 4
+   ...: obj = aDict(data)
+   ...: assert obj.one.two.three.four == expect
+
+In [6]:
+```
+
+if pass `as_default_dict=True` to custructor, use aDict insted of dict.
+
+```python
+In [1]: from datajuggler import aDict
+
+In [2]: data = { 'one': { 'two': { 'three': { 'four': 4 }}}}
+   ...: expect = ( "aDict({'one': "
+   ...:              "aDict({'two': "
+   ...:                "aDict({'three': "
+   ...:                  "aDict({'four': 4})})})})" )
+   ...: obj = aDict(data, as_default_dict=True)
+   ...: assert obj.__repr__() == expect
+
+In [3]: assert obj.one.two.three.four == 4
+
+In [4]:
+```
+
+## class uDict
+Support change keys for dict.
+
+```python
+In [1]: from datajuggler import uDict
+   ...:
+   ...: data = uDict({ 'January': 1, 'February': 2, 'March': 3, 'April': 4 })
+   ...: expect = { 'January': 1, 'February': 2, 'March': 3, 'Apr': 4 }
+   ...:
+   ...: saved = data.copy()
+   ...: result = data.replace_key('April', 'Apr')
+   ...: assert ( result == expect
+   ...:          and data == saved )
+
+In [2]: data = uDict({ 'January': 1, 'February': 2, 'March': 3, 'April': 4 })
+   ...: replace = {'January': 'Jan', 'February': 'Feb' }
+   ...: expect = { 'Jan': 1, 'Feb': 2, 'March': 3, 'April': 4 }
+   ...: saved = data.copy()
+   ...: result = data.replace_key_map(replace)
+   ...: assert ( result == expect
+   ...:          and data == saved )
+
+In [3]: data = uDict({ 'January': 1, 'February': 2, 'March': 3, 'April': 4 })
+   ...: replace = {'January': 'Jan', 'February': 'Feb' }
+   ...: expect = { 'Jan': 1, 'Feb': 2, 'March': 3, 'April': 4 }
+   ...: saved = data.copy()
+   ...: data.replace_key_map(replace, inplace=True)
+   ...: assert ( data == expect
+   ...:          and data != saved )
+```
+
+### class iDict
+
+Immutable Dict. iDict is hashable object.
+
+if set `iplace` parameter, it will not cause an error.
+but will always be ignored.
+
+```python
+In [1]: from datajuggler import iDict
+   ...:
+   ...: data = iDict({ 'January': 1, 'February': 2, 'March': 3, 'April': 4 })
+   ...:
+   ...: assert hasattr(data, '__hash__') == True
+
+In [2]: obj = dict({data: 1})
+   ...: assert  obj[data]  == 1
+
+In [3]: obj
+Out[3]: {iDict({'January': 1, 'February': 2, 'March': 3, 'April': 4}): 1}
+
+In [4]: try:
+   ...:     data['January'] = 'Jan'
+   ...: except TypeError as e:
+   ...:     print('Error')
+   ...:     assert str(e) == 'iDict object does not support item assignment'
+   ...:
+Error
+
+In [5]: try:
+   ...:     result  = data.pop(0)
+   ...: except AttributeError as e:
+   ...:     print('Error')
+   ...:     assert str(e) == 'iDict object has no attribute pop'
+   ...:
+Error
+
+In [6]: try:
+   ...:     data.clear()
+   ...: except AttributeError as e:
+   ...:     print('Error')
+   ...:     assert str(e) == 'iDict object has no attribute clear'
+   ...:
+Error
+
+In [7]: try:
+   ...:     data.update({ 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
+   ...: )
+   ...: except AttributeError as e:
+   ...:     print('Error')
+   ...:     assert str(e) == 'iDict object has no attribute update'
+   ...:
+Error
+
+In [8]: try:
+   ...:     data.setdefault('March', 3)
+   ...: except AttributeError as e:
+   ...:     print('Error')
+   ...:     assert str(e) == 'iDict object has no attribute setdefault'
+   ...:
+Error
+
+In [9]:
 ```
 
 

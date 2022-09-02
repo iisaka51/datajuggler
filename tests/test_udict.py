@@ -82,13 +82,30 @@ class TestClass:
         assert obj.__repr__() == expect
 
     def test_udict_case12(self):
+        data = [ 'January', 'February', 'March', 'April' ]
+        expect = ( "uDict("
+                   "{'1': 'January', '2': 'February', "
+                    "'3': 'March', '4': 'April'})" )
+        obj = uDict().fromvalues(data, prefix='')
+        assert obj.__repr__() == expect
+
+    def test_udict_case13(self):
+        data = [ 'January', 'February', 'March', 'April' ]
+        expect = ( "uDict("
+                   "{'month_1': 'January', 'month_2': 'February', "
+                    "'month_3': 'March', 'month_4': 'April'})" )
+
+        obj = uDict().fromvalues(data, prefix='month_')
+        assert obj.__repr__() == expect
+
+    def test_udict_case14(self):
         keys = [ 'January', 'February', 'March', 'April' ]
         values = [ 1, 2, 3, 4 ]
         expect = "uDict({'January': 1, 'February': 2, 'March': 3, 'April': 4})"
         obj = uDict().fromlists(keys, values)
         assert obj.__repr__() == expect
 
-    def test_udict_case13(self):
+    def test_udict_case15(self):
         keys = [ 'January', 'February', 'March', 'April' ]
         values = [ 1, 2, 3, 4 ]
         expect = "uDict({'January': 1, 'February': 2, 'March': 3, 'April': 4})"
@@ -96,14 +113,14 @@ class TestClass:
         obj.fromlists(keys, values, inplace=True)
         assert obj.__repr__() == expect
 
-    def test_udict_case14(self):
+    def test_udict_case16(self):
         keys = [ 'January', 'February' ]
         values = [ 1, 2, 3, 4 ]
         expect = "uDict({'January': 1, 'February': 2})"
         obj = uDict().fromlists(keys, values)
         assert obj.__repr__() == expect
 
-    def test_udict_case15(self):
+    def test_udict_case17(self):
         keys = [ 'January', 'February', 'March', 'April' ]
         values = [ 1, 2 ]
         expect = "uDict({'January': 1, 'February': 2})"

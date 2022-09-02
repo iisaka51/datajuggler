@@ -64,6 +64,7 @@ class DictFactory(dict):
     def fromvalues(self,
             seq: Sequence,
             base: int=1,
+            prefix: Optional[str]=None,
             inplace: bool=False,
         ) ->Optional[dict]:
         """Create a new dictionary from list of values.
@@ -71,7 +72,11 @@ class DictFactory(dict):
            `base` is the starting number.
            If set `True` to `inplace`, perform operation in-place.
         """
-        new = type(self)({base+x: seq[x] for x in range(len(seq))})
+        if prefix != None:
+            new = type(self)({'{}{}'.format(prefix, base+x): seq[x]
+                             for x in range(len(seq)) } )
+        else:
+            new = type(self)({base+x: seq[x] for x in range(len(seq))})
         if inplace:
             self.update(new)
         else:
@@ -107,8 +112,9 @@ class DictFactory(dict):
         else:
             return type(self)(json.loads(stream, **options))
 
-    def to_dict(self, obj):
+    def to_dict(self, obj: Optional[Any]=None):
         """ Recursively converts DictFactory to dict.  """
+        obj = obj or self
         holding_obj = dict()
 
         def convert_loop(obj):
@@ -144,7 +150,11 @@ class DictFactory(dict):
 
         return convert_loop(obj)
 
-    def from_dict(self, obj, factory=None, inplace: bool=False):
+    def from_dict(self,
+            obj: Any,
+            factory: Optional[Any]=None,
+            inplace: bool=False,
+        ):
         """ Recursively converts from dict to DictFactory. """
         factory = factory or type(self)
         holding_obj = dict()
@@ -205,12 +215,20 @@ class DictFactory(dict):
 
 class aDict(DictFactory):
 
-    def __init__(self, *args, as_default_dict: bool=False, **kwargs):
+    def __init__(self,
+            *args: Any,
+            as_default_dict: bool=False,
+            **kwargs: Any
+        ):
         if as_default_dict:
             self.update(*args, **kwargs)
         else:
             super().__init__(*args, **kwargs)
         self.yaml_initializer()
+
+    def __str__(self):
+        #return '{}'.format(self.__dict__)
+        return '{}'.format(self.to_dict(self))
 
     def __getattr__(self, k):
         try:
@@ -220,10 +238,6 @@ class aDict(DictFactory):
                 return self[k]
             except KeyError:
                 raise AttributeError(k)
-
-    def __str__(self):
-        #return '{}'.format(self.__dict__)
-        return '{}'.format(self.to_dict(self))
 
     def __setattr__(self, k, v):
         try:
@@ -336,6 +350,7 @@ class iDict(DictFactory):
     def fromvalues(self,
             seq: Sequence,
             base: int=1,
+            prefix: Optional[str]=None,
             inplace: bool=False,
         ) ->Optional[dict]:
         """Create a new dictionary from list of values.
@@ -344,7 +359,12 @@ class iDict(DictFactory):
            If `inplace` parameter set `True`, It will alway be ignored.
         """
         if not inplace:
-            return type(self)({base+x: seq[x] for x in range(len(seq))})
+            if prefix != None:
+                new = type(self)({'{}{}'.format(prefix, base+x): seq[x]
+                             for x in range(len(seq)) } )
+            else:
+                new = type(self)({base+x: seq[x] for x in range(len(seq))})
+            return new
 
     def fromlists(self,
             keys: Sequence,
