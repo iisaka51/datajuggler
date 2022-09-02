@@ -425,6 +425,34 @@ class uDict(DictFactory):
         else:
             return new
 
+    def filter_items(self,
+            predicate: Callable,
+            obj: Optional[Mapping]=None,
+            factory: Optional[Any]=None,
+            inplace: bool=False
+        ):
+        """ Create a new dictionary with filter items in dictionary by item.
+        if not set `obj`, use self.
+        If set `factory`, create instance of factory class.
+        If set `True` to `inplace`, perform operation in-place.
+        """
+
+        obj = obj or self
+        factory = factory or type(self)
+
+        new = factory()
+
+        for item in obj.items():
+            if predicate(item):
+                k, v = item
+                new[k] = v
+
+        if inplace:
+            self.clear()
+            self.update(new)
+        else:
+            return new
+
 
 class iDict(DictFactory):
 

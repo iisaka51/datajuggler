@@ -254,7 +254,6 @@ class TestClass:
         result = uDict().filter_keys(is_janfeb, data, factory=aDict)
         assert result == expect
 
-
     def test_udict_features_case18(self):
         is_even = lambda x: x % 2 == 0
         data = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
@@ -284,5 +283,39 @@ class TestClass:
         data = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
         expect = aDict({ 'February': 2, 'April': 4 })
         result = uDict().filter_values(is_even, data, factory=aDict)
+        assert result == expect
+
+
+    def is_valid(self, item):
+        k, v = item
+        return k.endswith('ary') and v % 2 == 0
+
+    def test_udict_features_case22(self):
+        data = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
+        expect = uDict({ 'February': 2 })
+        obj = uDict(data)
+        saved = obj.copy()
+        result = obj.filter_items(self.is_valid)
+        assert ( result == expect and obj == saved )
+
+    def test_udict_features_case23(self):
+        data = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
+        expect = uDict({ 'February': 2 })
+        obj = uDict(data)
+        obj.filter_items(self.is_valid, inplace=True)
+        assert obj == expect
+
+    def test_udict_features_case24(self):
+        is_even = lambda x: x % 2 == 0
+        data = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
+        expect = uDict({ 'February': 2 })
+        result = uDict().filter_items(self.is_valid, data)
+        assert result == expect
+
+    def test_udict_features_case25(self):
+        is_even = lambda x: x % 2 == 0
+        data = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
+        expect = aDict({ 'February': 2 })
+        result = uDict().filter_items(self.is_valid, data, factory=aDict)
         assert result == expect
 

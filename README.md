@@ -1003,13 +1003,14 @@ In [4]:
 uDict is utilized dictionary.
 uDict has followings  methods.
 
- - replace_key(old, new, inplace=False)
- - `replace_key_map(replace: Mapping, inplace=False)
+ - `replace_key(old, new, inplace=False)`
+ - `replace_key_map(replace: Mapping, inplace=False)`
  - `map_keys( func, obj: Mapping, factory=None, inplace=False)`
  - `map_values( func, obj: Mapping, factory=None, inplace=False)`
  - `map_items( func, obj: Mapping, factory=None, inplace=Fals=Falsee)`
  - `filter_keys( func, obj: Mapping, factory=None, inplace=False)`
  - `filter_values( func, obj: Mapping, factory=None, inplace=False)`
+ - `filter_items( func, obj: Mapping, factory=None, inplace=False)`
 
 ### replace_key()
 
