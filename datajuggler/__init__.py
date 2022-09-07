@@ -1,29 +1,36 @@
 from .dict import (
     aDict, uDict, iDict, ordereddict_to_dict, change_dict_keys,
+    DictItem, DictItemType, validate_DictItem
 )
 from .utils import (
-    StrCase, is_alpha, is_alnum, urange,
-    omit_values, replace_values, ReplaceFor, ReplaceForType,
-    split_chunks, add_df, df_compare, rename_duplicates, remove_accents,
+    StrCase, urange, omit_values, replace_values,
+    split_chunks, add_df, df_compare, rename_duplicates,
+)
+from .strings import (
+    searchstr, substr, is_match_string, is_alpha, is_alnum, remove_accents,
 )
 
 __all__ = [
-    "uDict",
-    "iDict",
+    "DictItem",
+    "DictItemType",
+    "validate_DictItem",
     "aDict",
+    "iDict",
+    "uDict",
     "StrCase",
     "urange",
-    "is_alpha",
-    "is_alnum",
     "ordereddict_to_dict",
     "change_dict_keys",
     "omit_values",
     "replace_values",
     "add_df",
     "df_compare",
-    "ReplaceFor",
-    "ReplaceForType",
     "split_chunks",
     "rename_duplicates",
+    "searchstr",
+    "substr",
+    "is_match_string",
+    "is_alpha",
+    "is_alnum",
     "remove_accents",
 ]

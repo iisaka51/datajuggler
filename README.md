@@ -1011,6 +1011,21 @@ uDict has followings  methods.
  - `filter_keys( func, obj: Mapping, factory=None, inplace=False)`
  - `filter_values( func, obj: Mapping, factory=None, inplace=False)`
  - `filter_items( func, obj: Mapping, factory=None, inplace=False)`
+ - `map_keys(func, obj: Mapping, factory=None, inplace=False)`
+ - `map_values(func, obj: Mapping, factory=None, inplace=False)`
+ - `map_items(func, obj: Mapping, factory=None, inplace=False)`
+ - `filter_keys(func, obj: Mapping, factory=None, inplace=False)`
+ - `filter_values(func, obj: Mapping, factory=None, inplace=False)`
+ - `filter_items(func, obj: Mapping, factory=None, inplace=False)`
+ - `get_allkeys(obj: Mapping)`
+ - `get_values(keys, obj: Mapping, wild=False, with_keys=False, verbatim=Flase)`
+ - `counts_of_keys(keys, obj: Mapping, wild=False, verbatim=False)`
+ - `counts_of_values(keys, obj: Mapping, wild=False, verbatim=False)`
+ - `get_items(loc, value, obj: Mapping, func=None, factory=None)`
+ - `del_items(loc, obj: Mapping, factory=None, inplace=False)`
+ - `set_items(loc, value, obj: Mapping, func=None, factory=None, inplace=False)`
+ - `compare(d1: Mapping, d2: Mapping, keys=None, thrown_error=False)`
+
 
 ### replace_key()
 
@@ -1190,6 +1205,438 @@ In [17]: expect = aDict({ 'February': 2, 'April': 4 })
 In [18]:
 ```
 
+### filter_items()
+Create a new dictionary with filter items in dictionary by item.
+if not set `obj`, use self.
+If set `factory`, create instance of factory class.
+If set `True` to `inplace`, perform operation in-place.
+
+```python
+In [1]: from datajuggler import uDict, iDict, aDict
+   ...:
+   ...: def is_valid(item):
+   ...:     k, v = item
+   ...:     return k.endswith('ary') and v % 2 == 0
+   ...:
+   ...: data = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
+   ...: expect = uDict({ 'February': 2 })
+   ...:
+   ...: obj = uDict(data)
+   ...: saved = obj.copy()
+   ...: result = obj.filter_items(is_valid)
+   ...: assert ( result == expect and obj == saved )
+
+In [2]: obj = uDict(data)
+   ...: obj.filter_items(is_valid, inplace=True)
+   ...: assert obj == expect
+
+In [3]: is_even = lambda x: x % 2 == 0
+   ...: expect = uDict({ 'February': 2 })
+   ...: result = uDict().filter_items(is_valid, data)
+   ...: assert result == expect
+
+In [4]: is_even = lambda x: x % 2 == 0
+   ...: expect = aDict({ 'February': 2 })
+   ...: result = uDict().filter_items(is_valid, data, factory=aDict)
+   ...: assert result == expect
+
+In [5]: result.February
+Out[5]: 2
+
+In [6]:
+```
+
+### get_allkeys()
+Get to get all keys from dictionary as a List
+This method is able to process on nested dictionary.
+
+```python
+In [1]: from datajuggler import uDict, iDict, aDict
+   ...:
+   ...: data = {'x': {'y': {'z': {'a': 'v1', 'b': 'v2', 'c': 'v3'}}}}
+   ...: expect = ['x', 'y', 'z', 'a', 'b', 'c']
+   ...:
+   ...: result = uDict().get_allkeys(data)
+   ...: assert result == expect
+
+In [2]: result = uDict(data).get_allkeys()
+   ...: assert result == expect
+
+In [3]: data = {'x': {'y': {'z': [{'a': 'v11', 'b': 'v12', 'c': 'v13'},
+   ...:                           {'a': 'v21', 'b': 'v22', 'c': 'v23'}]} }}
+   ...: expect =  ['x', 'y', 'z', 'a', 'b', 'c', 'a', 'b', 'c']
+   ...:
+   ...: result = uDict(data).get_allkeys()
+   ...: assert result == expect
+
+In [4]:
+```
+
+### get_values()
+Search the key in the objet(s).
+if not set `obj`, use self object.
+return a list of values.
+if pass `with_keys=True`, return dict with key, values pair.
+if pass `wild=True` match strings substr and ignorecase.
+
+
+```python
+In [1]: from datajuggler import uDict, iDict, aDict
+   ...:
+   ...: data = {'x': {'y': {'z': [{'a': 'v11', 'b': 'v12', 'c': 'v13'},
+   ...:                           {'a': 'v21', 'b': 'v22', 'c': 'v23'}]} }}
+   ...: expect = ['v11', 'v21']
+   ...: result = uDict().get_values('a', data)
+   ...: assert result == expect
+
+In [2]: expect = ['v11', 'v21']
+   ...: result = uDict(data).get_values('a')
+   ...: assert result == expect
+
+In [3]: expect = {'a': ['v11', 'v21']}
+   ...: result = uDict().get_values('a', data, with_keys=True)
+   ...: assert result == expect
+
+In [4]: data = {'x': {'y': {'z': [{'aA': 'v11', 'b': 'v12', 'c': 'v13'},
+   ...:                           {'aA': 'v21', 'b': 'v22', 'c': 'v23'}]} }}
+   ...: expect = ['v11', 'v21']
+   ...: result = uDict().get_values('a', data, wild=True)
+   ...: assert result == expect
+
+In [5]: expect = ['v11', 'v21']
+   ...: result = uDict().get_values('aa', data, wild=True)
+   ...: assert result == expect
+
+In [6]: expect = {'aA': ['v11', 'v21'], 'b': ['v12', 'v22']}
+   ...: result = uDict(data).get_values(['aA', 'b'])
+   ...: assert result == expect
+
+In [7]: expect = {'a': ['v11', 'v21'], 'b': ['v12', 'v22']}
+   ...: result = uDict(data).get_values(('a', 'b'), wild=True)
+   ...: assert result == expect
+
+In [8]: expect = {'aA': ['v11', 'v21'], 'b': ['v12', 'v22']}
+   ...: result = uDict(data).get_values(('a', 'b'), wild=True, verbatim=True)
+   ...: assert result == expect
+
+In [9]:
+```
+
+### counts_of_keys()
+
+Count of keys.
+
+```python
+In [1]: from datajuggler import uDict, iDict, aDict
+   ...:
+   ...: data = {'x': {'y': {'z': [{'aA': 'v11', 'b': 'v12', 'c': 'v13'},
+   ...:                           {'aA': 'v21', 'b': 'v22', 'c': 'v23'}]} }}
+   ...: count = uDict(data).counts_of_keys('aA')
+   ...: assert count == 2
+
+In [2]: count = uDict().counts_of_keys('aA', data)
+   ...: assert count == 2
+   ...:
+
+In [3]: count = uDict(data).counts_of_keys('aa')
+   ...: assert count == 0
+   ...:
+
+In [4]: count = uDict(data).counts_of_keys('aa', wild=True)
+   ...: assert count == 2
+
+In [5]: count = uDict(data).counts_of_keys('a', wild=True)
+   ...: assert count == 2
+
+In [6]: expect = {'aA': 2, 'b': 2}
+   ...: count = uDict().counts_of_keys(['aA', 'b'], data)
+   ...: assert count == expect
+
+In [7]: expect = {'a': 2, 'b': 2}
+   ...: count = uDict().counts_of_keys(['a', 'b'], data, wild=True)
+   ...: assert count == expect
+
+In [8]: expect = {'aA': 2, 'b': 2}
+   ...: count = uDict().counts_of_keys(['a', 'b'], data,
+   ...:                 wild=True, verbatim=True)
+   ...: assert count == expect
+
+In [9]:
+```
+
+### counts_of_values()
+
+Counts of values.
+
+```python
+In [1]: from datajuggler import uDict, iDict, aDict
+   ...:
+   ...: data = {'x': {'y': {'z': [{'aA': 'v11', 'b': 'v12', 'c': 'v13'},
+   ...:                           {'aA': 'v21', 'b': 'v22', 'c': 'v23'}]} }}
+   ...: expect = {'v11': 1}
+   ...: count = uDict(data).counts_of_values('v11')
+   ...: assert count == expect
+
+In [2]: data = {'x': {'y': {'z': [{'aA': 'v11', 'b': 'v12', 'c': 'v13'},
+   ...:                           {'aA': 'v21', 'b': 'v22', 'c': 'v23'}]} }}
+   ...: expect = {'v11': 1}
+   ...: count = uDict().counts_of_values('v11', data)
+   ...: assert count == expect
+
+In [3]: expect = {'v1': 3}
+   ...: count = uDict().counts_of_values('v1', data, wild=True)
+   ...: assert count == expect
+
+In [4]: expect = {'v11': 1, 'v12': 1, 'v13': 1}
+   ...: count = uDict().counts_of_values('v1', data, wild=True, verbatim=True)
+   ...:
+   ...: assert count == expect
+
+In [5]: data = {'x': {'y': {'z': [{'aA': 100, 'b': 101, 'c': 103},
+   ...:                           {'aA': 100, 'b': 101, 'c': 103}]} }}
+   ...: expect = {100: 2}
+   ...: count = uDict(data).counts_of_values(100)
+   ...: assert count == expect
+
+In [6]:
+```
+
+
+### get_items()
+
+ `get_items(loc, value, obj: Mapping, func=None, factory=None)`
+
+Create new dictionary with new key value pair as d[key]=val.
+If set `True` to `inplace`, perform operation in-place.
+otherwise, not modify the initial dictionary.
+
+`loc` is  the location of the value.
+
+i.e.: { 'a': { 'b1': { 'c1': {'x': 1 },
+                       'c2': {'x': 2 }},
+             { 'b2': { 'c1': {'x': 3 },
+                       'c2': {'x': 4 }} }}}
+
+if set ['a', 'b1', 'c1',  'x']  to `loc`, val is 1.
+giving the location of the value to be changed in `obj`.
+if set loc as str, convert to list using `loc.split(sep=' ')`.
+value: the value to aplly
+
+
+```python
+In [1]: from datajuggler import uDict, iDict, aDict
+   ...:
+   ...: data = { 'a': 1, 'b': 2}
+   ...: expect = {'a': 3, 'b': 2}
+   ...:
+   ...: result = uDict(data).get_items('a', 3)
+   ...: assert result == expect
+
+In [2]: result = uDict().get_items('a', 3, data)
+   ...: assert result == expect
+
+In [3]: expect = {'a': 1, 'b': 2, 'c': 3}
+   ...: result = uDict(data).get_items('c', 3)
+   ...: assert result == expect
+
+In [4]: data = {}
+   ...: expect = {'a': 1}
+   ...: result = uDict(data).get_items('a', 1)
+   ...: assert result == expect
+
+In [5]: data = { 'a': 1, 'b': [{'c': 11, 'd': 12 },
+   ...:                        {'c': 22, 'd': 22 }] }
+   ...: expect = {'a': 1, 'b': 2}
+   ...: result = uDict(data).get_items('b', 2)
+   ...: assert result == expect
+
+In [6]: data = { 'a': 1, 'b': [{'c': 11, 'd': 12 },
+   ...:                        {'c': 22, 'd': 22 }] }
+   ...: expect = {'a': 1, 'b': [{'c': 11, 'd': 12},
+   ...:                         {'c': 22, 'd': 22}], 'c': 33}
+   ...: result = uDict(data).get_items('c', 33)
+   ...: assert result == expect
+
+In [7]: data = {'x': {'y': {'z': {'a': 'v1', 'b': 'v2', 'c': 'v3'}}}}
+   ...: expect = {'a': 'v11', 'b': 'v2', 'c': 'v3'}
+   ...: result = uDict(data).get_items('x y z a', 'v11')
+   ...: assert result == expect
+
+In [8]:
+```
+
+### del_items()
+
+ - `del_items(loc, obj: Mapping, factory=None, inplace=False)
+
+Create new dicttionary with the given key(s) removed.
+New dictionary has d[key] deleted for each supplied key.
+If set `True` to `inplace`, perform operation in-place.
+otherwise, not modify the initial dictionary.
+
+loc:
+    the location of the value.
+    i.e.: { 'a': { 'b1': { 'c1': {'x': 1 },
+                           'c2': {'x': 2 }},
+                 { 'b2': { 'c1': {'x': 3 },
+                           'c2': {'x': 4 }} }}}
+    if set ['a', 'b1', 'c1',  'x']  to loc, val is 1.
+    giving the location of the value to be changed in `obj`.
+    if set loc as str, convert to list using `loc.split(sep=' ')`.
+obj
+    dictionary on which to operate
+inplace:
+    If set `True` to `inplace`, perform operation in-place.
+    otherwise, not modify the initial dictionary.
+
+
+```python
+In [1]: from datajuggler import uDict, iDict, aDict
+   ...:
+   ...: data = { 'a': 1, 'b': 2}
+   ...: expect = {'b': 2}
+   ...:
+   ...: result = uDict(data).del_items('a')
+   ...: assert result == expect
+
+In [2]: result = uDict().del_items('a', data)
+   ...: assert result == expect
+
+In [3]: expect = {'a': 1, 'b': 2}
+   ...: result = uDict(data).del_items('c')
+   ...: assert result == expect
+
+In [4]: expect = {'b': 2}
+   ...: obj = uDict(data)
+   ...: obj.del_items('a', inplace=True)
+   ...: assert obj == expect
+
+In [5]: expect = "aDict({'b': 2})"
+   ...: result = uDict(data).del_items('a', factory=aDict)
+   ...: assert result.__repr__() == expect
+
+In [6]: data = {'x': {'y': {'z': {'a': 'v1', 'b': 'v2', 'c': 'v3'}}}}
+   ...: expect = {'x': {'y': {'z': {'a': 'v1', 'b': 'v2', 'c': 'v3'}}}}
+   ...: result = uDict(data).del_items('a')
+   ...: assert result == expect
+
+In [7]: data = {'x': {'y': {'z': {'a': 'v1', 'b': 'v2', 'c': 'v3'}}}}
+   ...: expect = {'x': {'y': {'z': {'b': 'v2', 'c': 'v3'}}}}
+   ...: result = uDict(data).del_items('x y z a')
+   ...: assert result == expect
+
+In [8]:
+```
+
+### set_items()
+
+ - `set_items(loc, value, obj: Mapping, func=None, factory=None, inplace=False)`
+
+Create new dict with new, potentially nested, key value pair
+loc:
+    the location of the value.
+    i.e.: { 'a': { 'b1': { 'c1': {'x': 1 },
+                           'c2': {'x': 2 }},
+                 { 'b2': { 'c1': {'x': 3 },
+                           'c2': {'x': 4 }} }}}
+    if set ['a', 'b1', 'c1',  'x']  to loc, val is 1.
+    giving the location of the value to be changed in `obj`.
+    if set loc as str, convert to list using `loc.split(sep=' ')`.
+obj
+    dictionary on which to operate
+func:
+    the function to apply the object(s)..
+inplace:
+    If set `True` to `inplace`, perform operation in-place.
+    otherwise, not modify the initial dictionary.
+
+
+```python
+In [1]: from datajuggler import uDict, iDict, aDict
+   ...:
+   ...: data = { 'a': 1, 'b': 2}
+   ...: expect = { 'a': 2, 'b': 2}
+   ...:
+   ...: result = uDict(data).set_items('a',2 )
+   ...: assert result == expect
+
+In [2]: obj = uDict(data)
+   ...: obj.set_items('a',2, inplace=True)
+   ...: assert obj == expect
+
+In [3]: data = { 'a': 1, 'b': [{'c': 11, 'd': 12 },
+   ...:                        {'c': 22, 'd': 22 }] }
+   ...: expect = {'a': 1, 'b': 2}
+   ...: result = uDict(data).set_items('b', 2)
+   ...: assert result == expect
+
+In [4]: expect = { 'a': 1, 'b': [{'c': 11, 'd': 12 },
+   ...:                        {'c': 22, 'd': 22 }], 'c': 3 }
+   ...: result = uDict(data).set_items('c', 3)
+   ...: assert result == expect
+
+In [5]: data = {'x': {'y': {'z': {'a': 'v1', 'b': 'v2', 'c': 'v3'}}}}
+   ...: expect = {'x': {'y': {'z': {'a': 'v11', 'b': 'v2', 'c': 'v3'}}}}
+   ...: obj = uDict(data)
+   ...: obj['x']['y']['z']['a']='v11'
+   ...: assert obj == expect
+
+In [6]: data = {'x': {'y': {'z': {'a': 'v1', 'b': 'v2', 'c': 'v3'}}}}
+   ...: expect = {'x': {'y': {'z': {'a': 'v11', 'b': 'v2', 'c': 'v3'}}}}
+   ...: result = uDict(data).set_items('x y z a', 'v11')
+   ...: assert result == expect
+
+In [7]:
+```
+
+### compare()
+
+ - `compare(d1: Mapping, d2: Mapping, keys=None, thrown_error=False)`
+
+Compare tow dictionary with keys and return `True` when equal found values.
+otherwise return `False`.
+if not set second dictionary, use self object.
+if not set keys, just compare two dictionaries,
+if pass `thrown_error=True`, raise ValueError when not equal found values.
+
+```python
+In [1]: from datajuggler import uDict, iDict, aDict
+   ...:
+   ...: d1 = {'x': {'y': {'z': [{'aA': 'v11', 'b': 'v12', 'c': 'v13'},
+   ...:                         {'aA': 'v21', 'b': 'v22', 'c': 'v23'}]} }}
+   ...: d2 = {'x': {'y': {'z': [{'aA': 'v11', 'b': 'v12', 'c': 'v13'},
+   ...:                         {'aA': 'v21', 'b': 'v22', 'c': 'v23'}]} }}
+   ...:
+   ...: result = uDict().compare(d1, d2)
+   ...: assert result == True
+
+In [2]: result = uDict(d1).compare(d2)
+   ...: assert result == True
+
+In [3]: result = uDict().compare(d1, d2, keys='aA')
+   ...: assert result == True
+
+In [4]: d1 = {'x': {'y': {'z': [{'aA': 'v11', 'b': 'v12', 'c': 'v13'},
+   ...:                         {'aB': 'v21', 'b': 'v22', 'c': 'v23'}]} }}
+   ...: d2 = {'x': {'y': {'z': [{'aA': 'v11', 'b': 'v12', 'c': 'v13'},
+   ...:                         {'aB': 'd21', 'b': 'd22', 'c': 'd23'}]} }}
+   ...: result = uDict().compare(d1, d2, keys=['aA', 'b'])
+   ...: assert result == True
+
+In [5]: d1 = {'x': {'y': {'z': {'a': 'v1', 'b': 'v2', 'c': 'v3'}}}}
+   ...: d2 = {'x': {'y': {'z': {'a': 'v10', 'b': 'v2', 'c': 'v3'}}}}
+   ...: expect = "{'x': {'y': {'z': {'a': 'v1', 'b': 'v2', 'c': 'v3'}}}} is no
+   ...: t equal {'x': {'y': {'z': {'a': 'v10', 'b': 'v2', 'c': 'v3'}}}}."
+   ...: try:
+   ...:     result = uDict().compare(d1, d2, thrown_error=True)
+   ...: except ValueError as e:
+   ...:     print('Error')
+   ...:     assert str(e) == expect
+   ...:
+Error
+
+In [6]:
+```
 
 
 ### class iDict

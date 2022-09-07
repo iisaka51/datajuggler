@@ -1,17 +1,46 @@
 import re
 from typing import (
-    Any, Dict, Union, Optional, Hashable, Iterable, Sequence, Callable,
-    Literal, get_args
+    Any, Dict, Union, Optional, Hashable, Iterable, Sequence,
+    Callable, Pattern, Literal, get_args
 )
 from collections.abc import Mapping
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
+import operator
+from functools import reduce
 import json
 from enum import Enum
-from multimethod import multidispatch
+from multimethod import multidispatch, multimethod
 from .yaml import yaml_initializer, to_yaml, from_yaml
-import snoop
+from .strings import is_match_string
+
+class DictItem(str, Enum):
+  KEY = "key"
+  VALUE = "value"
+
+DictItemType = Literal[DictItem.KEY, DictItem.VALUE]
+
+def validate_DictItem(
+        dictitem: DictItemType,
+        thrown_error: bool=False,
+    ) ->Optional[bool]:
+    if dictitem in get_args(DictItemType):
+        return True
+    else:
+        if not thrown_error:
+            return False
+        else:
+            import inspect
+            from executing import Source
+
+            callFrame = inspect.currentframe().f_back.f_back
+            callNode = Source.executing(callFrame).node
+            source = Source.for_frame(callFrame)
+            name = source.asttokens().get_text(callNode.args[0])
+
+            raise ValueError("{} must be 'key' or 'value'.".format(name))
 
 class DictFactory(dict):
+
     yaml_initializer = classmethod(yaml_initializer)
     to_yaml = to_yaml
     from_yaml = from_yaml
@@ -113,7 +142,7 @@ class DictFactory(dict):
         else:
             return type(self)(json.loads(stream, **options))
 
-    def to_dict(self, obj: Optional[Any]=None):
+    def to_dict(self, obj: Optional[dict]=None):
         """ Recursively converts DictFactory to dict.  """
         obj = obj or self
         holding_obj = dict()
@@ -153,7 +182,7 @@ class DictFactory(dict):
 
     def from_dict(self,
             obj: Any,
-            factory: Optional[Any]=None,
+            factory: Optional[dict]=None,
             inplace: bool=False,
         ):
         """ Recursively converts from dict to DictFactory. """
@@ -228,7 +257,6 @@ class aDict(DictFactory):
         self.yaml_initializer()
 
     def __str__(self):
-        #return '{}'.format(self.__dict__)
         return '{}'.format(self.to_dict(self))
 
     def __getattr__(self, k):
@@ -286,12 +314,28 @@ class uDict(DictFactory):
     def __missing__(self, key):
         return None
 
-    def replace_key(self, old, new, inplace=False):
+    def replace_key(self,
+            old: Hashable,
+            new: Hashable,
+            inplace: bool=False
+        ):
+        """Create the new dictionary wich is chnaged the key of the dictionary)
+        If set `True` to `inplace`, perform operation in-place.
+        """
+
         result = self.replace_key_map({old: new}, inplace)
         if not inplace:
             return result
 
-    def replace_key_map(self, replace, inplace=False):
+    def replace_key_map(self,
+            replace: dict,
+            inplace: bool=False
+        ):
+        """Create the new dictionary which is chnaged the keys using mapping
+        dictionary. `replace` expect {old, new}.
+        If set `True` to `inplace`, perform operation in-place.
+        """
+
         if not inplace:
             work_dict = self.copy()
         else:
@@ -308,7 +352,7 @@ class uDict(DictFactory):
     def map_keys(self,
             func: Callable,
             obj: Optional[Mapping]=None,
-            factory: Optional[Any]=None,
+            factory: Optional[dict]=None,
             inplace: bool=False
         ):
         """ Create a new dictionary with apply function to keys of dictionary.
@@ -330,7 +374,7 @@ class uDict(DictFactory):
     def map_values(self,
             func: Callable,
             obj: Optional[Mapping]=None,
-            factory: Optional[Any]=None,
+            factory: Optional[dict]=None,
             inplace: bool=False
         ):
         """ Create a new dictionary with apply function to values of dictionary.
@@ -352,7 +396,7 @@ class uDict(DictFactory):
     def map_items(self,
             func: Callable,
             obj: Optional[Mapping]=None,
-            factory: Optional[Any]=None,
+            factory: Optional[dict]=None,
             inplace: bool=False
         ):
         """ Create a new dictionary with apply function to items of dictionary.
@@ -374,7 +418,7 @@ class uDict(DictFactory):
     def filter_keys(self,
             predicate: Callable,
             obj: Optional[Mapping]=None,
-            factory: Optional[Any]=None,
+            factory: Optional[dict]=None,
             inplace: bool=False
         ):
         """ Create a new dictionary with filter items in dictionary by keys.
@@ -401,7 +445,7 @@ class uDict(DictFactory):
     def filter_values(self,
             predicate: Callable,
             obj: Optional[Mapping]=None,
-            factory: Optional[Any]=None,
+            factory: Optional[dict]=None,
             inplace: bool=False
         ):
         """ Create a new dictionary with filter items in dictionary by values.
@@ -428,7 +472,7 @@ class uDict(DictFactory):
     def filter_items(self,
             predicate: Callable,
             obj: Optional[Mapping]=None,
-            factory: Optional[Any]=None,
+            factory: Optional[dict]=None,
             inplace: bool=False
         ):
         """ Create a new dictionary with filter items in dictionary by item.
@@ -452,6 +496,383 @@ class uDict(DictFactory):
             self.update(new)
         else:
             return new
+
+    def get_allkeys(self,
+            obj: Optional[dict]=None
+        ) -> list:
+        """ Get to get all keys from dictionary as a List
+            This method is able to process on nested dictionary.
+        """
+
+        def get_deeply( obj):
+            found_keys = list()
+
+            if isinstance(obj, Mapping):
+                for key, val in obj.items():
+                    found_keys.append(key)
+                    found_keys += get_deeply(val)
+
+            elif isinstance(obj, list) or isinstance(obj, tuple):
+                for element in obj:
+                    found_keys += get_deeply(element)
+
+            return found_keys
+
+        obj = obj or self
+        all_keys = get_deeply(obj)
+        return all_keys
+
+
+    def get_values(self,
+            keys: Union[Hashable, Sequence],
+            obj: Optional[Union[Mapping, Sequence]] = None,
+            wild: bool=False,
+            with_keys: bool=False,
+            verbatim: bool=False,
+        ) -> Union[list, Mapping]:
+        """Search the key in the objet(s).
+        `obj` : dict, dict[dict], dict[list], list[dict]
+        if not set `obj`, use self object.
+        return a list of values
+        """
+
+        def deep_lookup(
+                key: Hashable,
+                obj: Union[Mapping, list, tuple],
+                wild: bool=False,
+                verbatim: bool=False,
+            ):
+            """Lookup a key in a nested object(s).
+            yield a value
+            """
+
+            if isinstance(obj, Mapping):
+                for k, v in obj.items():
+                    if is_match_string(key, k, wild):
+                        if verbatim:
+                            yield k, v
+                        else:
+                            yield key, v
+                    if isinstance(v, Mapping):
+                        for kk, v in deep_lookup(key, v,
+                                          wild=wild, verbatim=verbatim):
+                            yield (kk, v)
+                    elif isinstance(v, list) or isinstance(v, tuple):
+                        for element in v:
+                            for kk, v in deep_lookup( key, element,
+                                             wild=wild, verbatim=verbatim):
+                                yield (kk, v)
+
+            elif isinstance(obj, list) or  isinstance(obj, tuple):
+                for element in obj:
+                    for k, v in deep_lookup(key, element,
+                                     wild=wild, verbatim=verbatim):
+                        if verbatim:
+                            yield (k, v)
+                        else:
+                            yield (key, v)
+
+        obj = obj or self
+        if isinstance(keys, str):
+            keys = [keys]
+            as_dict = False
+        else:
+            as_dict = True
+
+        keys = list(keys) if not isinstance(keys, list) else keys
+
+        values = defaultdict(list)
+        for key in keys:
+            for k, v in deep_lookup(key, obj, wild=wild, verbatim=verbatim):
+                values[k].append(v)
+
+        if with_keys or as_dict:
+            return values
+        else:
+            return list(values.values())[0]
+
+
+    def counts_of_keys(self,
+            keys: Union[Hashable, Sequence],
+            obj: Optional[Mapping]=None,
+            wild: bool=False,
+            verbatim: bool=False,
+        ) ->Union[int, dict]:
+
+        obj = obj or self
+        if isinstance(keys, str):
+            keys = [keys]
+            as_int=True
+        else:
+            as_int=False
+        keys = list(keys) if not isinstance(keys, list) else keys
+
+        counts = defaultdict(int)
+        all_keys = self.get_allkeys(obj)
+        for key in keys:
+            if wild:
+                for k in all_keys:
+                    if is_match_string(key, k, wild):
+                        if verbatim:
+                            counts[k] += 1
+                        else:
+                            counts[key] += 1
+            else:
+                counts[key] += all_keys.count(key)
+
+        if as_int:
+            return counts[keys[0]]
+        else:
+            return counts
+
+    def counts_of_values(self,
+            value: Any,
+            obj: Optional[Mapping]=None,
+            wild: bool=False,
+            verbatim: bool=False,
+        ) ->Union[int, dict]:
+
+        def deep_lookup(
+                value: Any,
+                obj: Union[Mapping, list, tuple],
+                wild: bool=False,
+                verbatim: bool=False,
+            ):
+
+            if isinstance(obj, Mapping):
+                for k, v in obj.items():
+                    if isinstance(v, str):
+                        if is_match_string(value, v, wild):
+                            if verbatim:
+                                yield (1, v)
+                            else:
+                                yield (1, value)
+
+                    elif isinstance(v, Mapping):
+                        for c, v in deep_lookup(value, v,
+                                          wild=wild, verbatim=verbatim):
+                            yield (c, v)
+                    elif isinstance(v, list) or isinstance(v, tuple):
+                        for element in v:
+                            for c, v in deep_lookup(value, element,
+                                             wild=wild, verbatim=verbatim):
+                                yield (c, v)
+                    elif value == v:
+                        yield (1, v)
+
+            elif isinstance(obj, list) or  isinstance(obj, tuple):
+                for element in obj:
+                    for c, v in deep_lookup(value, element,
+                                     wild=wild, verbatim=verbatim):
+                        yield (c, v)
+
+        obj = obj or self
+        counts = defaultdict(int)
+
+        for c, v in deep_lookup(value, obj, wild, verbatim=verbatim):
+            counts[v] += c
+
+        return counts
+
+
+    def compare(self,
+            d1: Mapping,
+            d2: Optional[Mapping]=None,
+            *,
+            keys: Optional[Union[Hashable,list]]=None,
+            thrown_error: bool=False,
+        ):
+        """Compare tow dictionary with keys.
+           and return  `True` when equal found values.
+           otherwise return `False`.
+           if not set second dictionary, use self object.
+           if not set keys, just compare two dictionaries,
+        """
+
+        def compare_dict(d1: Mapping, d2: Mapping, keys):
+            keys = keys if isinstance(keys, list) else [keys]
+            if isinstance(d1, Mapping):
+                d1_values = list(self.get_values(keys, d1).values()).sort()
+            else:
+                d1_values = d1
+            if isinstance(d2, Mapping):
+                d2_values = list(self.get_values(keys, d2).values()).sort()
+            else:
+                d2_values = d2
+            return d1_values == d2_values
+
+        d2 = d2 or self
+        check = d1 == d2 if not keys else compare_dict(d1, d2, keys)
+
+        if check:
+            return True
+        else:
+            if thrown_error:
+                raise ValueError('{} is not equal {}.'
+                                 .format(str(d1), str(d2)))
+            return False
+
+    def get_items(self,
+            loc: Hashable,
+            value: Any,
+            obj: Optional[Mapping]=None,
+            func: Optional[Callable]=None,
+            factory: Optional[dict]=None,
+        ):
+        """ Create new dictionary with new key value pair as d[key]=val.
+            If set `True` to `inplace`, perform operation in-place.
+            otherwise, not modify the initial dictionary.
+        loc
+            the location of the value.
+            i.e.: { 'a': { 'b1': { 'c1': {'x': 1 },
+                                   'c2': {'x': 2 }},
+                         { 'b2': { 'c1': {'x': 3 },
+                                   'c2': {'x': 4 }} }}}
+            if set ['a', 'b1', 'c1',  'x']  as `loc`, val is 1.
+            giving the location of the value to be changed in `obj`.
+            if set loc as str, convert to list using `loc.split(sep=' ')`.
+        value: the value to aplly
+        """
+        factory = factory or type(self)
+        obj = obj or self
+        new = factory(obj)
+        new = self.update_item(loc, value, new, func=func,
+                                  factory=factory, inplace=False, action="get")
+        return new
+
+    def del_items(self,
+            loc: Union[Hashable, list, tuple],
+            obj: Optional[Mapping]=None,
+            factory: Optional[dict]=None,
+            inplace: bool=False
+        ):
+        """ Create new dicttionary with the given key(s) removed.
+            New dictionary has d[key] deleted for each supplied key.
+            If set `True` to `inplace`, perform operation in-place.
+            otherwise, not modify the initial dictionary.
+        """
+        factory = factory or type(self)
+        obj = obj or self
+        new = factory(obj)
+
+        new = self.update_item(loc, None, new, func=None,
+                                  factory=factory, inplace=False, action="del")
+        if inplace:
+            self.clear()
+            self.update(new)
+        else:
+            return new
+
+    def set_items( self,
+            loc: Union[str, Sequence],
+            value: Any,
+            obj: Optional[Union[Mapping, Sequence]]=None,
+            func: Optional[Callable]=None,
+            factory: Optional[dict]=None,
+            inplace: bool=False,
+        ):
+        """ Create new dict with new, potentially nested, key value pair
+        loc:
+            the location of the value.
+            i.e.: { 'a': { 'b1': { 'c1': {'x': 1 },
+                                   'c2': {'x': 2 }},
+                         { 'b2': { 'c1': {'x': 3 },
+                                   'c2': {'x': 4 }} }}}
+            if set ['a', 'b1', 'c1',  'x']  to loc, val is 1.
+            giving the location of the value to be changed in `obj`.
+            if set loc as str, convert to list using `str.split(keys)`.
+        obj
+            dictionary on which to operate
+        func:
+            the function to apply the object(s)..
+        inplace:
+            If set `True` to `inplace`, perform operation in-place.
+            otherwise, not modify the initial dictionary.
+        """
+
+        return self.update_item(loc, value, obj, func=func,
+                                  factory=factory, inplace=inplace)
+
+    def update_item(self,
+            loc: Union[str, Sequence],
+            value: Any,
+            obj: Optional[Union[Mapping, Sequence]]=None,
+            func: Optional[Callable]=None,
+            default: Optional[Any]=None,
+            factory: Optional[dict]=None,
+            inplace: bool=False,
+            action: Literal["get", "del", "set"]="set"
+        ):
+        """ Create new dictionary Update value from a nested dictionary.
+        Paramters
+        ---------
+        loc
+            the location of the value.
+            i.e.: { 'a': { 'b1': { 'c1': {'x': 1 },
+                                   'c2': {'x': 2 }},
+                         { 'b2': { 'c1': {'x': 3 },
+                                   'c2': {'x': 4 }} }}}
+            if set ['a', 'b1', 'c1',  'x']  as loc,
+            giving the location of the value to be changed in d.
+            if set loc as str, convert to list using `str.split(keys)`.
+        value: the value to aplly
+        oonj
+            dictionary on which to operate
+        func
+            function to operate on that value
+
+        If loc is not a key in d,
+        update_in creates nested dictionaries to the depth
+        specified by the keys, with the innermost value set to func(default).
+
+        If set `True` to `inplace`, perform operation in-place.
+        otherwise, not modify the initial dictionary.
+        """
+
+        factory = factory or dict
+        obj = obj or self
+        if isinstance(loc, str):
+            loc = loc.split(sep=' ') if loc.find(' ')>0 else [loc]
+        else:
+            loc = list(loc) if isinstance(loc, tuple) else loc
+
+        iter_key = iter(loc)
+        k = next(iter_key)
+
+        new = inner = factory()
+        new.update(obj)
+
+        if not func:
+            func = lambda x: value
+
+        for key in iter_key:
+            if k in obj:
+                obj = obj[k]
+                wdict = factory()
+                wdict.update(obj)
+            else:
+                obj = wdict = factory()
+
+            inner[k] = inner = wdict
+            k = key
+
+        if k in obj:
+            inner[k] = func(obj[k])
+            if action == "get":
+                return inner
+            elif action == "del":
+                del inner[k]
+        else:
+            if action != "del":
+                inner[k] = func(default)
+
+        if inplace:
+            self.clear()
+            self.update(new)
+        else:
+            return new
+
+
 
 
 class iDict(DictFactory):
