@@ -293,10 +293,6 @@ class aDict(DictFactory):
         else:
             object.__delattr__(self, k)
 
-    @property
-    def __dict__(self):
-        return self.to_dict(self)
-
     def update(self, *args, **kwargs):
         for key, val in dict(*args, **kwargs).items():
             if isinstance(val, Mapping) and not isinstance(val, type(self)):
