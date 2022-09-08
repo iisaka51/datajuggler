@@ -889,7 +889,11 @@ class iDict(DictFactory):
         return dict.__getattribute__(self, attribute)
 
     def __hash__(self):
-        return hash(tuple(sorted(self.items())))
+        try:
+            return self._cached_hash
+        except:
+            h = self._cached_hash =  hash(frozenset(self.items()))
+            return h
 
     def fromkeys(self,
             seq: Sequence,
