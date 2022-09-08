@@ -933,6 +933,34 @@ In [18]: yaml_str = ( "!python/object:datajuggler.iDict "
 
 In [19]:
 ```
+if pass `as_default_dict=True` to custructor,
+use aDict, uDict, iDict insted of dict.
+
+```python
+In [1]: from datajuggler import aDict, iDict, uDict
+
+In [2]: aDict({1: 1, 2: 2, 3: {3: '3'}})
+Out[2]: aDict({1: 1, 2: 2, 3: {3: '3'}})
+
+In [3]: aDict({1: 1, 2: 2, 3: {3: '3'}}, as_default_dict=True)
+Out[3]: aDict({1: 1, 2: 2, 3: aDict({3: '3'})})
+
+In [4]: uDict({1: 1, 2: 2, 3: {3: '3'}})
+Out[4]: uDict({1: 1, 2: 2, 3: {3: '3'}})
+
+In [5]: uDict({1: 1, 2: 2, 3: {3: '3'}}, as_default_dict=True)
+Out[5]: uDict({1: 1, 2: 2, 3: uDict({3: '3'})})
+
+In [6]: iDict({1: 1, 2: 2, 3: {3: '3'}})
+Out[6]: iDict({1: 1, 2: 2, 3: {3: '3'}})
+
+In [7]: iDict({1: 1, 2: 2, 3: {3: '3'}}, as_default_dict=True)
+Out[7]: iDict({1: 1, 2: 2, 3: iDict({3: '3'})})
+
+In [8]:
+
+```
+
 
 
 ## class aDict
@@ -979,24 +1007,6 @@ In [5]: data = {'one': aDict({'two': aDict({'three': aDict({'four': 4 })})})}
    ...: assert obj.one.two.three.four == expect
 
 In [6]:
-```
-
-if pass `as_default_dict=True` to custructor, use aDict insted of dict.
-
-```python
-In [1]: from datajuggler import aDict
-
-In [2]: data = { 'one': { 'two': { 'three': { 'four': 4 }}}}
-   ...: expect = ( "aDict({'one': "
-   ...:              "aDict({'two': "
-   ...:                "aDict({'three': "
-   ...:                  "aDict({'four': 4})})})})" )
-   ...: obj = aDict(data, as_default_dict=True)
-   ...: assert obj.__repr__() == expect
-
-In [3]: assert obj.one.two.three.four == 4
-
-In [4]:
 ```
 
 ## class uDict

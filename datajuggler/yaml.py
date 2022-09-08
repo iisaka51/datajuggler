@@ -58,7 +58,7 @@ try:
 
     def from_yaml(self, stream, *args, inplace: bool=False, **kwargs):
         """instance method for convert from YAML"""
-        factory = lambda d: type(self)(*(args + (d,)), **kwargs)
+        factory = lambda d: dict(*(args + (d,)), **kwargs)
         loader_class = kwargs.pop('Loader', yaml.FullLoader)
         return self.from_dict(yaml.load(stream, Loader=loader_class),
                               factory=factory, inplace=inplace)

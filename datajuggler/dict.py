@@ -11,6 +11,7 @@ from enum import Enum
 from multimethod import multidispatch, multimethod
 from .yaml import yaml_initializer, to_yaml, from_yaml
 from .strings import is_match_string
+import snoop
 
 class DictItem(str, Enum):
   KEY = "key"
@@ -45,9 +46,18 @@ class DictFactory(dict):
     from_yaml = from_yaml
 
     """ Factory class for custom dictionary """
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self,
+            *args: Any,
+            as_default_dict: bool=False,
+            **kwargs: Any
+        ):
+        if as_default_dict:
+            new = self.from_dict(dict(*args, **kwargs), factory=type(self))
+            super().__init__(new)
+        else:
+            super().__init__(*args, **kwargs)
         self.yaml_initializer()
+
 
     def __repr__(self):
         return '{0}({1})'.format(self.__class__.__name__, dict.__repr__(self))
@@ -213,8 +223,8 @@ class DictFactory(dict):
                 return obj
 
         def post_convert(partial, obj):
-            if isinstance(obj, iDict):
-                partial = iDict((key, convert_loop(obj[key]))
+            if isinstance(obj, Mapping) and factory == type(self):
+                partial = factory((key, convert_loop(obj[key]))
                                 for key in obj.keys() )
             elif isinstance(obj, Mapping):
                 partial.update((key, convert_loop(obj[key]))
@@ -246,17 +256,6 @@ class DictFactory(dict):
 
 
 class aDict(DictFactory):
-
-    def __init__(self,
-            *args: Any,
-            as_default_dict: bool=False,
-            **kwargs: Any
-        ):
-        if as_default_dict:
-            self.update(*args, **kwargs)
-        else:
-            super().__init__(*args, **kwargs)
-        self.yaml_initializer()
 
     def __str__(self):
         return '{}'.format(self.to_dict(self))
@@ -881,6 +880,7 @@ class iDict(DictFactory):
 
     __delitem__ = __setitem__ = _blocked_attribute
     pop = popitem = setdefault = clear = update = _blocked_attribute
+
 
     def __missing__(self, key):
         return None
