@@ -66,6 +66,9 @@ class DictFactory(dict):
         for key, val in dict(*args, **kwargs).items():
             self[key] = val
 
+    def copy(self):
+        return copy.copy(self)
+
     def get(self, key: Hashable, default=None):
         if key not in self:
             return default
@@ -299,8 +302,6 @@ class aDict(DictFactory):
             else:
                 self[key] = val
 
-    def copy(self):
-        return copy.copy(self)
 
 
 class uDict(DictFactory):
@@ -872,35 +873,23 @@ class uDict(DictFactory):
 
 class iDict(DictFactory):
 
+    def _blocked_attribute(self):
+        raise AttributeError( ( "A {} cannot be modified."
+                                .format(self.__class__.__name__) ) )
+
+    _blocked_attribute = property(_blocked_attribute)
+
+    __delitem__ = __setitem__ = _blocked_attribute
+    pop = popitem = setdefault = clear = update = _blocked_attribute
+
     def __missing__(self, key):
         return None
 
-    def __getattr__(self, attribute):
-        if attribute in ('clear', 'update', 'pop', 'popitem', 'setdefault'):
-            raise AttributeError(
-                r"{} object has no attribute {}"
-                .format(type(self).__name__, attribute) )
-
-    def __setitem__(self, key, value):
-        raise TypeError(
-            r"{} object does not support item assignment"
-            .format(type(self).__name__) )
-
-    def __delitem__(self, key):
-        raise TypeError(
-            r"{} object does not support item deletion"
-            .format(type(self).__name__) )
-
     def __getattribute__(self, attribute):
-        if attribute in ('clear', 'update', 'pop', 'popitem', 'setdefault'):
-            raise AttributeError(
-                r"{} object has no attribute {}"
-                .format(type(self).__name__, attribute) )
         return dict.__getattribute__(self, attribute)
 
     def __hash__(self):
         return hash(tuple(sorted(self.items())))
-
 
     def fromkeys(self,
             seq: Sequence,

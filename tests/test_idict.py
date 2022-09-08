@@ -130,33 +130,33 @@ class TestClass:
 
     def test_idict_features_case01(self):
         data = iDict({ 'January': 1, 'February': 2, 'March': 3, 'April': 4 })
-        with pytest.raises(TypeError) as e:
+        with pytest.raises(AttributeError) as e:
             data['January'] = 'Jan'
-        assert str(e.value) == 'iDict object does not support item assignment'
+        assert str(e.value) == 'A iDict cannot be modified.'
 
     def test_idict_features_case02(self):
         data = iDict({ 'January': 1, 'February': 2, 'March': 3, 'April': 4 })
         with pytest.raises(AttributeError) as e:
             result  = data.pop(0)
-        assert str(e.value) == 'iDict object has no attribute pop'
+        assert str(e.value) == 'A iDict cannot be modified.'
 
     def test_idict_features_case03(self):
         data = iDict({ 'January': 1, 'February': 2, 'March': 3, 'April': 4 })
         with pytest.raises(AttributeError) as e:
             data.clear()
-        assert str(e.value) == 'iDict object has no attribute clear'
+        assert str(e.value) == 'A iDict cannot be modified.'
 
     def test_idict_features_case04(self):
         data = iDict({ 'January': 1, 'February': 2, 'March': 3, 'April': 4 })
         with pytest.raises(AttributeError) as e:
             data.update({ 'January': 1, 'February': 2, 'March': 3, 'April': 4 })
-        assert str(e.value) == 'iDict object has no attribute update'
+        assert str(e.value) == 'A iDict cannot be modified.'
 
     def test_idict_features_case05(self):
         data = iDict({ 'January': 1, 'February': 2, 'March': 3, 'April': 4 })
         with pytest.raises(AttributeError) as e:
             data.setdefault('March', 3)
-        assert str(e.value) == 'iDict object has no attribute setdefault'
+        assert str(e.value) == 'A iDict cannot be modified.'
 
     def test_idict_features_case06(self):
         data = iDict({ 'January': 1, 'February': 2, 'March': 3, 'April': 4 })
