@@ -209,6 +209,34 @@ In [5]: data = [ 'January', 'February', 'March', 'April' ]
 
 ```
 
+if pass `as_default_dict=True` to custructor,
+use aDict, uDict, iDict insted of dict.
+
+```python
+In [1]: from datajuggler import aDict, iDict, uDict
+
+In [2]: aDict({1: 1, 2: 2, 3: {3: '3'}})
+Out[2]: aDict({1: 1, 2: 2, 3: {3: '3'}})
+
+In [3]: aDict({1: 1, 2: 2, 3: {3: '3'}}, as_default_dict=True)
+Out[3]: aDict({1: 1, 2: 2, 3: aDict({3: '3'})})
+
+In [4]: uDict({1: 1, 2: 2, 3: {3: '3'}})
+Out[4]: uDict({1: 1, 2: 2, 3: {3: '3'}})
+
+In [5]: uDict({1: 1, 2: 2, 3: {3: '3'}}, as_default_dict=True)
+Out[5]: uDict({1: 1, 2: 2, 3: uDict({3: '3'})})
+
+In [6]: iDict({1: 1, 2: 2, 3: {3: '3'}})
+Out[6]: iDict({1: 1, 2: 2, 3: {3: '3'}})
+
+In [7]: iDict({1: 1, 2: 2, 3: {3: '3'}}, as_default_dict=True)
+Out[7]: iDict({1: 1, 2: 2, 3: iDict({3: '3'})})
+
+In [8]:
+
+```
+
 
 ### fromvalues()
 
@@ -933,34 +961,69 @@ In [18]: yaml_str = ( "!python/object:datajuggler.iDict "
 
 In [19]:
 ```
-if pass `as_default_dict=True` to custructor,
-use aDict, uDict, iDict insted of dict.
+
+### TOML
+
+if toml is installed or using Python 3.11 or later, enable `to_toml()` and `from_toml()` method.
+otherwise raise NotImplementedError.
 
 ```python
 In [1]: from datajuggler import aDict, iDict, uDict
+   ...:
+   ...: data = {'target': {'ip': 'xx.xx.xx.xx',
+   ...:   'os': {'os': 'win 10', 'Arch': 'x64'},
+   ...:   'ports': {'ports': ['1', '2'], '1': {'service': 'xxx', 'ver': '5.9'}}}
+   ...: }
+   ...:
+   ...: toml_str = ( '[target]\nip = "xx.xx.xx.xx"\n\n'
+   ...:              '[target.os]\nos = "win 10"\nArch = "x64"\n\n'
+   ...:              '[target.ports]\nports = [ "1", "2",]\n\n'
+   ...:              '[target.ports.1]\nservice = "xxx"\nver = "5.9"\n' )
+   ...:
+   ...: result = aDict(data).to_toml()
+   ...: assert result == toml_str
 
-In [2]: aDict({1: 1, 2: 2, 3: {3: '3'}})
-Out[2]: aDict({1: 1, 2: 2, 3: {3: '3'}})
+In [2]: result = aDict().to_toml(data)
+   ...: assert result == toml_str
 
-In [3]: aDict({1: 1, 2: 2, 3: {3: '3'}}, as_default_dict=True)
-Out[3]: aDict({1: 1, 2: 2, 3: aDict({3: '3'})})
+In [3]: obj = aDict()
+   ...: result = obj.from_toml(toml_str)
+   ...: assert result == data
 
-In [4]: uDict({1: 1, 2: 2, 3: {3: '3'}})
-Out[4]: uDict({1: 1, 2: 2, 3: {3: '3'}})
+In [4]: obj = aDict()
+   ...: obj.from_toml(toml_str, inplace=True)
+   ...: assert obj == data
 
-In [5]: uDict({1: 1, 2: 2, 3: {3: '3'}}, as_default_dict=True)
-Out[5]: uDict({1: 1, 2: 2, 3: uDict({3: '3'})})
+In [5]: result = uDict(data).to_toml()
+   ...: assert result == toml_str
 
-In [6]: iDict({1: 1, 2: 2, 3: {3: '3'}})
-Out[6]: iDict({1: 1, 2: 2, 3: {3: '3'}})
+In [6]: result = uDict().to_toml(data)
+   ...: assert result == toml_str
 
-In [7]: iDict({1: 1, 2: 2, 3: {3: '3'}}, as_default_dict=True)
-Out[7]: iDict({1: 1, 2: 2, 3: iDict({3: '3'})})
+In [7]: obj = uDict()
+   ...: result = obj.from_toml(toml_str)
+   ...: assert result == data
 
-In [8]:
+In [8]: obj = uDict()
+   ...: obj.from_toml(toml_str, inplace=True)
+   ...: assert obj == data
 
+In [9]: result = iDict(data).to_toml()
+   ...: assert result == toml_str
+
+In [10]: result = iDict().to_toml(data)
+    ...: assert result == toml_str
+
+In [11]: obj = iDict()
+    ...: result = obj.from_toml(toml_str)
+    ...: assert result == data
+
+In [12]: obj = iDict()
+    ...: obj.from_toml(toml_str, inplace=True)
+    ...: assert obj == iDict()
+
+In [13]:
 ```
-
 
 
 ## class aDict

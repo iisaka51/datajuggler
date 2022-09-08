@@ -9,9 +9,9 @@ import json
 import copy
 from enum import Enum
 from multimethod import multidispatch, multimethod
-from .yaml import yaml_initializer, to_yaml, from_yaml
+from .yaml import to_yaml, from_yaml, yaml_initializer
+from .toml import to_toml, from_toml
 from .strings import is_match_string
-import snoop
 
 class DictItem(str, Enum):
   KEY = "key"
@@ -44,6 +44,8 @@ class DictFactory(dict):
     yaml_initializer = classmethod(yaml_initializer)
     to_yaml = to_yaml
     from_yaml = from_yaml
+    to_toml = to_toml
+    from_toml = from_toml
 
     """ Factory class for custom dictionary """
     def __init__(self,
@@ -140,9 +142,10 @@ class DictFactory(dict):
         else:
             return new
 
-    def to_json(self, **options) ->str:
+    def to_json(self, obj: Optional[Any]=None, **options) ->str:
         """Generate a new json strings. """
-        return json.dumps(self, **options)
+        obj = obj or self
+        return json.dumps(obj, **options)
 
     def from_json(self,
         stream: str,

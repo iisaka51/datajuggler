@@ -1,3 +1,5 @@
+from typing import Any, Optional
+
 try:
     import yaml
     from yaml.representer import Representer, SafeRepresenter
@@ -47,14 +49,15 @@ try:
         Representer.add_representer(cls, _to_yaml)
         Representer.add_multi_representer(cls, _to_yaml)
 
-    def to_yaml(self, **options):
+    def to_yaml(self, obj: Optional[Any]=None, **options):
         """instance method for convert to YAML"""
+        obj = obj or self
         opts = dict(indent=4, default_flow_style=False, allow_unicode=True)
         opts.update(options)
         if 'Dumper' not in opts:
-            return yaml.safe_dump(self, **opts)
+            return yaml.safe_dump(obj, **opts)
         else:
-            return yaml.dump(self, **opts)
+            return yaml.dump(obj, **opts)
 
     def from_yaml(self, stream, *args, inplace: bool=False, **kwargs):
         """instance method for convert from YAML"""
