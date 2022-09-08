@@ -1,6 +1,6 @@
 from .dict import (
     aDict, uDict, iDict, ordereddict_to_dict, change_dict_keys,
-    DictItem, DictItemType, validate_DictItem
+    DictItem, DictItemType, validate_DictItem, groupby
 )
 from .utils import (
     StrCase, urange, omit_values, replace_values,
@@ -21,6 +21,7 @@ __all__ = [
     "urange",
     "ordereddict_to_dict",
     "change_dict_keys",
+    "groupby",
     "omit_values",
     "replace_values",
     "add_df",

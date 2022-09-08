@@ -6,7 +6,7 @@ sys.path.insert(0,"../datajuggler")
 
 from datajuggler import (
     uDict, iDict, aDict,
-    change_dict_keys, ordereddict_to_dict,
+    change_dict_keys, ordereddict_to_dict
 )
 
 from collections import OrderedDict
@@ -743,7 +743,7 @@ class TestClass:
                               "{'id': 3, 'name': 'Bob'}], "
                           "4: [{'id': 4, 'name': 'Freddie'}, "
                               "{'id': 4, 'name': 'Maichael'}]})" )
-        result = uDict().groupby(data, "id")
+        result = groupby(data, "id")
         assert result.__repr__() == expect
 
 
@@ -768,7 +768,7 @@ class TestClass:
                               "{'id': 3, 'name': 'Bob'}], "
                           "4: [{'id': 4, 'name': 'Freddie'}, "
                               "{'id': 4, 'name': 'Maichael'}]})" )
-        result = uDict().groupby(data, "id", factory=iDict)
+        result = groupby(data, "id", factory=iDict)
         assert result.__repr__() == expect
 
 

@@ -870,24 +870,6 @@ class uDict(DictFactory):
         else:
             return new
 
-    def groupby(self,
-            seq: list,
-            key: Hashable,
-            factory: Optional[dict]=None
-        ) -> Mapping:
-        if not isinstance(seq, list):
-            raise ValueError("seq should be a list of dicts.")
-
-        factory = factory or type(self)
-        grouped = defaultdict(list)
-        for element in seq:
-            if not isinstance(element, Mapping):
-                raise ValueError("element should be a dict.")
-            group = element.get(key)
-            grouped[group].append(element.copy())
-
-        return factory(grouped)
-
 
 class iDict(DictFactory):
 
@@ -1064,4 +1046,22 @@ def _change_dict_keys_multi(
     if not inplace:
         return data
 
+
+def groupby(
+        seq: list,
+        key: Hashable,
+        factory: Optional[Mapping]=None
+    ) -> Mapping:
+    if not isinstance(seq, list):
+        raise ValueError("seq should be a list of dicts.")
+
+    factory = factory or dict
+    grouped = defaultdict(list)
+    for element in seq:
+        if not isinstance(element, Mapping):
+            raise ValueError("element should be a dict.")
+        group = element.get(key)
+        grouped[group].append(element.copy())
+
+    return factory(grouped)
 
