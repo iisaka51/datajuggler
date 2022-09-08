@@ -6,6 +6,7 @@ from typing import (
 from collections.abc import Mapping
 from collections import OrderedDict, defaultdict
 import json
+import copy
 from enum import Enum
 from multimethod import multidispatch, multimethod
 from .yaml import yaml_initializer, to_yaml, from_yaml
@@ -299,7 +300,7 @@ class aDict(DictFactory):
                 self[key] = val
 
     def copy(self):
-        return self.from_dict(self)
+        return copy.copy(self)
 
 
 class uDict(DictFactory):
