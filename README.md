@@ -2,16 +2,32 @@
 
 This library provides utility classes and helper functions for data processing.
 This is spin-off project from [scrapinghelper](https://github.com/iisaka51/scrapinghelper).
+This project is inspired by [python-benedict](https://github.com/fabiocaccamo/python-benedict) and [munch](https://github.com/Infinidat/munch) and [adict](https://github.com/mewwts/addict).
 
 
- - class DictFactory
+## Features
+
+ - 100% backward-compatible, you can safely wrap existing dictionaries and list.
+ - Keypath list-index support (also negative) using the standard [n] suffix.
+ - aDict support dot-notation access to value of dictionaries.
+ - aDict support immutable and hashable of dictiinary.
+ - uDict support Keylist and Keypath which are pointing to valaues of dictionaries.
+ - uDict and many helper functions parse methods to retrieve data as needed.
+ - iList support immutable and hashable of list.
+ - iList support hold attributes using aDict.
+
+## classes
+
+ - class BaseDict
    Factory class for custom dictionary.
  - class aDict
    Allow to access using dot notation for dictionary.
+ - class Keypath and Keylist
+   type and manage for keypath and Keylist
  - class uDict
-   Allow to change key for Dict.
- - class iDict
-   Immutable Dict. iDict object hashable.
+   Allow to access using keypath and keylist.
+ - class iList
+   Allow hashable and immutable list. when call freeze().
  - class StrCase
    Convert case for object(s).
 
@@ -19,19 +35,18 @@ utilities for string manupulate helper functions.
 
  -  `is_alpha()` - Check word is alphabet.
  -  `is_alnum()` - Check word is alphabet and digits.
- -  `ordereddict_to_dict()` - convert object from OrderedDict to Dict.
- -  `change_dict_keys()` - Change keys of Dict.
  -  `replace_values()` - Replace objects for object(s).
  -  `omit_values()` - Omit values for object(s).
+ -  `rename_duplicates()` - Rename duplicated strings to append a number at the end.
  -  `add_df()` - Add data into DataFrame.
  -  `df_compare()` - Check DataFrame is equals.
  -  `split_chunks()` - Split iterable object into chunks.
  -  `urange()` - Return an object that produces a sequence of integes.
 
 
-## class DictFactory
+## class BaseDict
 
-DictFactory is internal base class for custom dictionary.
+BaseDict is internal base class for custom dictionary.
 this class has follows methods.
 
  - `update(*args, **kwargs)`
@@ -47,173 +62,16 @@ this class has follows methods.
  - `from_json(json_data: str, inplace: bool=False, **options)`
  - `to_yaml(**options: Any)`
  - `from_yaml(stream, *args: Any, inplace: bool=False, **kwargs: Any)`
+ - `to_toml(**options: Any)`
+ - `from_toml(stream, *args: Any, inplace: bool=False, **kwargs: Any)`
 
-aDict and uDict, iDict are subclass of DictFactory.
-
-### Common methods.
-
-```python
-In [1]: from datajuggler import aDict
-   ...:
-   ...: data = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
-   ...: expect = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
-   ...:
-   ...: obj = aDict(data)
-   ...: assert obj == data
-
-In [2]: expect = "{'January': 1, 'February': 2, 'March': 3, 'April': 4}"
-   ...: obj = aDict(data)
-   ...: assert obj.__str__() == expect
-
-In [3]: expect = "aDict({'January': 1, 'February': 2, 'March': 3, 'April': 4})"
-   ...:
-   ...: obj = aDict(data)
-   ...: assert obj.__repr__() == expect
-
-In [4]: expect = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
-   ...: obj = aDict(January=1, February=2, March=3, April=4)
-   ...: assert obj == expect
-
-In [5]: data = aDict({ 'January': 1, 'February': 2, 'March': 3, 'April': 4 })
-   ...: expect = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
-   ...: assert data == expect
-
-In [6]: data = { 'one': { 'two': { 'three': { 'four': 4 }}}}
-   ...: expect = ( "aDict("
-   ...:            "{'one': {'two': {'three': {'four': 4}}}}"
-   ...:            ")" )
-   ...: obj = aDict(data)
-   ...: assert obj.__repr__() == expect
-
-In [7]:
-```
-
-```python
-In [1]: from datajuggler import uDict
-   ...:
-   ...: data = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
-   ...: expect = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
-   ...:
-   ...: obj = uDict(data)
-   ...: assert obj == data
-
-In [2]: expect = "{'January': 1, 'February': 2, 'March': 3, 'April': 4}"
-   ...: obj = uDict(data)
-   ...: assert obj.__str__() == expect
-
-In [3]: expect = "uDict({'January': 1, 'February': 2, 'March': 3, 'April': 4})"
-   ...:
-   ...: obj = uDict(data)
-   ...: assert obj.__repr__() == expect
-
-In [4]: expect = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
-   ...: result = uDict(January=1, February=2, March=3, April=4)
-   ...: assert result == expect
-
-In [5]: data = uDict({ 'January': 1, 'February': 2, 'March': 3, 'April': 4 })
-   ...: expect = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
-   ...: assert data == expect
-
-In [6]: data = { 'one': { 'two': { 'three': { 'four': 4 }}}}
-   ...: expect = ( "uDict("
-   ...:            "{'one': {'two': {'three': {'four': 4}}}}"
-   ...:            ")" )
-   ...: obj = uDict(data)
-   ...: assert obj.__repr__() == expect
-
-In [7]:
-```
-
-```python
-In [1]: from datajuggler import iDict
-   ...:
-   ...: data = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
-   ...: expect = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
-   ...:
-   ...: obj = iDict(data)
-   ...: assert obj == data
-
-In [2]: expect = "{'January': 1, 'February': 2, 'March': 3, 'April': 4}"
-   ...: obj = iDict(data)
-   ...: assert obj.__str__() == expect
-
-In [3]: expect = "iDict({'January': 1, 'February': 2, 'March': 3, 'April': 4})"
-   ...:
-   ...: obj = iDict(data)
-   ...: assert obj.__repr__() == expect
-
-In [4]: expect = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
-   ...: obj = iDict(January=1, February=2, March=3, April=4)
-   ...: assert obj == expect
-
-In [5]: data = iDict({ 'January': 1, 'February': 2, 'March': 3, 'April': 4 })
-   ...: expect = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
-   ...: assert data == expect
-
-In [6]:
-```
-
-### fromkeys()
-
-Create a new dictionary with keys from iterable and values set to value.
-If set `True` to `inplace`, perform operation in-place.
-
-
-```python
-In [9]: data = [ 'January', 'February', 'March', 'April' ]
-   ...: expect = ( "aDict("
-   ...:            "{'January': 2, 'February': 2, 'March': 2, 'April': 2}"
-   ...:            ")" )
-   ...: obj = aDict().fromkeys(data, 2)
-   ...: assert obj.__repr__() == expect
-
-In [10]: data = [ 'January', 'February', 'March', 'April' ]
-    ...: expect = ( "aDict("
-    ...:            "{'January': 2, 'February': 2, 'March': 2, 'April': 2}"
-    ...:            ")" )
-    ...: obj = aDict()
-    ...: obj.fromkeys(data, 2, inplace=True)
-    ...: assert obj.__repr__() == expect
-```
-
-```python
-In [9]: data = [ 'January', 'February', 'March', 'April' ]
-   ...: expect = ( "uDict("
-   ...:            "{'January': 2, 'February': 2, 'March': 2, 'April': 2}"
-   ...:            ")" )
-   ...: obj = uDict().fromkeys(data, 2)
-   ...: assert obj.__repr__() == expect
-
-In [10]: obj = uDict()
-    ...: obj.fromkeys(data, 2, inplace=True)
-    ...: assert obj.__repr__() == expect
-
-```
-
-In case of iDict, if set `iplace` parameter, it will not cause an error.
-but will always be ignored.
-
-```python
-In [4]: data = [ 'January', 'February', 'March', 'April' ]
-   ...: expect = ( "iDict("
-   ...:            "{'January': 2, 'February': 2, 'March': 2, 'April': 2}"
-   ...:            ")" )
-   ...: obj = iDict().fromkeys(data, 2)
-   ...: assert obj.__repr__() == expect
-
-In [5]: data = [ 'January', 'February', 'March', 'April' ]
-   ...: expect = "iDict({})"
-   ...: obj = iDict()
-   ...: obj.fromkeys(data, 2, inplace=True)
-   ...: assert obj.__repr__() == expect
-
-```
+aDict and uDict are subclass of BaseDict.
 
 if pass `as_default_dict=True` to custructor,
-use aDict, uDict, iDict insted of dict.
+use aDict, uDict insted of dict.
 
 ```python
-In [1]: from datajuggler import aDict, iDict, uDict
+In [1]: from datajuggler import aDict, uDict
 
 In [2]: aDict({1: 1, 2: 2, 3: {3: '3'}})
 Out[2]: aDict({1: 1, 2: 2, 3: {3: '3'}})
@@ -227,16 +85,30 @@ Out[4]: uDict({1: 1, 2: 2, 3: {3: '3'}})
 In [5]: uDict({1: 1, 2: 2, 3: {3: '3'}}, as_default_dict=True)
 Out[5]: uDict({1: 1, 2: 2, 3: uDict({3: '3'})})
 
-In [6]: iDict({1: 1, 2: 2, 3: {3: '3'}})
-Out[6]: iDict({1: 1, 2: 2, 3: {3: '3'}})
-
-In [7]: iDict({1: 1, 2: 2, 3: {3: '3'}}, as_default_dict=True)
-Out[7]: iDict({1: 1, 2: 2, 3: iDict({3: '3'})})
-
-In [8]:
+In [6]:
 
 ```
 
+### fromkeys()
+
+Create a new dictionary with keys from iterable and values set to value.
+If set `True` to `inplace`, perform operation in-place.
+
+
+```python
+In [1]: from datajuggler import aDict,uDict
+
+In [2]: data = [ 'January', 'February', 'March', 'April' ]
+
+In [3]: aDict().fromkeys(data, 2)
+Out[3]: aDict({'January': 2, 'February': 2, 'March': 2, 'April': 2})
+
+In [4]: uDict().fromkeys(data, 2)
+Out[4]: uDict({'January': 2, 'February': 2, 'March': 2, 'April': 2})
+
+In [5]:
+
+```
 
 ### fromvalues()
 
@@ -248,126 +120,29 @@ So, set '' to `prefix`, key as str from interger.
 If set `True` to `inplace`, perform operation in-place.
 
 ```python
-In [11]: data = [ 'January', 'February', 'March', 'April' ]
-    ...: expect = ( "aDict("
-    ...:            "{1: 'January', 2: 'February', 3: 'March', 4: 'April'}"
-    ...:            ")" )
-    ...: obj = aDict().fromvalues(data)
-    ...: assert obj.__repr__() == expect
+In [1]: from datajuggler import aDict,uDict
 
-In [12]: data = [ 'January', 'February', 'March', 'April' ]
-    ...: expect = ( "aDict("
-    ...:            "{0: 'January', 1: 'February', 2: 'March', 3: 'April'}"
-    ...:            ")" )
-    ...: obj = aDict().fromvalues(data, base=0)
-    ...: assert obj.__repr__() == expect
+In [2]: data = [ 'January', 'February', 'March', 'April' ]
 
-In [13]: data = [ 'January', 'February', 'March', 'April' ]
-    ...: expect = ( "aDict("
-    ...:            "{1: 'January', 2: 'February', 3: 'March', 4: 'April'}"
-    ...:            ")" )
-    ...: obj = aDict()
-    ...: obj.fromvalues(data, base=1, inplace=True)
-    ...: assert obj.__repr__() == expect
+In [3]: aDict().fromvalues(data)
+Out[3]: aDict({1: 'January', 2: 'February', 3: 'March', 4: 'April'})
 
-In [14]: data = [ 'January', 'February', 'March', 'April' ]
-    ...:
-    ...: expect = ( "aDict("
-    ...:            "{'1': 'January', '2': 'February', "
-    ...:             "'3': 'March', '4': 'April'})" )
-    ...:
-    ...: obj = aDict().fromvalues(data, prefix='')
-    ...: assert obj.__repr__() == expect
+In [4]: uDict().fromvalues(data)
+Out[4]: uDict({1: 'January', 2: 'February', 3: 'March', 4: 'April'})
 
-In [15]: expect = ( "aDict("
-    ...:            "{'month_1': 'January', 'month_2': 'February', "
-    ...:             "'month_3': 'March', 'month_4': 'April'})" )
-    ...:
-    ...: obj = aDict().fromvalues(data, prefix='month_')
-    ...: assert obj.__repr__() == expect
+In [6]: aDict().fromvalues(data, base=0)
+Out[6]: aDict({0: 'January', 1: 'February', 2: 'March', 3: 'April'})
 
-In [16]:
-```
+In [7]: aDict().fromvalues(data, base=100)
+Out[7]: aDict({100: 'January', 101: 'February', 102: 'March', 103: 'April'})
 
+In [8]: aDict().fromvalues(data, prefix='key_')
+Out[8]: aDict({'key_1': 'January', 'key_2': 'February', 'key_3': 'March', 'key_4': 'April'})
 
-```python
-In [11]: data = [ 'January', 'February', 'March', 'April' ]
-    ...: expect = ( "uDict("
-    ...:            "{1: 'January', 2: 'February', 3: 'March', 4: 'April'}"
-    ...:            ")" )
-    ...: obj = uDict().fromvalues(data)
-    ...: assert obj.__repr__() == expect
+In [9]: aDict().fromvalues(data, prefix='')
+Out[9]: aDict({'1': 'January', '2': 'February', '3': 'March', '4': 'April'})
 
-In [12]: obj = uDict()
-    ...: obj.fromvalues(data, base=1, inplace=True)
-    ...: assert obj.__repr__() == expect
-
-In [13]: expect = ( "uDict("
-    ...:            "{0: 'January', 1: 'February', 2: 'March', 3: 'April'}"
-    ...:            ")" )
-    ...: obj = uDict().fromvalues(data, base=0)
-    ...: assert obj.__repr__() == expect
-
-In [14]: data = [ 'January', 'February', 'March', 'April' ]
-    ...:
-    ...: expect = ( "uDict("
-    ...:            "{'1': 'January', '2': 'February', "
-    ...:             "'3': 'March', '4': 'April'})" )
-    ...:
-    ...: obj = uDict().fromvalues(data, prefix='')
-    ...: assert obj.__repr__() == expect
-
-In [15]: expect = ( "uDict("
-    ...:            "{'month_1': 'January', 'month_2': 'February', "
-    ...:             "'month_3': 'March', 'month_4': 'April'})" )
-    ...:
-    ...: obj = uDict().fromvalues(data, prefix='month_')
-    ...: assert obj.__repr__() == expect
-
-In [16]:
-```
-
-In case of iDict, if set `iplace` parameter, it will not cause an error.
-but will always be ignored.
-
-```python
-In [11]: data = [ 'January', 'February', 'March', 'April' ]
-    ...: expect = ( "iDict("
-    ...:            "{1: 'January', 2: 'February', 3: 'March', 4: 'April'}"
-    ...:            ")" )
-    ...: obj = iDict().fromvalues(data)
-    ...: assert obj.__repr__() == expect
-
-In [12]: data = [ 'January', 'February', 'March', 'April' ]
-    ...: expect = ( "iDict("
-    ...:            "{0: 'January', 1: 'February', 2: 'March', 3: 'April'}"
-    ...:            ")" )
-    ...: obj = iDict().fromvalues(data, base=0)
-    ...: assert obj.__repr__() == expect
-
-In [13]: data = [ 'January', 'February', 'March', 'April' ]
-    ...: expect = "iDict({})"
-    ...: obj = iDict()
-    ...: obj.fromvalues(data, base=1, inplace=True)
-    ...: assert obj.__repr__() == expect
-
-In [14]: data = [ 'January', 'February', 'March', 'April' ]
-    ...:
-    ...: expect = ( "iDict("
-    ...:            "{'1': 'January', '2': 'February', "
-    ...:             "'3': 'March', '4': 'April'})" )
-    ...:
-    ...: obj = iDict().fromvalues(data, prefix='')
-    ...: assert obj.__repr__() == expect
-
-In [15]: expect = ( "iDict("
-    ...:            "{'month_1': 'January', 'month_2': 'February', "
-    ...:             "'month_3': 'March', 'month_4': 'April'})" )
-    ...:
-    ...: obj = iDict().fromvalues(data, prefix='month_')
-    ...: assert obj.__repr__() == expect
-
-In [16]:
+In [10]:
 ```
 
 
@@ -379,177 +154,42 @@ If set `True` to `inplace`, perform operation in-place.
 
 
 ```python
-In [14]: keys = [ 'January', 'February', 'March', 'April' ]
-    ...: values = [ 1, 2, 3, 4 ]
-    ...: expect = ( "aDict("
-    ...:            "{'January': 1, 'February': 2, 'March': 3, 'April': 4}"
-    ...:            ")" )
-    ...: obj = aDict().fromlists(keys, values)
-    ...: assert obj.__repr__() == expect
-
-In [15]: keys = [ 'January', 'February', 'March', 'April' ]
-    ...: values = [ 1, 2, 3, 4 ]
-    ...: expect = ( "aDict("
-    ...:            "{'January': 1, 'February': 2, 'March': 3, 'April': 4}"
-    ...:            ")" )
-    ...: obj = aDict()
-    ...: obj.fromlists(keys, values, inplace=True)
-    ...: assert obj.__repr__() == expect
-
-In [16]: keys = [ 'January', 'February' ]
-    ...: values = [ 1, 2, 3, 4 ]
-    ...: expect = "aDict({'January': 1, 'February': 2})"
-    ...: obj = aDict().fromlists(keys, values)
-    ...: assert obj.__repr__() == expect
-
-In [17]: keys = [ 'January', 'February', 'March', 'April' ]
-    ...: values = [ 1, 2 ]
-    ...: expect = "aDict({'January': 1, 'February': 2})"
-    ...: obj = aDict().fromlists(keys, values)
-    ...: assert obj.__repr__() == expect
-```
-
-
-```python
-In [14]: keys = [ 'January', 'February', 'March', 'April' ]
-    ...: values = [ 1, 2, 3, 4 ]
-    ...: expect = ( "uDict("
-    ...:            "{'January': 1, 'February': 2, 'March': 3, 'April': 4}"
-    ...:            ")" )
-    ...: obj = uDict().fromlists(keys, values)
-    ...: assert obj.__repr__() == expect
-
-In [15]: obj = uDict()
-    ...: obj.fromlists(keys, values, inplace=True)
-    ...: assert obj.__repr__() == expect
-
-In [16]: keys = [ 'January', 'February' ]
-    ...: values = [ 1, 2, 3, 4 ]
-    ...: expect = "uDict({'January': 1, 'February': 2})"
-    ...: obj = uDict().fromlists(keys, values)
-    ...: assert obj.__repr__() == expect
-
-In [17]: keys = [ 'January', 'February', 'March', 'April' ]
-    ...: values = [ 1, 2 ]
-    ...: expect = "uDict({'January': 1, 'February': 2})"
-    ...: obj = uDict().fromlists(keys, values)
-    ...: assert obj.__repr__() == expect
-
-```
-
-In case of iDict, if set `iplace` parameter, it will not cause an error.
-but will always be ignored.
-
-```python
-In [1]: from datajuggler import iDict
-   ...:
-   ...: keys = [ 'January', 'February', 'March', 'April' ]
-   ...: values = [ 1, 2, 3, 4 ]
-   ...: expect = ( "iDict("
-   ...:            "{'January': 1, 'February': 2, 'March': 3, 'April': 4}"
-   ...:            ")" )
-   ...: obj = iDict().fromlists(keys, values)
-   ...: assert obj.__repr__() == expect
+In [1]: from datajuggler import aDict,uDict
 
 In [2]: keys = [ 'January', 'February', 'March', 'April' ]
-   ...: values = [ 1, 2, 3, 4 ]
-   ...: expect = "iDict({})"
-   ...: obj = iDict()
-   ...: obj.fromlists(keys, values, inplace=True)
-   ...: assert obj.__repr__() == expect
 
-In [3]: keys = [ 'January', 'February' ]
-   ...: values = [ 1, 2, 3, 4 ]
-   ...: expect = "iDict({'January': 1, 'February': 2})"
-   ...: obj = iDict().fromlists(keys, values)
-   ...: assert obj.__repr__() == expect
+In [3]: values = [ 1, 2, 3, 4 ]
 
-In [4]: keys = [ 'January', 'February', 'March', 'April' ]
-   ...: values = [ 1, 2 ]
-   ...: expect = "iDict({'January': 1, 'February': 2})"
-   ...: obj = iDict().fromlists(keys, values)
-   ...: assert obj.__repr__() == expect
+In [4]: aDict().fromlists(keys, values)
+Out[4]: aDict({'January': 1, 'February': 2, 'March': 3, 'April': 4})
 
+In [5]: uDict().fromlists(keys, values)
+Out[5]: uDict({'January': 1, 'February': 2, 'March': 3, 'April': 4})
+
+In [6]:
 ```
+
 
 ## Serialization
 
 ### JSON
 
-to_json() and from_json().
-If set `True` to `inplace`, perform operation in-place.
-
+#### to_json() and from_json().
 
 ```python
-In [6]: data = {"console": "Nintendo Switch",
+In [1]: from datajuggler import aDict,uDict
+
+In [2]: data = {"console": "Nintendo Switch",
    ...:         "games": ["The Legend of Zelda", "Mario Golf"]}
-   ...: json_data = ( '{"console": "Nintendo Switch", '
-   ...:            '"games": ["The Legend of Zelda", "Mario Golf"]}' )
-   ...: obj = aDict(data)
-   ...: assert obj.to_json() == json_data
-```
-
-If set `True` to `inplace`, perform operation in-place.
-
-
-```python
-In [7]: expect = ( "aDict({'console': 'Nintendo Switch', "
-   ...:            "'games': ['The Legend of Zelda', 'Mario Golf']})" )
-   ...: obj = aDict().from_json(json_data)
-   ...: assert obj.__repr__() == expect
-
-In [8]: obj = aDict()
-   ...: obj.from_json(json_data, inplace=True)
-   ...: assert obj.__repr__() == expect
-
-```
-
-
-```python
-In [5]: from datajuggler import uDict
    ...:
-   ...: data = {"console": "Nintendo Switch",
-   ...:         "games": ["The Legend of Zelda", "Mario Golf"]}
-   ...: json_data = ( '{"console": "Nintendo Switch", '
-   ...:            '"games": ["The Legend of Zelda", "Mario Golf"]}' )
-   ...: repr  = ( "uDict({'console': 'Nintendo Switch', "
-   ...:            "'games': ['The Legend of Zelda', 'Mario Golf']})" )
 
-In [6]: obj = uDict(data)
-   ...: assert obj.to_json() == json_data
+In [3]: aDict(data).to_json()
+Out[3]: '{"console": "Nintendo Switch", "games": ["The Legend of Zelda", "Mario Golf"]}'
 
-In [7]: new = uDict().from_json(json_data)
-   ...: assert new.__repr__() == repr
+In [4]: uDict(data).to_json()
+Out[4]: '{"console": "Nintendo Switch", "games": ["The Legend of Zelda", "Mario Golf"]}'
 
-In [8]: obj = uDict()
-   ...: obj.from_json(json_data, inplace=True)
-   ...: assert obj.__repr__() == repr
-
-```
-
-if set `iplace` parameter, it will not cause an error.
-but will always be ignored.
-
-```python
-In [1]: from datajuggler import iDict
-   ...:
-   ...: data = {"console": "Nintendo Switch",
-   ...:         "games": ["The Legend of Zelda", "Mario Golf"]}
-   ...: json_data = ( '{"console": "Nintendo Switch", '
-   ...:               '"games": ["The Legend of Zelda", "Mario Golf"]}' )
-   ...: obj = iDict(data)
-   ...: assert obj.to_json() == json_data
-
-In [2]: expect = ( "iDict({'console': 'Nintendo Switch', "
-   ...:            "'games': ['The Legend of Zelda', 'Mario Golf']})" )
-   ...: result = iDict().from_json(json_data)
-   ...: assert result.__repr__() == expect
-
-In [3]: expect = "iDict({})"
-   ...: obj = iDict()
-   ...: obj.from_json(json_data, inplace=True)
-   ...: assert obj.__repr__() == expect
-
+In [5]:
 ```
 
 ### YAML
@@ -831,144 +471,13 @@ In [19]:
 
 
 
-
-```python
-In [1]: from datajuggler import iDict
-   ...: import yaml
-   ...:
-   ...: data = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
-   ...: expect = "{April: 4, February: 2, January: 1, March: 3}\n"
-   ...:
-   ...: obj = iDict(data)
-   ...: result = yaml.safe_dump(obj, default_flow_style=True)
-   ...: assert result == expect
-
-In [2]: expect = "{January: 1, February: 2, March: 3, April: 4}\n"
-   ...: obj = iDict(data)
-   ...: result = yaml.safe_dump(obj, default_flow_style=True,sort_keys=False)
-   ...: assert result == expect
-
-In [3]: expect = "{April: 4, February: 2, January: 1, March: 3}\n"
-   ...: obj = iDict(data)
-   ...: result = obj.to_yaml(default_flow_style=True)
-   ...: assert result == expect
-
-In [4]: expect = "{January: 1, February: 2, March: 3, April: 4}\n"
-   ...: obj = iDict(data)
-   ...: result = obj.to_yaml(default_flow_style=True,sort_keys=False)
-   ...: assert result == expect
-
-In [5]: expect = ( "!datajuggler.iDict "
-   ...:            "{April: 4, February: 2, January: 1, March: 3}\n" )
-   ...: obj = iDict(data)
-   ...: result = yaml.dump(obj, default_flow_style=True)
-   ...: assert result == expect
-
-In [6]: expect = ( "!datajuggler.iDict "
-   ...:            "{January: 1, February: 2, March: 3, April: 4}\n" )
-   ...: obj = iDict(data)
-   ...: result = yaml.dump(obj, default_flow_style=True,sort_keys=False)
-   ...: assert result == expect
-
-In [7]: expect = ( "!datajuggler.iDict "
-   ...:            "{April: 4, February: 2, January: 1, March: 3}\n" )
-   ...: obj = iDict(data)
-   ...: result = obj.to_yaml(Dumper=yaml.Dumper,  default_flow_style=True)
-   ...: assert result == expect
-
-In [8]: expect = ( "!datajuggler.iDict "
-   ...:            "{January: 1, February: 2, March: 3, April: 4}\n" )
-   ...: obj = iDict(data)
-   ...: result = obj.to_yaml(Dumper=yaml.Dumper,
-   ...:                      default_flow_style=True, sort_keys=False)
-   ...: assert result == expect
-
-In [9]: data = { 'one': { 'two': { 'three': { 'four': 4 }}}}
-   ...: expect = "{one: {two: {three: {four: 4}}}}\n"
-   ...: obj = iDict(data)
-   ...: result = obj.to_yaml(default_flow_style=True,sort_keys=False)
-   ...: assert result  == expect
-
-In [10]: expect = ( "!datajuggler.iDict "
-    ...:            "{one: {two: {three: {four: 4}}}}\n" )
-    ...: obj = iDict(data)
-    ...: result = obj.to_yaml(Dumper=yaml.Dumper,
-    ...:                      default_flow_style=True, sort_keys=False)
-    ...: assert result  == expect
-
-In [11]: yaml_str = ( "!datajuggler.iDict "
-    ...:              "{April: 4, February: 2, January: 1, March: 3}\n" )
-    ...: expect = ( "iDict("
-    ...:            "{'April': 4, 'February': 2, 'January': 1, 'March': 3}"
-    ...:            ")" )
-    ...: obj = iDict()
-    ...: result = obj.from_yaml(yaml_str)
-    ...: assert result.__repr__() == expect
-
-In [12]: yaml_str = ( "!python/object:datajuggler.iDict "
-    ...:              "{April: 4, February: 2, January: 1, March: 3}\n" )
-    ...: obj = iDict()
-    ...: result = obj.from_yaml(yaml_str)
-    ...: assert result.__repr__() == expect
-
-In [13]: yaml_str = ( "!datajuggler.iDict "
-    ...:              "{January: 1, February: 2, March: 3, April: 4}\n"
-    ...:             ")" )
-    ...: obj = iDict()
-    ...: expect = ( "iDict("
-    ...:            "{'January': 1, 'February': 2, 'March': 3, 'April': 4}"
-    ...:            ")" )
-    ...: result = obj.from_yaml(yaml_str)
-    ...: assert result.__repr__() == expect
-
-In [14]: data = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
-    ...: yaml_str = ( "!python/object:datajuggler.iDict "
-    ...:              "{January: 1, February: 2, March: 3, April: 4}\n" )
-    ...: expect = ( "iDict("
-    ...:            "{'January': 1, 'February': 2, 'March': 3, 'April': 4}"
-    ...:            ")" )
-    ...: obj = iDict()
-    ...: result = obj.from_yaml(yaml_str)
-    ...: assert result.__repr__() == expect
-
-In [15]: yaml_str = ( "!datajuggler.iDict "
-    ...:              "{April: 4, February: 2, January: 1, March: 3}\n" )
-    ...: expect = "iDict({})"
-    ...: obj = iDict()
-    ...: _ = obj.from_yaml(yaml_str)
-    ...: assert obj.__repr__() == expect
-
-In [16]: yaml_str = ( "!python/object:datajuggler.iDict "
-    ...:              "{January: 1, February: 2, March: 3, April: 4}\n" )
-    ...: expect = "iDict({})"
-    ...: obj = iDict()
-    ...: _ = obj.from_yaml(yaml_str)
-    ...: assert obj.__repr__() == expect
-
-In [17]: yaml_str = ( "!datajuggler.iDict "
-    ...:              "{April: 4, February: 2, January: 1, March: 3}\n" )
-    ...: expect = "iDict({})"
-    ...: obj = iDict()
-    ...: obj.from_yaml(yaml_str, inplace=True)
-    ...: assert obj.__repr__() == expect
-
-In [18]: yaml_str = ( "!python/object:datajuggler.iDict "
-    ...:              "{January: 1, February: 2, March: 3, April: 4}\n" )
-    ...: expect = "iDict({})"
-    ...: obj = iDict()
-    ...: obj.from_yaml(yaml_str, inplace=True)
-    ...: assert obj.__repr__() == expect
-
-In [19]:
-```
-
 ### TOML
 
 if toml is installed or using Python 3.11 or later, enable `to_toml()` and `from_toml()` method.
 otherwise raise NotImplementedError.
 
 ```python
-In [1]: from datajuggler import aDict, iDict, uDict
+In [1]: from datajuggler import aDict,  uDict
    ...:
    ...: data = {'target': {'ip': 'xx.xx.xx.xx',
    ...:   'os': {'os': 'win 10', 'Arch': 'x64'},
@@ -1008,773 +517,2314 @@ In [8]: obj = uDict()
    ...: obj.from_toml(toml_str, inplace=True)
    ...: assert obj == data
 
-In [9]: result = iDict(data).to_toml()
-   ...: assert result == toml_str
-
-In [10]: result = iDict().to_toml(data)
-    ...: assert result == toml_str
-
-In [11]: obj = iDict()
-    ...: result = obj.from_toml(toml_str)
-    ...: assert result == data
-
-In [12]: obj = iDict()
-    ...: obj.from_toml(toml_str, inplace=True)
-    ...: assert obj == iDict()
-
-In [13]:
 ```
 
+## class IODict
+
+this class support serialize method. Base64, INI, JSON, YAML, TOML, XML.
+
+if not installed PyYAML and/or toml and call from_yaml(), from_tomo(),
+will raise NotImpelementedError.
 
 ## class aDict
-Allow to access using dot notation for dictionary.
-This class inspired [munch](https://github.com/Infinidat/munch).
-aDict is subclass of DictFactory.
 
+Allow to access using dot notation for dictionary.
+This class is inspired by [munch](https://github.com/Infinidat/munch).
+aDict is subclass of BaseDict.
+
+This class is inspired by [munch](https://github.com/Infinidat/munch) and [adict](https://github.com/mewwts/addict).
 
 ```python
 In [1]: from datajuggler import aDict
-   ...:
-   ...: data = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
-   ...: expect = 2
-   ...: obj = aDict(data)
-   ...: assert obj.February == expect
 
-In [2]: data = { 'one': { 'two': { 'three': { 'four': 4 }}}}
-   ...: expect = { 'two': { 'three': { 'four': 4 }}}
-   ...: obj = aDict(data)
-   ...: assert obj.one == expect
+In [2]: d = aDict()
 
-In [3]: data = { 'one': { 'two': { 'three': { 'four': 4 }}}}
-   ...: expect = "{'one': {'two': {'three': {'four': 4}}}}"
-   ...: obj = aDict(data)
-   ...: try:
-   ...:     result = obj.one.two
-   ...: except AttributeError as e:
-   ...:     print('Error')
-   ...:     assert str(e) == "'dict' object has no attribute 'two'"
-   ...:
-Error
+In [3]: d.python = 'great'
 
-In [4]: data = {'one': aDict({'two': aDict({'three': aDict({'four': 4 })})})}
-   ...: expect = ( "aDict({'one': "
-   ...:              "aDict({'two': "
-   ...:                "aDict({'three': "
-   ...:                  "aDict({'four': 4})})})})" )
-   ...: obj = aDict(data)
-   ...: assert obj.__repr__() == expect
+In [4]: d
+Out[4]: aDict({'python': 'great'})
 
-In [5]: data = {'one': aDict({'two': aDict({'three': aDict({'four': 4 })})})}
-   ...: expect = 4
-   ...: obj = aDict(data)
-   ...: assert obj.one.two.three.four == expect
+In [5]: d['python']
+Out[5]: 'great'
 
-In [6]:
+In [6]: data = {'one': {'two': {'three': {'four': 4 }}}}
+
+In [7]: d = aDict(data)
+
+In [8]: d
+Out[8]: aDict({'one': aDict({'two': aDict({'three': aDict({'four': 4})})})})
+
+In [9]: d.one.two.three.four
+Out[9]: 4
+
+In [10]:
 ```
 
-## class uDict
-uDict is utilized dictionary.
-uDict has followings  methods.
+aDict support hashable and immutable dictionary.
 
- - `replace_key(old, new, inplace=False)`
- - `replace_key_map(replace: Mapping, inplace=False)`
- - `map_keys( func, obj: Mapping, factory=None, inplace=False)`
- - `map_values( func, obj: Mapping, factory=None, inplace=False)`
- - `map_items( func, obj: Mapping, factory=None, inplace=Fals=Falsee)`
- - `filter_keys( func, obj: Mapping, factory=None, inplace=False)`
- - `filter_values( func, obj: Mapping, factory=None, inplace=False)`
- - `filter_items( func, obj: Mapping, factory=None, inplace=False)`
- - `map_keys(func, obj: Mapping, factory=None, inplace=False)`
- - `map_values(func, obj: Mapping, factory=None, inplace=False)`
- - `map_items(func, obj: Mapping, factory=None, inplace=False)`
- - `filter_keys(func, obj: Mapping, factory=None, inplace=False)`
- - `filter_values(func, obj: Mapping, factory=None, inplace=False)`
- - `filter_items(func, obj: Mapping, factory=None, inplace=False)`
- - `get_allkeys(obj: Mapping)`
- - `get_values(keys, obj: Mapping, wild=False, with_keys=False, verbatim=Flase)`
- - `counts_of_keys(keys, obj: Mapping, wild=False, verbatim=False)`
- - `counts_of_values(keys, obj: Mapping, wild=False, verbatim=False)`
- - `get_items(loc, value, obj: Mapping, func=None, factory=None)`
- - `del_items(loc, obj: Mapping, factory=None, inplace=False)`
- - `set_items(loc, value, obj: Mapping, func=None, factory=None, inplace=False)`
- - `compare(d1: Mapping, d2: Mapping, keys=None, thrown_error=False)`
+ - `freeze()` - freeze object for immutable.
+ - `unfreeze()` - unfreeze object
 
-
-### replace_key()
-
-Create the new dictionary with changed keys.
-If set `True` to `inplace`, perform operation in-place.
+built-in function `hash()` acceptfrozen object.
+So, frozen aDict object is able to set as key to dictionary.
 
 ```python
-In [1]: from datajuggler import uDict
-   ...:
-   ...: data = uDict({ 'January': 1, 'February': 2, 'March': 3, 'April': 4 })
-   ...: expect = { 'January': 1, 'February': 2, 'March': 3, 'Apr': 4 }
-   ...:
-   ...: saved = data.copy()
-   ...: result = data.replace_key('April', 'Apr')
-   ...: assert ( result == expect
-   ...:          and data == saved )
-```
+In [1]: from datajuggler import aDict
 
-### replace_key_map()
+In [2]: d = aDict({'one': {'two': {'three': {'four': 4 }}}})
 
-Create the new dictionary with changed keys using map dictionary..
-If set `True` to `inplace`, perform operation in-place.
+In [3]: d
+Out[3]: aDict({'one': aDict({'two': aDict({'three': aDict({'four': 4})})})})
 
-```python
+In [4]: d.one.two.three.four = 1
 
-In [2]: data = uDict({ 'January': 1, 'February': 2, 'March': 3, 'April': 4 })
-   ...: replace = {'January': 'Jan', 'February': 'Feb' }
-   ...: expect = { 'Jan': 1, 'Feb': 2, 'March': 3, 'April': 4 }
-   ...: saved = data.copy()
-   ...: result = data.replace_key_map(replace)
-   ...: assert ( result == expect
-   ...:          and data == saved )
+In [5]: d.freeze()
 
-In [3]: data = uDict({ 'January': 1, 'February': 2, 'March': 3, 'April': 4 })
-   ...: replace = {'January': 'Jan', 'February': 'Feb' }
-   ...: expect = { 'Jan': 1, 'Feb': 2, 'March': 3, 'April': 4 }
-   ...: saved = data.copy()
-   ...: data.replace_key_map(replace, inplace=True)
-   ...: assert ( data == expect
-   ...:          and data != saved )
-```
+In [6]: d.one.two.three.four = 2
+---------------------------------------------------------------------------
+AttributeError                            Traceback (most recent call last)
+File ~/Projects/GitHub/datajuggler/datajuggler/core.py:679, in aDict.__setattr__(self, k, v)
+    678 try:
+--> 679     object.__getattribute__(self, k)
+    680 except AttributeError:
 
-### map_keys()
-Create a new dictionary with apply function to keys of dictionary.
-if not set `obj`, use self.
-If set `factory`, create instance of factory class.
-If set `True` to `inplace`, perform operation in-place.
+AttributeError: 'aDict' object has no attribute 'four'
 
-```python
-In [1]: from datajuggler import aDict, uDict, iDict
-   ...:
-   ...: data = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
-   ...: expect = uDict({ 'JANUARY': 1, 'FEBRUARY': 2, 'MARCH': 3, 'APRIL': 4 })
-   ...: obj = uDict(data)
-   ...: saved = obj.copy()
-   ...: result = obj.map_keys(str.upper)
-   ...: assert ( result == expect and data == saved )
+During handling of the above exception, another exception occurred:
 
-In [2]: data = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
-   ...: expect = uDict({ 'JANUARY': 1, 'FEBRUARY': 2, 'MARCH': 3, 'APRIL': 4 })
-   ...: result = uDict().map_keys(str.upper, data)
-   ...: assert result == expect
+AttributeError                            Traceback (most recent call last)
+File ~/Projects/GitHub/datajuggler/datajuggler/core.py:685, in aDict.__setattr__(self, k, v)
+    684     else:
+--> 685         self[k] = v
+    686 except:
 
-In [3]: data = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
-   ...: expect = iDict({ 'JANUARY': 1, 'FEBRUARY': 2, 'MARCH': 3, 'APRIL': 4 })
-   ...: result = uDict().map_keys(str.upper, data, factory=iDict)
-   ...: assert result == expect
+File ~/Projects/GitHub/datajuggler/datajuggler/core.py:556, in aDict.__setitem__(self, name, value)
+    555     else:
+--> 556         raise AttributeError("'aDict' object attribute "
+    557                          "'{0}' is read-only".format(name))
+    559 super().__setitem__(name, value)
 
-In [4]: data = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
-   ...: expect = uDict({ 'JANUARY': 1, 'FEBRUARY': 2, 'MARCH': 3, 'APRIL': 4 })
-   ...: obj = uDict(data)
-   ...: obj.map_keys(str.upper, inplace=True)
-   ...: assert ( obj == expect )
-```
+AttributeError: 'aDict' object attribute 'four' is read-only
 
-### map_values()
-Create a new dictionary with apply function to values of dictionary.
-if not set `obj`, use self.
-If set `factory`, create instance of factory class.
-If set `True` to `inplace`, perform operation in-place.
+During handling of the above exception, another exception occurred:
 
+AttributeError                            Traceback (most recent call last)
+Input In [6], in <cell line: 1>()
+----> 1 d.one.two.three.four = 2
 
-```python
-In [5]: data = { 'Jack': [10, 11, 12], 'John': [8, 15, 3] }
-   ...: expect = { 'Jack': 33, 'John': 26 }
-   ...: obj = uDict(data)
-   ...: saved = obj.copy()
-   ...: result = obj.map_values(sum)
-   ...: assert ( result == expect and data == saved )
+File ~/Projects/GitHub/datajuggler/datajuggler/core.py:687, in aDict.__setattr__(self, k, v)
+    685             self[k] = v
+    686     except:
+--> 687         if not self._check_frozen():
+    688             raise AttributeError(k)
+    689 else:
 
-In [6]: data = { 'Jack': [10, 11, 12], 'John': [8, 15, 3] }
-   ...: expect = { 'Jack': 33, 'John': 26 }
-   ...: obj = uDict(data)
-   ...: saved = obj.copy()
-   ...: obj.map_values(sum, inplace=True)
-   ...: assert ( obj == expect )
-```
+File ~/Projects/GitHub/datajuggler/datajuggler/core.py:538, in aDict._check_frozen(self, thrown_error, msg)
+    536 if object.__getattribute__(self, '__frozen'):
+    537     if thrown_error:
+--> 538         raise AttributeError( f"{self.__class__.__name__} {msg}" )
+    539     else:
+    540         return True
 
-### map_items()
-Create a new dictionary with apply function to items of dictionary.
-if not set `obj`, use self.
-If set `factory`, create instance of factory class.
-If set `True` to `inplace`, perform operation in-place.
+AttributeError: aDict frozen object cannot be modified.
 
-```python
-In [7]: data = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
-   ...: expect = uDict({ 1: 'January', 2: 'February', 3: 'March', 4: 'April' })
-   ...: obj = uDict(data)
-   ...: saved = obj.copy()
-   ...: result = obj.map_items(reversed)
-   ...: assert ( result == expect and obj == saved )
+In [7]: d.unfreeze()
 
-In [8]: result = uDict().map_items(reversed, data)
-   ...: assert result == expect
-
-In [9]: expect = aDict({ 1: 'January', 2: 'February', 3: 'March', 4: 'April' })
-   ...: result = uDict().map_items(reversed, data, factory=aDict)
-   ...: assert result == expect
-
-```
-
-### filter_keys()
-Create a new dictionary with filter items in dictionary by keys.
-if not set `obj`, use self.
-If set `factory`, create instance of factory class.
-If set `True` to `inplace`, perform operation in-place.
-
-```python
-In [10]: is_janfeb = lambda x: x.endswith('ary')
-    ...: data = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
-    ...: expect = uDict({ 'January': 1, 'February': 2 })
-    ...:
-    ...: obj = uDict(data)
-    ...: saved = obj.copy()
-    ...: result = obj.filter_keys(is_janfeb)
-    ...: assert ( result == expect and obj == saved )
-
-In [11]: obj = uDict(data)
-    ...: obj.filter_keys(is_janfeb, inplace=True)
-    ...: assert obj == expect
-
-In [12]: result = uDict().filter_keys(is_janfeb, data)
-    ...: assert result == expect
-
-In [13]: expect = aDict({ 'January': 1, 'February': 2 })
-    ...: result = uDict().filter_keys(is_janfeb, data, factory=aDict)
-    ...: assert result == expect
-```
-
-### filter_values()
-Create a new dictionary with filter items in dictionary by values.
-if not set `obj`, use self.
-If set `factory`, create instance of factory class.
-If set `True` to `inplace`, perform operation in-place.
-
-```python
-In [14]: is_even = lambda x: x % 2 == 0
-    ...: data = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
-    ...: expect = uDict({ 'February': 2, 'April': 4 })
-    ...:
-    ...: obj = uDict(data)
-    ...: saved = obj.copy()
-    ...: result = obj.filter_values(is_even)
-    ...: assert ( result == expect and obj == saved )
-
-In [15]: obj = uDict(data)
-    ...: obj.filter_values(is_even, inplace=True)
-    ...: assert obj == expect
-
-In [16]: result = uDict().filter_values(is_even, data)
-    ...: assert result == expect
-
-In [17]: expect = aDict({ 'February': 2, 'April': 4 })
-    ...: result = uDict().filter_values(is_even, data, factory=aDict)
-    ...: assert result == expect
-
-In [18]:
-```
-
-### filter_items()
-Create a new dictionary with filter items in dictionary by item.
-if not set `obj`, use self.
-If set `factory`, create instance of factory class.
-If set `True` to `inplace`, perform operation in-place.
-
-```python
-In [1]: from datajuggler import uDict, iDict, aDict
-   ...:
-   ...: def is_valid(item):
-   ...:     k, v = item
-   ...:     return k.endswith('ary') and v % 2 == 0
-   ...:
-   ...: data = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
-   ...: expect = uDict({ 'February': 2 })
-   ...:
-   ...: obj = uDict(data)
-   ...: saved = obj.copy()
-   ...: result = obj.filter_items(is_valid)
-   ...: assert ( result == expect and obj == saved )
-
-In [2]: obj = uDict(data)
-   ...: obj.filter_items(is_valid, inplace=True)
-   ...: assert obj == expect
-
-In [3]: is_even = lambda x: x % 2 == 0
-   ...: expect = uDict({ 'February': 2 })
-   ...: result = uDict().filter_items(is_valid, data)
-   ...: assert result == expect
-
-In [4]: is_even = lambda x: x % 2 == 0
-   ...: expect = aDict({ 'February': 2 })
-   ...: result = uDict().filter_items(is_valid, data, factory=aDict)
-   ...: assert result == expect
-
-In [5]: result.February
-Out[5]: 2
-
-In [6]:
-```
-
-### get_allkeys()
-Get to get all keys from dictionary as a List
-This method is able to process on nested dictionary.
-
-```python
-In [1]: from datajuggler import uDict, iDict, aDict
-   ...:
-   ...: data = {'x': {'y': {'z': {'a': 'v1', 'b': 'v2', 'c': 'v3'}}}}
-   ...: expect = ['x', 'y', 'z', 'a', 'b', 'c']
-   ...:
-   ...: result = uDict().get_allkeys(data)
-   ...: assert result == expect
-
-In [2]: result = uDict(data).get_allkeys()
-   ...: assert result == expect
-
-In [3]: data = {'x': {'y': {'z': [{'a': 'v11', 'b': 'v12', 'c': 'v13'},
-   ...:                           {'a': 'v21', 'b': 'v22', 'c': 'v23'}]} }}
-   ...: expect =  ['x', 'y', 'z', 'a', 'b', 'c', 'a', 'b', 'c']
-   ...:
-   ...: result = uDict(data).get_allkeys()
-   ...: assert result == expect
-
-In [4]:
-```
-
-### get_values()
-Search the key in the objet(s).
-if not set `obj`, use self object.
-return a list of values.
-if pass `with_keys=True`, return dict with key, values pair.
-if pass `wild=True` match strings substr and ignorecase.
-
-
-```python
-In [1]: from datajuggler import uDict, iDict, aDict
-   ...:
-   ...: data = {'x': {'y': {'z': [{'a': 'v11', 'b': 'v12', 'c': 'v13'},
-   ...:                           {'a': 'v21', 'b': 'v22', 'c': 'v23'}]} }}
-   ...: expect = ['v11', 'v21']
-   ...: result = uDict().get_values('a', data)
-   ...: assert result == expect
-
-In [2]: expect = ['v11', 'v21']
-   ...: result = uDict(data).get_values('a')
-   ...: assert result == expect
-
-In [3]: expect = {'a': ['v11', 'v21']}
-   ...: result = uDict().get_values('a', data, with_keys=True)
-   ...: assert result == expect
-
-In [4]: data = {'x': {'y': {'z': [{'aA': 'v11', 'b': 'v12', 'c': 'v13'},
-   ...:                           {'aA': 'v21', 'b': 'v22', 'c': 'v23'}]} }}
-   ...: expect = ['v11', 'v21']
-   ...: result = uDict().get_values('a', data, wild=True)
-   ...: assert result == expect
-
-In [5]: expect = ['v11', 'v21']
-   ...: result = uDict().get_values('aa', data, wild=True)
-   ...: assert result == expect
-
-In [6]: expect = {'aA': ['v11', 'v21'], 'b': ['v12', 'v22']}
-   ...: result = uDict(data).get_values(['aA', 'b'])
-   ...: assert result == expect
-
-In [7]: expect = {'a': ['v11', 'v21'], 'b': ['v12', 'v22']}
-   ...: result = uDict(data).get_values(('a', 'b'), wild=True)
-   ...: assert result == expect
-
-In [8]: expect = {'aA': ['v11', 'v21'], 'b': ['v12', 'v22']}
-   ...: result = uDict(data).get_values(('a', 'b'), wild=True, verbatim=True)
-   ...: assert result == expect
+In [8]: d.one.two.three.four = 2
 
 In [9]:
 ```
 
-### counts_of_keys()
 
-Count of keys.
+## class Keypath and Keylist
+
+This is utility class for uDict and manage for keypath and Keylist
 
 ```python
-In [1]: from datajuggler import uDict, iDict, aDict
-   ...:
-   ...: data = {'x': {'y': {'z': [{'aA': 'v11', 'b': 'v12', 'c': 'v13'},
-   ...:                           {'aA': 'v21', 'b': 'v22', 'c': 'v23'}]} }}
-   ...: count = uDict(data).counts_of_keys('aA')
-   ...: assert count == 2
-
-In [2]: count = uDict().counts_of_keys('aA', data)
-   ...: assert count == 2
-   ...:
-
-In [3]: count = uDict(data).counts_of_keys('aa')
-   ...: assert count == 0
-   ...:
-
-In [4]: count = uDict(data).counts_of_keys('aa', wild=True)
-   ...: assert count == 2
-
-In [5]: count = uDict(data).counts_of_keys('a', wild=True)
-   ...: assert count == 2
-
-In [6]: expect = {'aA': 2, 'b': 2}
-   ...: count = uDict().counts_of_keys(['aA', 'b'], data)
-   ...: assert count == expect
-
-In [7]: expect = {'a': 2, 'b': 2}
-   ...: count = uDict().counts_of_keys(['a', 'b'], data, wild=True)
-   ...: assert count == expect
-
-In [8]: expect = {'aA': 2, 'b': 2}
-   ...: count = uDict().counts_of_keys(['a', 'b'], data,
-   ...:                 wild=True, verbatim=True)
-   ...: assert count == expect
-
-In [9]:
+    { 'a': { 'b1': { 'c1': {'x': 1 },
+                     'c2': {'x': 2 }},
+           { 'b2': { 'c1': {'x': 3 },
+                     'c2': {'x': 4 }} }}}
 ```
+Keylist(['a','b', 'c1', 'x']) point to value `1`.
+Keypath(['a.b1.c1.x']) point to value `1`.
 
-### counts_of_values()
+### methods for Keylist class
 
-Counts of values.
+ - `keylistss(d: dict)`
+ - `to_keypath(d: dict)`
+ - `list2path(keylist)`
+ - `value()`
+ - `validate(keylist)`
+
+### methods for Keypath class
+ - `keypaths(d: dict)`
+ - `to_keylist(keypath)`
+ - `path2list(keypath)`
+ - `value()`
+ - `validate(keypath)`
+
+### keylists()
+
+keylists() suppport list of key as keys.
+
+ - `keylists(obj, indexes=False)`
 
 ```python
-In [1]: from datajuggler import uDict, iDict, aDict
+In [1]: from datajuggler import keylists
    ...:
-   ...: data = {'x': {'y': {'z': [{'aA': 'v11', 'b': 'v12', 'c': 'v13'},
-   ...:                           {'aA': 'v21', 'b': 'v22', 'c': 'v23'}]} }}
-   ...: expect = {'v11': 1}
-   ...: count = uDict(data).counts_of_values('v11')
-   ...: assert count == expect
-
-In [2]: data = {'x': {'y': {'z': [{'aA': 'v11', 'b': 'v12', 'c': 'v13'},
-   ...:                           {'aA': 'v21', 'b': 'v22', 'c': 'v23'}]} }}
-   ...: expect = {'v11': 1}
-   ...: count = uDict().counts_of_values('v11', data)
-   ...: assert count == expect
-
-In [3]: expect = {'v1': 3}
-   ...: count = uDict().counts_of_values('v1', data, wild=True)
-   ...: assert count == expect
-
-In [4]: expect = {'v11': 1, 'v12': 1, 'v13': 1}
-   ...: count = uDict().counts_of_values('v1', data, wild=True, verbatim=True)
+   ...: data = { "a": 1,
+   ...:          "b": { "c": { "x": 2, "y": 3, },
+   ...:                 "d": { "x": 4, "y": 5, },
+   ...:               },
+   ...:         }
    ...:
-   ...: assert count == expect
+   ...: expect = [ ["a"],
+   ...:            ["b"],
+   ...:            ["b", "c"],
+   ...:            ["b", "c", "x"],
+   ...:            ["b", "c", "y"],
+   ...:            ["b", "d"],
+   ...:            ["b", "d", "x"],
+   ...:            ["b", "d", "y"],
+   ...:        ]
+   ...: result = keylists(data)
+   ...: assert result == expect
 
-In [5]: data = {'x': {'y': {'z': [{'aA': 100, 'b': 101, 'c': 103},
-   ...:                           {'aA': 100, 'b': 101, 'c': 103}]} }}
-   ...: expect = {100: 2}
-   ...: count = uDict(data).counts_of_values(100)
-   ...: assert count == expect
+In [2]: data = { 1: { 1: 1, },
+   ...:          2: { 2: 1, },
+   ...:          3: { None: 1, },
+   ...:        }
+   ...: expect = [[1], [1, 1], [2], [2, 2], [3], [3, None]]
+   ...: result = keylists(data)
+   ...: assert result == expect
+
+   ...:                        { "x": 2, "y": -2, "z": [2, 3, 4], },
+   ...:                        { "x": 3, "y": -3, "z": [3, 4, 5], },
+   ...:                      ],
+   ...:               },
+   ...:        }
+   ...: expect = [
+   ...:     ["a"],
+   ...:     ["b"],
+   ...:     ["b", "c"],
+   ...:     ["b", "c", "x"],
+   ...:     ["b", "c", "y"],
+   ...:     ["b", "d"],
+   ...:     ["b", "d", "x"],
+   ...:     ["b", "d", "y"],
+   ...:     ["b", "e"],
+   ...:     ["b", "e[0]"],
+   ...:     ["b", "e[0]", "x"],
+   ...:     ["b", "e[0]", "y"],
+   ...:     ["b", "e[0]", "z"],
+   ...:     ["b", "e[0]", "z[0]"],
+   ...:     ["b", "e[0]", "z[1]"],
+   ...:     ["b", "e[0]", "z[2]"],
+   ...:     ["b", "e[1]"],
+   ...:     ["b", "e[1]", "x"],
+   ...:     ["b", "e[1]", "y"],
+   ...:     ["b", "e[1]", "z"],
+   ...:     ["b", "e[1]", "z[0]"],
+   ...:     ["b", "e[1]", "z[1]"],
+   ...:     ["b", "e[1]", "z[2]"],
+   ...:     ["b", "e[2]"],
+   ...:     ["b", "e[2]", "x"],
+   ...:     ["b", "e[2]", "y"],
+   ...:     ["b", "e[2]", "z"],
+   ...:     ["b", "e[2]", "z[0]"],
+   ...:     ["b", "e[2]", "z[1]"],
+   ...:     ["b", "e[2]", "z[2]"],
+   ...: ]
+   ...: result  = keylists(data, indexes=True)
+   ...: result.sort()
+   ...: assert result == expect
+
+In [4]: data = { "a": { "b": [
+   ...:                    [1, 2],
+   ...:                    [3, 4, 5],
+   ...:                    [ { "x": 1, "y": -1, }, ],
+   ...:                  ],
+   ...:               },
+   ...:        }
+   ...: expect = [ ["a"],
+   ...:            ["a", "b"],
+   ...:            ["a", "b[0]"],
+   ...:            ["a", "b[0][0]"],
+   ...:            ["a", "b[0][1]"],
+   ...:            ["a", "b[1]"],
+   ...:            ["a", "b[1][0]"],
+   ...:            ["a", "b[1][1]"],
+   ...:            ["a", "b[1][2]"],
+   ...:            ["a", "b[2]"],
+   ...:            ["a", "b[2][0]"],
+   ...:            ["a", "b[2][0]", "x"],
+   ...:            ["a", "b[2][0]", "y"],
+   ...:         ]
+   ...: result = keylists(data, indexes=True)
+   ...: result.sort()
+   ...: assert result == expect
+
+In [5]: data = { "a": 1,
+   ...:          "b": { "c": { "x": 2, "y": 3, },
+   ...:                 "d": { "x": 4, "y": 5, },
+   ...:                 "e": [ { "x": 1, "y": -1, "z": [1, 2, 3], },
+   ...:                        { "x": 2, "y": -2, "z": [2, 3, 4], },
+   ...:                        { "x": 3, "y": -3, "z": [3, 4, 5], },
+   ...:                      ],
+   ...:               },
+   ...:       }
+   ...: expect = [ ["a"],
+   ...:            ["b"],
+   ...:            ["b", "c"],
+   ...:            ["b", "c", "x"],
+   ...:            ["b", "c", "y"],
+   ...:            ["b", "d"],
+   ...:            ["b", "d", "x"],
+   ...:            ["b", "d", "y"],
+   ...:            ["b", "e"],
+   ...:        ]
+   ...: result = keylists(data, indexes=False)
+   ...: result.sort()
+   ...: assert result == expect
 
 In [6]:
 ```
 
+### keypaths()
 
-### get_items()
+Keypath support attribute-styple access to value (dot-notation by default).
 
- `get_items(loc, value, obj: Mapping, func=None, factory=None)`
-
-Create new dictionary with new key value pair as d[key]=val.
-If set `True` to `inplace`, perform operation in-place.
-otherwise, not modify the initial dictionary.
-
-`loc` is  the location of the value.
-
-i.e.: { 'a': { 'b1': { 'c1': {'x': 1 },
-                       'c2': {'x': 2 }},
-             { 'b2': { 'c1': {'x': 3 },
-                       'c2': {'x': 4 }} }}}
-
-if set ['a', 'b1', 'c1',  'x']  to `loc`, val is 1.
-giving the location of the value to be changed in `obj`.
-if set loc as str, convert to list using `loc.split(sep=' ')`.
-value: the value to aplly
-
+ - `keypaths(obj, separator, indexes=False)`
 
 ```python
-In [1]: from datajuggler import uDict, iDict, aDict
+In [1]: from datajuggler import keypaths
    ...:
-   ...: data = { 'a': 1, 'b': 2}
-   ...: expect = {'a': 3, 'b': 2}
+   ...: data = { "a": 1,
+   ...:          "b": { "c": { "x": 2, "y": 3 },
+   ...:                 "d": { "x": 4, "y": 5 },
+   ...:          },
+   ...: }
+   ...: expect = [ "a",
+   ...:            "b",
+   ...:            "b.c",
+   ...:            "b.c.x",
+   ...:            "b.c.y",
+   ...:            "b.d",
+   ...:            "b.d.x",
+   ...:            "b.d.y",
+   ...:       ]
    ...:
-   ...: result = uDict(data).get_items('a', 3)
+   ...: result = keypaths(data)
    ...: assert result == expect
 
-In [2]: result = uDict().get_items('a', 3, data)
+In [2]: data = { "a": 1,
+   ...:          "b": { "c": { "x": 2, "y": 3 },
+   ...:          "d": { "x": 4, "y": 5 },
+   ...:     },
+   ...: }
+   ...: expect = [ "a",
+   ...:            "b",
+   ...:            "b c",
+   ...:            "b c x",
+   ...:            "b c y",
+   ...:            "b d",
+   ...:            "b d x",
+   ...:            "b d y",
+   ...:       ]
+   ...: result = keypaths(data, separator=" ")
    ...: assert result == expect
 
-In [3]: expect = {'a': 1, 'b': 2, 'c': 3}
-   ...: result = uDict(data).get_items('c', 3)
+In [3]: data = { 1: { 1: 1 }, 2: { 2: 1 }, 3: { 3: 1 } }
+   ...: expect = ['1', '1.1', '2', '2.2', '3', '3.3']
+   ...: result = keypaths(data)
    ...: assert result == expect
 
-In [4]: data = {}
-   ...: expect = {'a': 1}
-   ...: result = uDict(data).get_items('a', 1)
-   ...: assert result == expect
-
-In [5]: data = { 'a': 1, 'b': [{'c': 11, 'd': 12 },
-   ...:                        {'c': 22, 'd': 22 }] }
-   ...: expect = {'a': 1, 'b': 2}
-   ...: result = uDict(data).get_items('b', 2)
-   ...: assert result == expect
-
-In [6]: data = { 'a': 1, 'b': [{'c': 11, 'd': 12 },
-   ...:                        {'c': 22, 'd': 22 }] }
-   ...: expect = {'a': 1, 'b': [{'c': 11, 'd': 12},
-   ...:                         {'c': 22, 'd': 22}], 'c': 33}
-   ...: result = uDict(data).get_items('c', 33)
-   ...: assert result == expect
-
-In [7]: data = {'x': {'y': {'z': {'a': 'v1', 'b': 'v2', 'c': 'v3'}}}}
-   ...: expect = {'a': 'v11', 'b': 'v2', 'c': 'v3'}
-   ...: result = uDict(data).get_items('x y z a', 'v11')
-   ...: assert result == expect
-
-In [8]:
-```
-
-### del_items()
-
- - `del_items(loc, obj: Mapping, factory=None, inplace=False)
-
-Create new dicttionary with the given key(s) removed.
-New dictionary has d[key] deleted for each supplied key.
-If set `True` to `inplace`, perform operation in-place.
-otherwise, not modify the initial dictionary.
-
-loc:
-    the location of the value.
-    i.e.: { 'a': { 'b1': { 'c1': {'x': 1 },
-                           'c2': {'x': 2 }},
-                 { 'b2': { 'c1': {'x': 3 },
-                           'c2': {'x': 4 }} }}}
-    if set ['a', 'b1', 'c1',  'x']  to loc, val is 1.
-    giving the location of the value to be changed in `obj`.
-    if set loc as str, convert to list using `loc.split(sep=' ')`.
-obj
-    dictionary on which to operate
-inplace:
-    If set `True` to `inplace`, perform operation in-place.
-    otherwise, not modify the initial dictionary.
-
-
-```python
-In [1]: from datajuggler import uDict, iDict, aDict
+In [4]: data = { "a": 1,
+   ...:          "b": { "c": { "x": 2, "y": 3, },
+   ...:                 "d": { "x": 4, "y": 5, },
+   ...:                 "e": [ { "x": 1, "y": -1, "z": [1, 2, 3], },
+   ...:                        { "x": 2, "y": -2, "z": [2, 3, 4], },
+   ...:                        { "x": 3, "y": -3, "z": [3, 4, 5], },
+   ...:                 ],
+   ...:             },
+   ...:         }
+   ...: expect = [ "a",
+   ...:            "b",
+   ...:            "b.c", "b.c.x", "b.c.y", "b.d", "b.d.x", "b.d.y", "b.e",
+   ...:            "b.e[0]", "b.e[0].x", "b.e[0].y", "b.e[0].z",
+   ...:            "b.e[0].z[0]", "b.e[0].z[1]", "b.e[0].z[2]",
+   ...:            "b.e[1]", "b.e[1].x", "b.e[1].y", "b.e[1].z",
+   ...:            "b.e[1].z[0]", "b.e[1].z[1]", "b.e[1].z[2]",
+   ...:            "b.e[2]", "b.e[2].x", "b.e[2].y", "b.e[2].z",
+   ...:            "b.e[2].z[0]", "b.e[2].z[1]", "b.e[2].z[2]",
+   ...:     ]
    ...:
-   ...: data = { 'a': 1, 'b': 2}
-   ...: expect = {'b': 2}
-   ...:
-   ...: result = uDict(data).del_items('a')
+   ...: result = keypaths(data, indexes=True)
    ...: assert result == expect
 
-In [2]: result = uDict().del_items('a', data)
+In [5]: data = { "a": 1,
+   ...:          "b": {
+   ...:             "c": { "x": 2, "y": 3, },
+   ...:             "d": { "x": 4, "y": 5, },
+   ...:             "e": [ { "x": 1, "y": -1, "z": [1, 2, 3], },
+   ...:                    { "x": 2, "y": -2, "z": [2, 3, 4], },
+   ...:                    { "x": 3, "y": -3, "z": [3, 4, 5], },
+   ...:                  ],
+   ...:             },
+   ...:         }
+   ...: expect = [ "a",
+   ...:            "b",
+   ...:            "b.c",
+   ...:            "b.c.x",
+   ...:            "b.c.y",
+   ...:            "b.d",
+   ...:            "b.d.x",
+   ...:            "b.d.y",
+   ...:            "b.e",
+   ...:        ]
+   ...: result = keypaths(data, indexes=False)
    ...: assert result == expect
 
-In [3]: expect = {'a': 1, 'b': 2}
-   ...: result = uDict(data).del_items('c')
-   ...: assert result == expect
-
-In [4]: expect = {'b': 2}
-   ...: obj = uDict(data)
-   ...: obj.del_items('a', inplace=True)
-   ...: assert obj == expect
-
-In [5]: expect = "aDict({'b': 2})"
-   ...: result = uDict(data).del_items('a', factory=aDict)
-   ...: assert result.__repr__() == expect
-
-In [6]: data = {'x': {'y': {'z': {'a': 'v1', 'b': 'v2', 'c': 'v3'}}}}
-   ...: expect = {'x': {'y': {'z': {'a': 'v1', 'b': 'v2', 'c': 'v3'}}}}
-   ...: result = uDict(data).del_items('a')
-   ...: assert result == expect
-
-In [7]: data = {'x': {'y': {'z': {'a': 'v1', 'b': 'v2', 'c': 'v3'}}}}
-   ...: expect = {'x': {'y': {'z': {'b': 'v2', 'c': 'v3'}}}}
-   ...: result = uDict(data).del_items('x y z a')
-   ...: assert result == expect
-
-In [8]:
-```
-
-### set_items()
-
- - `set_items(loc, value, obj: Mapping, func=None, factory=None, inplace=False)`
-
-Create new dict with new, potentially nested, key value pair
-loc:
-    the location of the value.
-    i.e.: { 'a': { 'b1': { 'c1': {'x': 1 },
-                           'c2': {'x': 2 }},
-                 { 'b2': { 'c1': {'x': 3 },
-                           'c2': {'x': 4 }} }}}
-    if set ['a', 'b1', 'c1',  'x']  to loc, val is 1.
-    giving the location of the value to be changed in `obj`.
-    if set loc as str, convert to list using `loc.split(sep=' ')`.
-obj
-    dictionary on which to operate
-func:
-    the function to apply the object(s)..
-inplace:
-    If set `True` to `inplace`, perform operation in-place.
-    otherwise, not modify the initial dictionary.
-
-
-```python
-In [1]: from datajuggler import uDict, iDict, aDict
-   ...:
-   ...: data = { 'a': 1, 'b': 2}
-   ...: expect = { 'a': 2, 'b': 2}
-   ...:
-   ...: result = uDict(data).set_items('a',2 )
-   ...: assert result == expect
-
-In [2]: obj = uDict(data)
-   ...: obj.set_items('a',2, inplace=True)
-   ...: assert obj == expect
-
-In [3]: data = { 'a': 1, 'b': [{'c': 11, 'd': 12 },
-   ...:                        {'c': 22, 'd': 22 }] }
-   ...: expect = {'a': 1, 'b': 2}
-   ...: result = uDict(data).set_items('b', 2)
-   ...: assert result == expect
-
-In [4]: expect = { 'a': 1, 'b': [{'c': 11, 'd': 12 },
-   ...:                        {'c': 22, 'd': 22 }], 'c': 3 }
-   ...: result = uDict(data).set_items('c', 3)
-   ...: assert result == expect
-
-In [5]: data = {'x': {'y': {'z': {'a': 'v1', 'b': 'v2', 'c': 'v3'}}}}
-   ...: expect = {'x': {'y': {'z': {'a': 'v11', 'b': 'v2', 'c': 'v3'}}}}
-   ...: obj = uDict(data)
-   ...: obj['x']['y']['z']['a']='v11'
-   ...: assert obj == expect
-
-In [6]: data = {'x': {'y': {'z': {'a': 'v1', 'b': 'v2', 'c': 'v3'}}}}
-   ...: expect = {'x': {'y': {'z': {'a': 'v11', 'b': 'v2', 'c': 'v3'}}}}
-   ...: result = uDict(data).set_items('x y z a', 'v11')
+In [6]: data  = { "a": { "b": [ [1, 2],
+   ...:                         [3, 4, 5],
+   ...:                         [ { "x": 1, "y": -1, }, ],
+   ...:                   ],
+   ...:             },
+   ...:      }
+   ...: expect = [ "a",
+   ...:            "a.b",
+   ...:            "a.b[0]",
+   ...:            "a.b[0][0]",
+   ...:            "a.b[0][1]",
+   ...:            "a.b[1]",
+   ...:            "a.b[1][0]",
+   ...:            "a.b[1][1]",
+   ...:            "a.b[1][2]",
+   ...:            "a.b[2]",
+   ...:            "a.b[2][0]",
+   ...:            "a.b[2][0].x",
+   ...:            "a.b[2][0].y",
+   ...: ]
+   ...: result = keypaths(data, indexes=True)
    ...: assert result == expect
 
 In [7]:
 ```
 
-### compare()
-
- - `compare(d1: Mapping, d2: Mapping, keys=None, thrown_error=False)`
-
-Compare tow dictionary with keys and return `True` when equal found values.
-otherwise return `False`.
-if not set second dictionary, use self object.
-if not set keys, just compare two dictionaries,
-if pass `thrown_error=True`, raise ValueError when not equal found values.
+### list2path() and path2list()
+Convert from/to keylists and keypaths.
 
 ```python
-In [1]: from datajuggler import uDict, iDict, aDict
+In [1]: from datajuggler import Keylist, Keypath
    ...:
-   ...: d1 = {'x': {'y': {'z': [{'aA': 'v11', 'b': 'v12', 'c': 'v13'},
-   ...:                         {'aA': 'v21', 'b': 'v22', 'c': 'v23'}]} }}
-   ...: d2 = {'x': {'y': {'z': [{'aA': 'v11', 'b': 'v12', 'c': 'v13'},
-   ...:                         {'aA': 'v21', 'b': 'v22', 'c': 'v23'}]} }}
+   ...: data = ['x', 'y', 'z']
+   ...: expect = ['x.y.z']
    ...:
-   ...: result = uDict().compare(d1, d2)
-   ...: assert result == True
+   ...: result = Keylist.list2path(data)
+   ...: assert result == expect
 
-In [2]: result = uDict(d1).compare(d2)
-   ...: assert result == True
+In [2]: expect = ['x_y_z']
+   ...: result = Keylist.list2path(data, separator='_')
+   ...: assert result == expect
 
-In [3]: result = uDict().compare(d1, d2, keys='aA')
-   ...: assert result == True
+In [3]: data = [['x', 'y', 'z'], ['a', 'b', 'c']]
+   ...: expect = ['x.y.z', 'a.b.c']
+   ...: result = Keylist.list2path(data)
+   ...: assert result == expect
 
-In [4]: d1 = {'x': {'y': {'z': [{'aA': 'v11', 'b': 'v12', 'c': 'v13'},
-   ...:                         {'aB': 'v21', 'b': 'v22', 'c': 'v23'}]} }}
-   ...: d2 = {'x': {'y': {'z': [{'aA': 'v11', 'b': 'v12', 'c': 'v13'},
-   ...:                         {'aB': 'd21', 'b': 'd22', 'c': 'd23'}]} }}
-   ...: result = uDict().compare(d1, d2, keys=['aA', 'b'])
-   ...: assert result == True
+In [4]: data = 'x.y.z'
+   ...: expect = ['x', 'y', 'z']
+   ...: result = Keypath.path2list(data)
+   ...: assert result == expect
 
-In [5]: d1 = {'x': {'y': {'z': {'a': 'v1', 'b': 'v2', 'c': 'v3'}}}}
-   ...: d2 = {'x': {'y': {'z': {'a': 'v10', 'b': 'v2', 'c': 'v3'}}}}
-   ...: expect = "{'x': {'y': {'z': {'a': 'v1', 'b': 'v2', 'c': 'v3'}}}} is no
-   ...: t equal {'x': {'y': {'z': {'a': 'v10', 'b': 'v2', 'c': 'v3'}}}}."
-   ...: try:
-   ...:     result = uDict().compare(d1, d2, thrown_error=True)
-   ...: except ValueError as e:
-   ...:     print('Error')
-   ...:     assert str(e) == expect
+In [5]: data = 'x_y_z'
+   ...: expect = ['x', 'y', 'z']
+   ...: result = Keypath.path2list(data, separator='_')
+   ...: assert result == expect
+
+In [6]: data = ['x.y.z', 'a.b.c']
+   ...: expect = [['x', 'y', 'z'], ['a', 'b', 'c']]
+   ...: result = Keypath.path2list(data)
+   ...: assert result == expect
+
+In [7]:
+```
+
+## class uDict
+uDict is utilized dictionary which is subclass of IODict.
+This class is inspired by [python-benedict](https://github.com/fabiocaccamo/python-benedict).
+uDict support keypath and keylist.
+
+uDict has following  methods.
+
+ - `clean(d1: dict, strings=True, collections=True,
+          inplace=False, factory=dict)`
+ - `clone(d1: dict, empty=False, memo=None)`
+ - `compare(d1: dict, d2: dict, keys=None, thrown_error=False)`
+ - `counts(pattern, d=None, count_for"key", wild=False, verbatim=False)`
+ - `filter(predicate, d=None, factory=dict)`
+ - `get_keys(d=None, output_for=None)`
+ - `get_values(keys, d=None, wild=False, with_keys=False, verbatim=Flase)`
+ - `groupby(seq, key, factory=dict)`
+ - `invert(d=None, flat=False, inplace=False, factory=dict)`
+ - `key_path2list(keypaths)`
+ - `key_list2path(keylists)`
+ - `keylists(d=None, indexes=False)`
+ - `keypaths(d=None, indexes=False, separator=".")`
+ - `map(func, d=None, map_for=None, inplace=False, factory=dict)`
+ - `merge(other, d=None, overwrite=False, inplace=False, factory=dict)`
+ - `move(key_src, key_dest, d=None, overwrite=False, inplace=False, factory=dict)`
+ - `rename(key, key_new, d=None, case_name=None, overwrite=False,
+           inplace=False, factory=dict)`
+ - `remove(keys, d=None, inplace=False, factory=dict)`
+ - `nest(items, key, patrent_key, children_key)`
+ - `subset(keys, d=None, default=None, use_keypath=False,
+           separator=".", inplace=False, factory=dict)`
+ - `find(keys, d=None, default=None, first_one=True, factory=dict)`
+ - `search(query, d=None, search_for="key", exact=False, ignore_case=False)`
+ - `sort(d=None, sort_by="key", reverse=False, inplace=False, factory=dict)`
+ - `swap(key1, key2, d=None, inplace=False, factory=dict)`
+ - `flatten(d=None, separator=".", inplace=False, factory=dict)`
+ - `unflatten(d=None, default=None, separator=".", inplace=False, factory=dict)`
+ - `traverse(callback, d=None, parents=[], *args, **kwargs)`
+ - `unique(d=None)`
+ - `get_items(loc, value, d=None, func=None,
+                   separator='.',inplace=False,  factory=dict)`
+ - `pop_items(loc, value, d=None, func=None,
+                   separator='.',inplace=False,  factory=dict)`
+ - `del_items(loc, value, d=None, func=None,
+                   separator='.',inplace=False,  factory=dict)`
+ - `set_items(loc, value, d=None, func=None,
+                   separator='.',inplace=False,  factory=dict)`
+
+helper functions are defined in datajuggler.dicthelper for normal dict objects.
+
+ - `d_clean()`
+ - `d_clone()`
+ - `d_compare()`
+ - `d_counts()`
+ - `d_filter()`
+ - `d_groupby()`
+  - d_invert()`
+ - `d_map()`
+ - `d_merge()`
+ - `d_move()`
+ - `d_rename()`
+ - `d_remove()`
+ - `d_nest()`
+ - `d_subset()`
+ - `d_find()`
+ - `d_sort()`
+ - `d_search()`
+ - `d_swap()`
+ - `d_flatten()`
+ - `d_unflatten()`
+ - `d_traverse()`
+ - `d_unique()`
+
+### clean() and d_clean()
+
+```python
+def clean(self,
+        obj: Optional[dict]=None,
+        strings=True,
+        collections=True,
+        inplace: bool=False,
+        factory: Optional[Type[dict]]=None,
+    ):
+```
+
+```python
+def d_clean(
+        obj: dict,
+        strings=True,
+        collections=True,
+        inplace: bool=False,
+        factory: Type[dict]=dict,
+    ):
+```
+
+Clean the current dict instance removing all empty values:
+
+    None, '', {}, [], ().
+
+If strings or collections (dict, list, set, tuple) flags are False,
+related empty values will not be deleted.
+
+
+```python
+In [1]: from datajuggler import aDict
+   ...: from datajuggler.dicthelper import d_clean
    ...:
-Error
+   ...: data = {
+   ...:     "a": {},
+   ...:     "b": {"x": 1},
+   ...:     "c": [],
+   ...:     "d": [0, 1],
+   ...:     "e": 0.0,
+   ...:     "f": "",
+   ...:     "g": None,
+   ...:     "h": "0",
+   ...: }
+   ...:
+   ...: expect = {
+   ...:     "b": {"x": 1},
+   ...:     "d": [0, 1],
+   ...:     "e": 0.0,
+   ...:     "h": "0",
+   ...: }
+   ...:
+   ...: result = d_clean(data)
+   ...: assert result == expect
+
+In [2]: expect = {
+   ...:     "a": {},
+   ...:     "b": {"x": 1},
+   ...:     "c": [],
+   ...:     "d": [0, 1],
+   ...:     "e": 0.0,
+   ...:     "h": "0",
+   ...: }
+   ...:
+   ...: result = d_clean(data, collections=False)
+   ...: assert result == expect
+
+In [3]: expect = {
+   ...:     "b": {"x": 1},
+   ...:     "d": [0, 1],
+   ...:     "e": 0.0,
+   ...:     "f": "",
+   ...:     "h": "0",
+   ...: }
+   ...:
+   ...: result = d_clean(data, strings=False)
+   ...: assert result == expect
+
+In [4]: expect = aDict({
+   ...:             "b": {"x": 1},
+   ...:             "d": [0, 1],
+   ...:             "e": 0.0,
+   ...:             "h": "0",
+   ...:          })
+   ...:
+   ...: result = d_clean(data, factory=aDict)
+   ...: assert result == expect
+
+In [5]: expect = {
+   ...:     "b": {"x": 1},
+   ...:     "d": [0, 1],
+   ...:     "e": 0.0,
+   ...:     "h": "0",
+   ...: }
+   ...:
+   ...: d_clean(data, inplace=True)
+   ...: assert data == expect
 
 In [6]:
 ```
 
-
-### class iDict
-
-Immutable Dict. iDict is hashable object.
-
-if set `iplace` parameter, it will not cause an error.
-but will always be ignored.
+### clone() and d_clone()
 
 ```python
-In [1]: from datajuggler import iDict
-   ...:
-   ...: data = iDict({ 'January': 1, 'February': 2, 'March': 3, 'April': 4 })
-   ...:
-   ...: assert hasattr(data, '__hash__') == True
+def clone(self,
+        obj: Optional[dict]=None,
+        empty: bool=False,
+        memo: Optional[dict]=None,
+        factory: Optional[Type[dict]]=None,
+    ):
+```
 
-In [2]: obj = dict({data: 1})
-   ...: assert  obj[data]  == 1
+```python
+def d_clone(
+        obj: dict,
+        empty: bool=False,
+        memo: Optional[dict]=None,
+    ):
+```
 
-In [3]: obj
-Out[3]: {iDict({'January': 1, 'February': 2, 'March': 3, 'April': 4}): 1}
+Return a clone (deepcopy) of the dict.
 
-In [4]: try:
-   ...:     data['January'] = 'Jan'
-   ...: except TypeError as e:
-   ...:     print('Error')
-   ...:     assert str(e) == 'iDict object does not support item assignment'
+```python
+In [1]: from datajuggler.dicthelper import d_clone
    ...:
-Error
-
-In [5]: try:
-   ...:     result  = data.pop(0)
-   ...: except AttributeError as e:
-   ...:     print('Error')
-   ...:     assert str(e) == 'iDict object has no attribute pop'
+   ...: data = { "a": { "b": { "c": 1, }, }, }
    ...:
-Error
+   ...: result = d_clone(data)
+   ...: assert isinstance(result, dict) == True
+   ...: assert result == data
 
-In [6]: try:
-   ...:     data.clear()
-   ...: except AttributeError as e:
-   ...:     print('Error')
-   ...:     assert str(e) == 'iDict object has no attribute clear'
+In [2]: result["a"]["b"]["c"] = 2
    ...:
-Error
+   ...: assert result["a"]["b"]["c"] == 2
+   ...: assert data["a"]["b"]["c"] == 1
 
-In [7]: try:
-   ...:     data.update({ 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
-   ...: )
-   ...: except AttributeError as e:
-   ...:     print('Error')
-   ...:     assert str(e) == 'iDict object has no attribute update'
-   ...:
-Error
+In [3]: data = { "a": { "b": { "c": 1, }, }, }
+   ...: result = d_clone(data, empty=True)
+   ...: assert isinstance(result, dict) == True
+   ...: assert result == {}
 
-In [8]: try:
-   ...:     data.setdefault('March', 3)
-   ...: except AttributeError as e:
-   ...:     print('Error')
-   ...:     assert str(e) == 'iDict object has no attribute setdefault'
+In [4]:
+```
+
+### compare() and d_compare()
+
+```python
+def compare(self,
+    d1: dict,
+    d2: Optional[dict]=None,
+    *,
+    keys: Optional[Union[Hashable,list]]=None,
+    keylist: bool=False,
+    keypath: bool=False,
+    thrown_error: bool=False,
+    ):
+```
+
+```pythob
+def d_compare(
+        d1: dict,
+        d2: dict,
+        *,
+        keys: Optional[Union[Hashable,list, Keylist, Keypath]]=None,
+        keylist: bool=False,
+        keypath: bool=False,
+        thrown_error: bool=False,
+    ):
+```
+
+Compare tow dictionary with keys and return `True` when equal found values.
+otherwise return `False`.
+
+if not set second dictionary, use self object.
+if not set keys, just compare two dictionaries,
+if pass `thrown_error=True`, raise ValueError when not equal found values.
+if passs `keylist=True`, keylist accept for key.
+if passs `keypath=True`, keypath accept for key.
+
+```python
+In [1]: from datajuggler import aDict, Keylist, Keypath
+   ...: from datajuggler.dicthelper import d_compare
    ...:
-Error
+   ...: d1 = {}
+   ...: d2 = {}
+   ...: result = d_compare(d1, d2)
+   ...: assert result == True
+
+In [2]: d1 = {1: 1}
+   ...: d2 = {1: 1}
+   ...: result = d_compare(d1, d2)
+   ...: assert result == True
+
+In [3]: d1 = {'1': 'one'}
+   ...: d2 = {'1': 'one'}
+   ...: result = d_compare(d1, d2)
+   ...: assert result == True
+
+In [4]: d1 = {'1': 'one'}
+   ...: d2 = {'1':  2}
+   ...: result = d_compare(d1, d2)
+   ...: assert result == False
+
+In [5]: d1 = { "a": 1, "b": [1,2,3] }
+   ...: d2 = { "a": 1, "b": [1,2,3] }
+   ...: result = d_compare(d1, d2)
+   ...: assert result == True
+
+In [6]: d1 = { "a": 1,
+   ...:        "b": 2,
+   ...:        "c": {
+   ...:             "d": {
+   ...:                 "e": 3,
+   ...:                 "f": 4,
+   ...:                 "g": { "h": 5, },
+   ...:             }
+   ...:          },
+   ...:       }
+   ...: d2 = { "a": 1,
+   ...:        "b": 2,
+   ...:        "c": {
+   ...:             "d": {
+   ...:                 "e": 3,
+   ...:                 "f": 4,
+   ...:                 "g": { "h": 5, },
+   ...:             }
+   ...:          },
+   ...:       }
+   ...: result = d_compare(d1, d2)
+   ...: assert result == True
+
+In [7]: d1 = { "a": 1,
+   ...:        "b": 2,
+   ...:        "c": {
+   ...:             "d": {
+   ...:                 "e": 3,
+   ...:                 "f": 4,
+   ...:                 "g": { "h": 5, },
+   ...:             }
+   ...:          },
+   ...:       }
+   ...: d2 = { "a": 1,
+   ...:        "b": 2,
+   ...:        "c": {
+   ...:             "d": {
+   ...:                 "e": 13,
+   ...:                 "f": 14,
+   ...:                 "g": { "h": 5, },
+   ...:             }
+   ...:          },
+   ...:       }
+   ...: result = d_compare(d1, d2, keys='b')
+   ...: assert result == True
+
+In [8]: d1 = { "a": 1,
+   ...:        "b": 2,
+   ...:        "c": {
+   ...:             "d": {
+   ...:                 "e": 3,
+   ...:                 "f": 4,
+   ...:                 "g": { "h": 5, },
+   ...:             }
+   ...:          },
+   ...:       }
+   ...: d2 = { "a": 1,
+   ...:        "b": 2,
+   ...:        "c": {
+   ...:             "d": {
+   ...:                 "e": 13,
+   ...:                 "f": 14,
+   ...:                 "g": { "h": 5, },
+   ...:             }
+   ...:          },
+   ...:       }
+   ...: result = d_compare(d1, d2, keys='d')
+   ...: assert result == False
+
+In [9]: d1 = { "a": 1,
+   ...:        "b": 2,
+   ...:        "c": {
+   ...:             "d": {
+   ...:                 "e": 3,
+   ...:                 "f": 4,
+   ...:                 "g": { "h": 5, },
+   ...:             }
+   ...:          },
+   ...:       }
+   ...: d2 = { "a": 1,
+   ...:        "b": 2,
+   ...:        "c": {
+   ...:             "d": {
+   ...:                 "e": 13,
+   ...:                 "f": 14,
+   ...:                 "g": { "h": 5, },
+   ...:             }
+   ...:          },
+   ...:       }
+   ...: result = d_compare(d1, d2, keys=Keylist(['c', 'd', 'g']))
+   ...: assert result == True
+
+In [10]: d1 = { "a": 1,
+    ...:        "b": 2,
+    ...:        "c": {
+    ...:             "d": {
+    ...:                 "e": 3,
+    ...:                 "f": 4,
+    ...:                 "g": { "h": 5, },
+    ...:             }
+    ...:          },
+    ...:       }
+    ...: d2 = { "a": 1,
+    ...:        "b": 2,
+    ...:        "c": {
+    ...:             "d": {
+    ...:                 "e": 13,
+    ...:                 "f": 14,
+    ...:                 "g": { "h": 5, },
+    ...:             }
+    ...:          },
+    ...:       }
+    ...: result = d_compare(d1, d2, keys=Keypath('c.d.g'))
+    ...: assert result == True
+
+In [11]:
+```
+
+### counts() and d_counts()
+
+```python
+def counts(self,
+        pattern: Union[Pattern, Hashable, Sequence],
+        obj: Optional[dict]=None,
+        count_for: DictItemType=DictItem.KEY,
+        wild: bool=False,
+        verbatim: bool=False,
+    ) ->Union[int, dict]:
+```
+
+```python
+def d_counts(
+        obj: dict,
+        pattern: Union[Hashable, Pattern, Sequence],
+        count_for: DictItemType=DictItem.KEY,
+        wild: bool=False,
+        verbatim: bool=False,
+    ) ->Union[int, dict]:
+```
+Counts of keys or values.
+`count_for` accept "key" and "value".
+if pass `wild=True`, match substr and ignore_case.
+if pass `verbatim=True`, counts as it is.
+
+
+```python
+In [1]: from datajuggler.dicthelper import d_counts
+   ...:
+   ...: data = {'x': {'y': {'z': [{'aA': 'v11', 'b': 'v12', 'c': 'v13'},
+   ...:                           {'aA': 'v21', 'b': 'v22', 'c': 'v23'}]} }}
+   ...: d_counts(data, 'aA')
+Out[1]: 2
+
+In [2]: d_counts(data, 'aA', count_for='key')
+Out[2]: 2
+
+In [3]: d_counts(data, 'aa', count_for='key')
+Out[3]: 0
+
+In [4]: d_counts(data, 'aa', count_for='key', wild=True)
+Out[4]: 2
+
+In [5]: d_counts(data, ['aA', 'b'])
+Out[5]: defaultdict(int, {'aA': 2, 'b': 2})
+
+In [6]: d_counts(data, ['aA', 'b'], wild=True)
+Out[6]: defaultdict(int, {'aA': 2, 'b': 2})
+
+In [7]: d_counts(data, ['a', 'b'], wild=True, verbatim=True)
+Out[7]: defaultdict(int, {'aA': 2, 'b': 2})
+
+In [8]: d_counts(data, 'v11', count_for='value')
+Out[8]: {'v11': 1}
+
+In [9]: d_counts(data, 'v1', count_for='value', wild=True)
+Out[9]: {'v1': 3}
+
+In [10]: d_counts(data, 'v1', count_for='value', wild=True, verbatim=True)
+Out[10]: {'v11': 1, 'v12': 1, 'v13': 1}
+
+In [11]: data = {'x': {'y': {'z': [{'aA': 100, 'b': 101, 'c': 103},
+    ...:                           {'aA': 100, 'b': 101, 'c': 103}]} }}
+    ...: d_counts(data, 100, count_for='value')
+Out[11]: {100: 2}
+
+In [12]:
+```
+
+### filter() and d_filter()
+
+```python
+def filter(self,
+        predicate: Callable,
+        obj: Optional[dict]=None,
+        factory: Optional[Type[dict]]=None,
+    ):
+```
+
+```python
+def d_filter(
+        predicate: Callable,
+        obj: dict,
+        factory: Type[dict]=dict,
+    ):
+```
+
+Create a new dictionary with filter items in dictionary by item.
+
+Predicate function receives key, value arguments
+and should return a bool value.
+If set `factory`, create instance of factory class.
+If set `True` to `inplace`, perform operation in-place.
+
+```python
+In [1]: from datajuggler import uDict,  aDict
+   ...: from datajuggler.dicthelper import d_filter
+   ...:
+   ...:
+   ...: is_janfeb = lambda x, y: x.endswith('ary')
+   ...: data = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
+   ...:
+   ...: d_filter(is_janfeb, data)
+Out[1]: {'January': 1, 'February': 2}
+
+In [2]: d_filter(is_janfeb, data, factory=uDict)
+Out[2]: uDict({'January': 1, 'February': 2})
+
+In [3]: is_even = lambda x, y: y % 2 == 0
+   ...: d_filter(is_even, data)
+Out[3]: {'February': 2, 'April': 4}
+
+In [4]:
+```
+
+### groupby() and d_groupby()
+
+```python
+def groupby( self,
+        seq: list,
+        key: Hashable,
+        factory: Optional[Type[dict]]=None,
+    ) -> dict:
+```
+
+```python
+def d_groupby(
+        seq: list,
+        key: Hashable,
+        factory: Type[dict]=dict,
+    ) -> dict:
+```
+
+A groupby operation involves some combination of splitting the object, applying a function, and combining the results. This can be used to group large amounts of data and compute operations on these groups.
+
+```python
+In [1]: from datajuggler import uDict,  aDict
+   ...: from datajuggler.dicthelper import d_groupby
+   ...:
+   ...: data = [
+   ...:     {"id": 1, "name": "John"},
+   ...:     {"id": 2, "name": "Paul"},
+   ...:     {"id": 3, "name": "David"},
+   ...:     {"id": 4, "name": "Freddie"},
+   ...:     {"id": 3, "name": "Jack"},
+   ...:     {"id": 1, "name": "Eddie"},
+   ...:     {"id": 3, "name": "Bob"},
+   ...:     {"id": 4, "name": "Maichael"},
+   ...:     {"id": 1, "name": "Edward"},
+   ...: ]
+   ...: expect = ( "{1: [{'id': 1, 'name': 'John'}, "
+   ...:                 "{'id': 1, 'name': 'Eddie'}, "
+   ...:                 "{'id': 1, 'name': 'Edward'}], "
+   ...:             "2: [{'id': 2, 'name': 'Paul'}], "
+   ...:             "3: [{'id': 3, 'name': 'David'}, "
+   ...:                 "{'id': 3, 'name': 'Jack'}, "
+   ...:                 "{'id': 3, 'name': 'Bob'}], "
+   ...:             "4: [{'id': 4, 'name': 'Freddie'}, "
+   ...:                 "{'id': 4, 'name': 'Maichael'}]}" )
+   ...: result = d_groupby(data, "id")
+   ...: assert result.__repr__() == expect
+
+```
+
+### invert() and d_invert()
+
+```python
+def invert( self,
+        obj: Optional[dict]=None,
+        flat: bool=False,
+        inplace: bool=False,
+        factory: Optional[Type[dict]]=None,
+    ) ->dict:
+```
+
+
+```python
+def d_invert(
+        obj: dict,
+        flat: bool=False,
+        inplace: bool=False,
+        factory: Type[dict]=dict,
+    ) ->dict:
+```
+
+Return an inverted dict where values become keys and keys become values.
+Since multiple keys could have the same value, each value will be a list of keys.
+If pass `flat=True` each value will be a single value.
+(use this only if values are unique).
+
+```python
+In [1]: from datajuggler import aDict
+   ...: from datajuggler.dicthelper import d_invert
+   ...:
+   ...:
+   ...: data = { "a": 1, "b": 2, "c": 3, "d": 4, "e": 5}
+   ...: expect = {1: ['a'], 2: ['b'], 3: ['c'], 4: ['d'], 5: ['e']}
+   ...: result = d_invert(data)
+   ...: assert result == expect
+
+In [2]: data = { "a": 1, "b": 2, "c": 3, "d": 4, "e": 5}
+   ...: expect = {1: ['a'], 2: ['b'], 3: ['c'], 4: ['d'], 5: ['e']}
+   ...: d_invert(data, inplace=True)
+   ...: assert data == expect
+
+In [3]: data = { "a": 1, "b": 2, "c": 3, "d": 4, "e": 5}
+   ...: expect = aDict({1: ['a'], 2: ['b'], 3: ['c'], 4: ['d'], 5: ['e']})
+   ...: result = d_invert(data, factory=aDict)
+   ...: assert result == expect
+
+In [4]: data = { "a": 1, "b": 2, "c": 3, "d": 4, "e": 5}
+   ...: expect = { 1: "a", 2: "b", 3: "c", 4: "d", 5: "e"}
+   ...: result = d_invert(data, flat=True)
+   ...: assert result == expect
+
+In [5]: data = { "a": 1, "b": 2, "c": 3, "d": 4, "e": 5}
+   ...: expect = { 1: "a", 2: "b", 3: "c", 4: "d", 5: "e"}
+   ...: d_invert(data, flat=True, inplace=True)
+   ...: assert data == expect
+
+In [6]: data = { "a": 1, "b": 2, "c": 3, "d": 4, "e": 5}
+   ...: expect = aDict({ 1: "a", 2: "b", 3: "c", 4: "d", 5: "e"})
+   ...: result = d_invert(data, flat=True, factory=aDict)
+   ...: assert result == expect
+
+In [7]:
+```
+
+### map() and d_map()
+
+```python
+def map(self,
+        func: Callable,
+        obj: Optional[dict]=None,
+        map_for: Optional[DictItemType]=None,
+        inplace: bool=False,
+        factory: Optional[Type[dict]]=None,
+    ) ->dict:
+```
+
+```python
+def d_map(
+        func: Callable,
+        obj: dict,
+        map_for: Optional[DictItemType]=None,
+        inplace: bool=False,
+        factory: Type[dict]=dict,
+    ) ->dict:
+```
+Create a new dictionary with apply function to keys/value of dictionary.
+if pass `map_for=None`  apply function to key and value. (default)
+if pass `map_for="key"`  apply function to key.
+if pass `map_for="value"`  apply function to value.
+If set `factory`, create instance of factory class.
+If set `True` to `inplace`, perform operation in-place.
+
+```python
+In [1]: from datajuggler import uDict,  aDict
+   ...: from datajuggler.dicthelper import d_map
+   ...:
+   ...:
+   ...: data = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
+   ...: expect = { 1: 'January', 2: 'February', 3: 'March', 4: 'April' }
+   ...: result = d_map(reversed, data)
+   ...: assert result == expect
+
+In [2]: expect = uDict({ 1: 'January', 2: 'February', 3: 'March', 4: 'April' })
+   ...: result = d_map(reversed, data, factory=uDict)
+   ...: assert result == expect
+   ...:
+
+In [3]: expect = { 1: 'January', 2: 'February', 3: 'March', 4: 'April' }
+   ...: result = d_map(reversed, data, inplace=True)
+   ...: assert data == expect
+
+In [4]: data = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
+   ...: expect = uDict({ 'JANUARY': 1, 'FEBRUARY': 2, 'MARCH': 3, 'APRIL': 4 })
+   ...: result = d_map(str.upper, data, map_for="key")
+   ...: assert result == expect
+
+In [5]: data = { 'Jack': [10, 11, 12], 'John': [8, 15, 3] }
+   ...: expect = { 'Jack': 33, 'John': 26 }
+   ...: result = d_map(sum, data, map_for="value")
+   ...: assert result == expect
+
+In [6]:
+```
+
+### merge() and d_merger()
+
+```python
+def merge(self,
+        others: list,
+        obj: Optional[dict]=None,
+        overwrite: bool=True,
+        concat: bool=False,
+        inplace: bool=False,
+        factory: Optional[Type[dict]]=None,
+    ) ->dict:
+```
+
+```python
+def d_merge(
+        obj: dict,
+        others: Union[dict, list, tuple],
+        overwrite: bool=True,
+        concat: bool=False,
+        inplace: bool=False,
+        factory: Type[dict]=dict,
+    ) ->dict:
+```
+
+Merge one or more dictionary objects into obj.
+Sub-dictionaries keys will be merged toghether.
+If pass `overwrite=False`, existing values will not be overwritten.
+If pass `concat=True`, list values will be concatenated toghether.
+If set `factory`, create instance of factory class.
+If set `True` to `inplace`, perform operation in-place.
+
+```python
+In [1]: from datajuggler import aDict
+   ...: from datajuggler.dicthelper import d_merge
+   ...:
+   ...:
+   ...: d1 = { "a": 1, "b": 1, }
+   ...: d2 = { "b": 2, "c": 3, }
+   ...: expect = { "a": 1, "b": 2, "c": 3, }
+   ...: d_merge(d1, d2)
+Out[1]: {'a': 1, 'b': 2, 'c': 3}
+
+In [2]: d_merge(d1, d2, factory=aDict)
+Out[2]: aDict({'a': 1, 'b': 2, 'c': 3})
+
+In [3]: d_merge(d1, d2, inplace=True)
+
+In [4]: d1
+Out[4]: {'a': 1, 'b': 2, 'c': 3}
+
+In [5]: d1 = {
+   ...:     "a": [0, 1, 2],
+   ...:     "b": [5, 6, 7],
+   ...:     "c": [],
+   ...:     "d": [],
+   ...: }
+   ...: d2 = {
+   ...:     "a": [3, 4, 5],
+   ...:     "b": [8, 9, 0],
+   ...:     "c": [-1],
+   ...: }
+   ...: expect = {
+   ...:     "a": [3, 4, 5],
+   ...:     "b": [8, 9, 0],
+   ...:     "c": [-1],
+   ...:     "d": [],
+   ...: }
+
+In [6]: d_merge(d1, d2)
+Out[6]: {'a': [3, 4, 5], 'b': [8, 9, 0], 'c': [-1], 'd': []}
+
+In [7]: d_merge(d1, d2, concat=True)
+Out[7]: {'a': [0, 1, 2, 3, 4, 5], 'b': [5, 6, 7, 8, 9, 0], 'c': [-1], 'd': []}
+
+In [8]: d1 = { "a": 1, "b": 1, }
+   ...: d2 = { "b": 2, "c": 3, "d": 3, }
+   ...: d3 = { "d": 5, "e": 5, }
+   ...: d4 = { "d": 4, "f": 6, }
+
+In [9]: d_merge(d1, [d2, d3, d4])
+Out[9]: {'a': 1, 'b': 2, 'c': 3, 'd': 4, 'e': 5, 'f': 6}
+
+In [10]: d_merge(d1, (d2, d3, d4))
+Out[10]: {'a': 1, 'b': 2, 'c': 3, 'd': 4, 'e': 5, 'f': 6}
+
+In [11]: d1 = {
+    ...:     "a": 1,
+    ...:     "b": {
+    ...:         "c": { "x": 2, "y": 3, },
+    ...:         "d": { "x": 4, "y": 5, },
+    ...:         "e": { "x": 6, "y": 7, },
+    ...:     },
+    ...: }
+    ...: d2 = {
+    ...:     "a": 0,
+    ...:     "b": {
+    ...:         "c": 1,
+    ...:         "d": { "y": 1, "z": 2, },
+    ...:         "e": {
+    ...:             "f": { "x": 2, "y": 3, },
+    ...:             "g": { "x": 4, "y": 5, },
+    ...:         },
+    ...:     },
+    ...: }
+
+In [12]: d_merge(d1, d2)
+Out[12]:
+{'a': 0,
+ 'b': {'c': 1,
+  'd': {'x': 4, 'y': 1, 'z': 2},
+  'e': {'x': 6, 'y': 7, 'f': {'x': 2, 'y': 3}, 'g': {'x': 4, 'y': 5}}}}
+
+In [13]:  d_merge(d1, d2, overwrite=False)
+Out[13]:
+{'a': 1,
+ 'b': {'c': 1,
+  'd': {'x': 4, 'y': 1, 'z': 2},
+  'e': {'x': 6, 'y': 7, 'f': {'x': 2, 'y': 3}, 'g': {'x': 4, 'y': 5}}}}
+
+In [14]:
+```
+
+### move() and d_move()
+
+```python
+def move(self,
+        key_src: Union[str, list],
+        key_dest: Union[str, list],
+        obj: Optional[dict]=None,
+        *,
+        keep_order: bool=False,
+        overwrite: bool=True,
+        inplace: bool=False,
+        factory: Optional[Type[dict]]=None,
+    ) ->dict:
+```
+
+```python
+def d_move(
+        obj: dict,
+        key_src: Union[str, list, dict],
+        key_dest: Optional[Union[str, list]]=None,
+        *,
+        overwrite: bool=True,
+        keep_order: bool=False,
+        inplace: bool=False,
+        factory: Type[dict]=dict,
+    ) ->dict:
+```
+
+Create new dictionary which Move an item from key_src to key_dst.
+It can be used to rename a key.
+If key_dst exists and pass `overwrite=True`, its value will be overwritten.
+if pass `keep_order=True`, keep ordered of dictionary. (may be slow).
+If set `factory`, create instance of factory class.
+If set `True` to `inplace`, perform operation in-place.
+
+```python
+In [1]: from datajuggler import aDict
+   ...: from datajuggler.dicthelper import d_move
+   ...:
+   ...: data = {
+   ...:     "a": { "x": 1, "y": 1, },
+   ...:     "b": { "x": 2, "y": 2, },
+   ...:     "c": { "x": 3, "y": 3, },
+   ...: }
+
+In [2]: d_move(data, "a", "a")
+Out[2]: {'a': {'x': 1, 'y': 1}, 'b': {'x': 2, 'y': 2}, 'c': {'x': 3, 'y': 3}}
+
+In [3]: d_move(data, "a", "d")
+Out[3]: {'b': {'x': 2, 'y': 2}, 'c': {'x': 3, 'y': 3}, 'd': {'x': 1, 'y': 1}}
+
+In [4]: d_move(data, "a", "d", overwrite=False)
+Out[4]: {'b': {'x': 2, 'y': 2}, 'c': {'x': 3, 'y': 3}, 'd': {'x': 1, 'y': 1}}
+
+In [5]: d_move(data, "a", "d", keep_order=True)
+Out[5]: {'d': {'x': 1, 'y': 1}, 'b': {'x': 2, 'y': 2}, 'c': {'x': 3, 'y': 3}}
+
+In [6]: d_move(data, "a", "d", factory=aDict)
+Out[6]: aDict({'b': {'x': 2, 'y': 2}, 'c': {'x': 3, 'y': 3}, 'd': {'x': 1, 'y': 1}})
+
+In [7]: d_move(data, "a", "d", inplace=True)
+
+In [8]: data
+Out[8]: {'b': {'x': 2, 'y': 2}, 'c': {'x': 3, 'y': 3}, 'd': {'x': 1, 'y': 1}}
 
 In [9]:
 ```
+
+
+### rename() and d_rename()
+
+```python
+def rename(self,
+        key: Union[Hashable,dict],
+        key_new: Optional[Hashable]=None,
+        obj: Optional[dict]=None,
+        case_name: Optional[str]=None,
+        *,
+        overwrite: bool=False,
+        keep_order: bool=False,
+        inplace: bool=False,
+        factory: Optional[Type[dict]]=None,
+    ) ->dict:
+```
+
+```python
+def d_rename(
+        obj: dict,
+        key: Union[Hashable,dict, list],
+        key_new: Optional[Hashable]=None,
+        case_name: Optional[str]=None,
+        *,
+        overwrite: bool=False,
+        keep_order: bool=False,
+        inplace: bool=False,
+        factory: Type[dict]=dict,
+    ) ->dict:
+```
+
+Create the new dictionary which is chnaged the key to key_new.
+if key as dictionary {key: key_new}, change key using mapping dictionary.
+If key_dst exists and pass `overwrite=True`, its value will be overwritten.
+if pass `keep_order=True`, keep ordered of dictionary. (may be slow).
+If set `factory`, create instance of factory class.
+If set `True` to `inplace`, perform operation in-place.
+
+```python
+In [1]: from datajuggler import  aDict
+   ...: from datajuggler.dicthelper import d_rename
+   ...:
+   ...: data = { "a": 1, "b": 2, "c": 3, "d": None, }
+
+In [2]: d_rename(data, "a", "a")
+Out[2]: {'a': 1, 'b': 2, 'c': 3, 'd': None}
+
+In [3]: d_rename(data, "a", "A")
+Out[3]: {'b': 2, 'c': 3, 'd': None, 'A': 1}
+
+In [4]: d_rename(data, "a", "A", keep_order=True)
+Out[4]: {'A': 1, 'b': 2, 'c': 3, 'd': None}
+
+In [5]: try:
+   ...:     result = d_rename(data, "a", "b")
+   ...: except KeyError as e:
+   ...:     print(e)
+   ...:
+"Invalid key: 'b', key already in dict and 'overwrite' is disabled."
+
+In [6]: d_rename(data, "a", "b", overwrite=True)
+Out[6]: {'b': 1, 'c': 3, 'd': None}
+
+In [7]: d_rename(data, {'a': 'A', 'b': 'B'})
+Out[7]: {'c': 3, 'd': None, 'A': 1, 'B': 2}
+
+In [8]: d_rename(data, "b", "B", inplace=True)
+
+In [9]: data
+Out[9]: {'a': 1, 'c': 3, 'd': None, 'B': 2}
+
+In [10]: data = { "First Name": 'jack', 'Last Name': 'bauwer' }
+
+In [11]: d_rename(data, "First Name", case_name='snake')
+Out[11]: {'Last Name': 'bauwer', 'first_name': 'jack'}
+
+In [12]: keys = list(data.keys())
+    ...: d_rename(data, keys, case_name='snake')
+Out[12]: {'first_name': 'jack', 'last_name': 'bauwer'}
+
+In [13]: d_rename(data, keys, case_name='camel')
+Out[13]: {'firstName': 'jack', 'lastName': 'bauwer'}
+
+In [14]:
+```
+
+
+### remove() and d_remove()
+
+```python
+def remove(self,
+        keys: Union[list, Hashable],
+        obj: Optional[dict]=None,
+        *,
+        inplace: bool=False,
+        factory: Optional[Type[dict]]=None,
+    ):
+```
+
+```python
+def d_remove(
+        obj: dict,
+        keys: Union[list, tuple, Hashable],
+        *,
+        inplace: bool=False,
+        factory: Type[dict]=dict,
+    ):
+```
+
+Create new dictionary which Remove multiple keys from the dict.
+It is possible to pass a single key or more keys (as list or *args).
+
+```python
+In [1]: from datajuggler import aDict
+   ...: from datajuggler.dicthelper import d_remove
+   ...:
+   ...: data = { "a": 1, "b": 2, "c": 3, "d": 4, "e": 5, }
+
+In [2]: d_remove(data, "c")
+Out[2]: {'a': 1, 'b': 2, 'd': 4, 'e': 5}
+
+In [3]: d_remove(data, ["c", "d", "e"])
+Out[3]: {'a': 1, 'b': 2}
+
+In [4]: d_remove(data, ("c", "d", "e"))
+Out[4]: {'a': 1, 'b': 2}
+
+In [5]: d_remove(data, "c", factory=aDict)
+Out[5]: aDict({'a': 1, 'b': 2, 'd': 4, 'e': 5})
+
+In [6]: d_remove(data, "c", inplace=True)
+
+In [7]: data
+Out[7]: {'a': 1, 'b': 2, 'd': 4, 'e': 5}
+
+In [8]:
+```
+
+### nest() and d_nest()
+
+
+```python
+def d_nest(
+    items: tuple,
+    id_key: Union[str, list],
+    parent_id_key: Union[str, list],
+    children_key: Union[str, list],
+    ) -> list:
+```
+
+Nest a list of dicts at the given key and return a new nested list
+using the specified keys to establish the correct items hierarchy.
+
+```python
+In [1]: from datajuggler.dicthelper import d_nest
+   ...:
+   ...: data = [
+   ...:     {"id": 1, "parent_id": None, "name": "John"},
+   ...:     {"id": 2, "parent_id": 1, "name": "Frank"},
+   ...:     {"id": 3, "parent_id": 2, "name": "Tony"},
+   ...:     {"id": 4, "parent_id": 3, "name": "Jimmy"},
+   ...:     {"id": 5, "parent_id": 1, "name": "Sam"},
+   ...:     {"id": 6, "parent_id": 3, "name": "Charles"},
+   ...:     {"id": 7, "parent_id": 2, "name": "Bob"},
+   ...:     {"id": 8, "parent_id": 3, "name": "Paul"},
+   ...:     {"id": 9, "parent_id": None, "name": "Michael"},
+   ...: ]
+
+In [2]: d_nest(data, "id", "parent_id", "children")
+Out[2]:
+[{'id': 1,
+  'parent_id': None,
+  'name': 'John',
+  'children': [{'id': 2,
+    'parent_id': 1,
+    'name': 'Frank',
+    'children': [{'id': 3,
+      'parent_id': 2,
+      'name': 'Tony',
+      'children': [{'id': 4, 'parent_id': 3, 'name': 'Jimmy', 'children': []},
+       {'id': 6, 'parent_id': 3, 'name': 'Charles', 'children': []},
+       {'id': 8, 'parent_id': 3, 'name': 'Paul', 'children': []}]},
+     {'id': 7, 'parent_id': 2, 'name': 'Bob', 'children': []}]},
+   {'id': 5, 'parent_id': 1, 'name': 'Sam', 'children': []}]},
+ {'id': 9, 'parent_id': None, 'name': 'Michael', 'children': []}]
+
+In [3]: try:
+   ...:     result = d_nest(data, "id", "id", "children")
+   ...: except ValueError as e:
+   ...:     print(e)
+   ...:
+keys should be different.
+
+In [4]: try:
+   ...:     result = d_nest(data, "id", "parent_id", "id")
+   ...: except ValueError as e:
+   ...:     print(e)
+   ...:
+keys should be different.
+
+In [5]: try:
+   ...:     d_nest(data, "id", "parent_id", "parent_id")
+   ...: except ValueError as e:
+   ...:     print(e)
+   ...:
+keys should be different.
+
+In [6]: data = [
+   ...:     [{"id": 1, "parent_id": None, "name": "John"}],
+   ...:     [{"id": 2, "parent_id": 1, "name": "Frank"}],
+   ...: ]
+
+In [7]: try:
+   ...:     d_nest(data, "id", "parent_id", "children")
+   ...: except ValueError as e:
+   ...:     print(e)
+   ...:
+element should be a dict.
+
+In [8]:
+```
+
+
+### subset() and d_subset()
+
+```python
+def d_subset(
+        obj: dict,
+        keys: Union[str, list, tuple, Hashable],
+        *,
+        default: Optional[Any]=None,
+        use_keypath: bool=False,
+        separator: str=Default_Keypath_Separator,
+        inplace: bool=False,
+        factory: Type[dict]=dict,
+    ):
+```
+
+Return a dict subset for the given keys.
+It is possible to pass a single key or more keys (as list or *args).
+
+
+```python
+In [1]: from datajuggler import aDict
+   ...: from datajuggler.dicthelper import d_subset
+   ...:
+   ...:
+   ...: data = { "a": 1, "b": 2, "c": 3, "d": 4, "e": 5}
+
+In [2]: d_subset(data, 'b')
+Out[2]: {'b': 2}
+
+In [3]: d_subset(data, ['b', 'd'])
+Out[3]: {'b': 2, 'd': 4}
+
+In [4]: d_subset(data, ('b', 'd'))
+Out[4]: {'b': 2, 'd': 4}
+
+In [5]: d_subset(data, ('b', 'd'), factory=aDict)
+Out[5]: aDict({'b': 2, 'd': 4})
+
+In [6]: d_subset(data, ('b', 'd'), inplace=True)
+
+In [7]: data
+Out[7]: {'b': 2, 'd': 4}
+
+In [8]: data = { "a": 1,
+   ...:          "b": { "c": { "x": 2, "y": 3 },
+   ...:                 "d": { "x": 4, "y": 5 },
+   ...:          },
+   ...: }
+
+In [9]: d_subset(data, keys='z', default={})
+Out[9]: {'z': {}}
+
+In [10]: try:
+    ...:     d_subset(data, keys='x', default={})
+    ...: except KeyError as e:
+    ...:     print(e)
+    ...:
+"Multiple keys founded.'x'"
+
+In [11]: d_subset(data, keys='x', default={}, use_keypath=True)
+Out[11]: {'b.c.x': 2, 'b.d.x': 4}
+
+In [12]: d_subset(data, keys='c')
+Out[12]: {'c': {'x': 2, 'y': 3}}
+
+In [13]: d_subset(data, keys=['c', 'd'])
+Out[13]: {'c': {'x': 2, 'y': 3}, 'd': {'x': 4, 'y': 5}}
+
+In [14]: d_subset(data, keys=['c', 'd'], use_keypath=True)
+Out[14]: {'b.c': {'x': 2, 'y': 3}, 'b.d': {'x': 4, 'y': 5}}
+
+In [15]: d_subset(data, keys=['c', 'd'],use_keypath=True, separator=' ')
+Out[15]: {'b c': {'x': 2, 'y': 3}, 'b d': {'x': 4, 'y': 5}}
+
+In [16]:
+```
+
+### find() and d_find()
+
+```python
+def d_find(
+        obj: dict,
+        keys: Union[list,Hashable],
+        default: Optional[Any]=None,
+        first_one: bool=True,
+        factory: Type[dict]=dict,
+    ) -> Union[Any, dict]:
+```
+Return the match searching for the given keys.
+if pass `first_one=True`, return first matches.
+If no result found, default value is returned.
+
+
+```python
+In [1]: from datajuggler.dicthelper import d_find
+   ...:
+   ...: data = { "a": 1, "b": 2, "c": 3, "d": None, }
+
+In [2]: d_find(data, "b", 0)
+Out[2]: 2
+
+In [3]: d_find(data, "e", 0)
+Out[3]: 0
+
+In [4]: d_find(data, ["x", "y", "b", "z"], 5)
+Out[4]: 2
+
+In [5]: d_find(data, ["a", "x", "b", "y"], 5)
+Out[5]: 1
+
+In [6]: d_find(data, ["x", "y", "z"], 5)
+Out[6]: 5
+
+In [7]: d_find(data, ["x", "y", "z"], "missing")
+Out[7]: 'missing'
+
+In [8]: d_find(data, ["x", "y", "z"])
+
+In [9]: d_find(data, ["a", "b", "c"], first_one=True)
+Out[9]: 1
+
+In [10]: d_find(data, ["a", "b", "c"], first_one=False)
+Out[10]: {'a': 1, 'b': 2, 'c': 3}
+
+In [11]:
+```
+
+
+### sort() and d_sort()
+
+```python
+def d_sort(
+        obj: dict,
+        sort_by: DictItemType=DictItem.KEY,
+        reverse: bool=False,
+        inplace: bool=False,
+        factory: Type[dict]=dict,
+    ):
+```
+
+Create new dictiionary which is sorted by keys/values.
+`sort_by` accept "key" and "value". default is  "key".
+If pass `reverse=True`,  the list will be reversed.
+If set `factory`, create instance of factory class.
+If set `True` to `inplace`, perform operation in-place.
+
+```python
+In [1]: from datajuggler import aDict
+   ...: from datajuggler.dicthelper import d_sort
+   ...:
+   ...: data = {
+   ...:     "a": 8,
+   ...:     "c": 6,
+   ...:     "e": 4,
+   ...:     "g": 2,
+   ...:     "b": 7,
+   ...:     "d": 5,
+   ...:     "f": 3,
+   ...:     "h": 1,
+   ...: }
+
+In [2]: d_sort(data)
+Out[2]: {'h': 1, 'g': 2, 'f': 3, 'e': 4, 'd': 5, 'c': 6, 'b': 7, 'a': 8}
+
+In [3]: d_sort(data, reverse=True)
+Out[3]: {'a': 8, 'b': 7, 'c': 6, 'd': 5, 'e': 4, 'f': 3, 'g': 2, 'h': 1}
+
+In [4]: d_sort(data, sort_by="value")
+Out[4]: {'a': 8, 'b': 7, 'c': 6, 'd': 5, 'e': 4, 'f': 3, 'g': 2, 'h': 1}
+
+In [5]: d_sort(data, factory=aDict)
+Out[5]: aDict({'h': 1, 'g': 2, 'f': 3, 'e': 4, 'd': 5, 'c': 6, 'b': 7, 'a': 8})
+
+In [6]: d_sort(data, inplace=True)
+
+In [7]: data
+Out[7]: {'h': 1, 'g': 2, 'f': 3, 'e': 4, 'd': 5, 'c': 6, 'b': 7, 'a': 8}
+
+In [8]:
+```
+
+
+### search() and d_search()
+
+```python
+def d_search(
+        obj: dict,
+        query: Pattern,
+        search_for: DictItemType=DictItem.KEY,
+        exact: bool=False,
+        ignore_case: bool=False,
+        use_keypath: bool=True,
+    ):
+```
+
+Search and return a list of items matching the given query.
+
+```python
+In [1]: from datajuggler.dicthelper import d_search
+   ...:
+   ...: data =  {
+   ...:     "a": "January",
+   ...:     "b": "january!",
+   ...:     "c": {
+   ...:         "d": True,
+   ...:         "e": " january february ",
+   ...:         "f": {
+   ...:             "g": ['January', 'February', 'March', 'April' ],
+   ...:             "january": 12345,
+   ...:             "February": True,
+   ...:         },
+   ...:     },
+   ...:     "x": "Peter Piper picked a peck of pickled peppers.",
+   ...:     "y": { "x": { "y": 5, "z": 6, }, },
+   ...:     "January February": "march",
+   ...: }
+
+In [2]: d_search(data, "jarnuary", search_for="value")
+Out[2]: {}
+
+In [3]: d_search(data, "january", search_for="value", ignore_case=True)
+Out[3]: {'a': 'January', 'b': 'january!', 'c.f.g.0': 'January'}
+
+In [4]: d_search(data, "january", search_for="value", exact=True)
+Out[4]: {}
+
+In [5]: d_search(data, "january", search_for="value", ignore_case=True)
+Out[5]:
+{Keypath("a"): 'January',
+ Keypath("b"): 'january!',
+ Keypath("c.f.g[0]"): 'January'}
+
+In [6]: d_search(data, "january", search_for="value",
+   ...:          ignore_case=True, use_keypath=False)
+Out[6]: {'a': 'January', 'b': 'january!', 'c.f.g[0]': 'January'}
+
+In [7]:
+```
+
+### swap() and d_swap()
+
+```python
+def d_swap(
+        obj: dict,
+        key1: Hashable,
+        key2: Hashable,
+        inplace: bool=False,
+        factory: Type[dict]=dict,
+    ) ->Optional[dict]:
+```
+
+Swap items values at the given keys.
+
+
+```python
+In [1]: from datajuggler import aDict
+   ...: from datajuggler.dicthelper import d_swap
+   ...:
+   ...: data = { "a": 1, "b": 2, "c": 3, "d": None, }
+
+In [2]: d_swap(data, "a", "b")
+Out[2]: {'a': 2, 'b': 1, 'c': 3, 'd': None}
+
+In [3]: d_swap(data, "a", "a")
+Out[3]: {'a': 1, 'b': 2, 'c': 3, 'd': None}
+
+In [4]: d_swap(data, "a", "b", factory=aDict)
+Out[4]: aDict({'a': 2, 'b': 1, 'c': 3, 'd': None})
+
+In [5]: d_swap(data, "a", "b", inplace=True)
+
+In [6]: data
+Out[6]: {'a': 2, 'b': 1, 'c': 3, 'd': None}
+
+In [7]:
+```
+
+### flatten() and d_flatten()
+
+```python
+def d_flatten(
+        obj: dict,
+        separator: str=Default_Keypath_Separator,
+        inplace: bool=False,
+        factory: Type[dict]=dict,
+    ) -> dict:
+```
+
+Return a new flattened dict using the given separator to join nested
+
+```python
+In [1]: from datajuggler import aDict
+   ...: from datajuggler.dicthelper import d_flatten, d_unflatten
+   ...:
+   ...: data = { "a": 1,
+   ...:          "b": 2,
+   ...:          "c": {
+   ...:             "d": {
+   ...:                 "e": 3,
+   ...:                 "f": 4,
+   ...:                  "g": { "h": 5, },
+   ...:             }
+   ...:          },
+   ...:       }
+
+In [2]: d_flatten(data)
+Out[2]: {'a': 1, 'b': 2, 'c.d.e': 3, 'c.d.f': 4, 'c.d.g.h': 5}
+
+In [3]: d_flatten(data, separator="_")
+Out[3]: {'a': 1, 'b': 2, 'c_d_e': 3, 'c_d_f': 4, 'c_d_g_h': 5}
+
+In [4]: d_flatten(data, factory=aDict)
+Out[4]: aDict({'a': 1, 'b': 2, 'c.d.e': 3, 'c.d.f': 4, 'c.d.g.h': 5})
+
+In [5]: d_flatten(data, inplace=True)
+
+In [6]: data
+Out[6]: {'a': 1, 'b': 2, 'c.d.e': 3, 'c.d.f': 4, 'c.d.g.h': 5}
+
+In [7]:
+```
+
+### unflatten() and d_unflatten()
+
+```python
+
+def d_unflatten(
+        obj: dict,
+        default: Optional[Any]=None,
+        separator: str=Default_Keypath_Separator,
+        inplace: bool=False,
+        factory: Type[dict]=dict,
+    ) -> dict:
+```
+
+Return a new unflattened dict using the given separator to join nested dict keys to flatten keypaths.
+
+
+```python
+In [1]: from datajuggler import aDict
+   ...: from datajuggler.dicthelper import d_flatten, d_unflatten
+   ...:
+   ...: data = {
+   ...:     "a": 1,
+   ...:     "b": 2,
+   ...:     "c.d.e": 3,
+   ...:     "c.d.f": 4,
+   ...:     "c.d.g.h": 5,
+   ...: }
+
+In [2]: d_unflatten(data)
+Out[2]: {'a': 1, 'b': 2, 'c': {'d': {'e': 3, 'f': 4, 'g': {'h': 5}}}}
+
+In [3]: data = {
+   ...:     "a": 1,
+   ...:     "b": 2,
+   ...:     "c_d_e": 3,
+   ...:     "c_d_f": 4,
+   ...:     "c_d_g_h": 5,
+   ...: }
+
+In [4]: d_unflatten(data, separator="_")
+Out[4]: {'a': 1, 'b': 2, 'c': {'d': {'e': 3, 'f': 4, 'g': {'h': 5}}}}
+
+In [5]: d_unflatten(data, separator="_", inplace=True)
+
+In [6]: data
+Out[6]: {'a': 1, 'b': 2, 'c': {'d': {'e': 3, 'f': 4, 'g': {'h': 5}}}}
+
+In [7]:
+```
+
+### traverse() and d_traverse()
+
+```python
+ef d_traverse(
+        obj: Union[dict, list, tuple],
+        callback: Callable,
+        parents: list=[],
+        *args: Any,
+        **kwargs: Any,
+    ):
+```
+Traverse dict or list and apply callback function.
+callback function will be called as follows.
+
+  - `callback(obj, key, value, parents=parents, *args,  **kwargs)`
+  - `callback(obj, index, value, parents=parents, *args,  **kwargs)`
+
+`parantes` can pass to Keylist().
+
+  - Keylist(parents)`
+
+```python
+In [1]: from datajuggler.dicthelper import d_traverse
+   ...:
+   ...:
+   ...: data = { "a": { "x": 2, "y": 3, "z": { "ok": 5, }, },
+   ...:          "b": { "x": 7, "y": 11, "z": { "ok": 13, }, },
+   ...:          "c": { "x": 17, "y": 19, "z": { "ok": 23, }, },
+   ...:        }
+
+In [2]: def func(obj, key, val, *args, **kwargs):
+   ...:     if not isinstance(val, dict):
+   ...:         obj[key] = val + 1
+   ...:
+   ...: d_traverse(data, func)
+
+In [3]: data
+Out[3]:
+{'a': {'x': 3, 'y': 4, 'z': {'ok': 6}},
+ 'b': {'x': 8, 'y': 12, 'z': {'ok': 14}},
+ 'c': {'x': 18, 'y': 20, 'z': {'ok': 24}}}
+
+In [4]: paths=[]
+   ...: def func(obj, key, val, parents, *args, **kwargs):
+   ...:     global paths
+   ...:     if not isinstance(val, dict):
+   ...:         obj[key] = val + 1
+   ...:         paths.append(Keylist(parents).to_keypath())
+   ...:
+   ...: d_traverse(data, func)
+
+In [5]: data
+Out[5]:
+{'a': {'x': 4, 'y': 5, 'z': {'ok': 7}},
+ 'b': {'x': 9, 'y': 13, 'z': {'ok': 15}},
+ 'c': {'x': 19, 'y': 21, 'z': {'ok': 25}}}
+
+In [6]: data = [ 100, [200, [300, 310], 210], 110]
+   ...:
+   ...: def func(obj, index, val, parents, *args, **kwargs):
+   ...:     if not isinstance(val, list):
+   ...:         obj[index] = val + 1000
+   ...:
+   ...: d_traverse(data, func)
+
+In [7]: data
+Out[7]: [1100, [1200, [1300, 1310], 1210], 1110]
+
+In [8]: paths = []
+   ...: def func(obj, index, val, parents, *args, **kwargs):
+   ...:     global paths
+   ...:     index_paths = [ str(x) for x in parents ]
+   ...:     paths.append( ' '.join(index_paths))
+   ...:
+   ...: d_traverse(data, func)
+
+In [9]: data
+Out[9]: [1100, [1200, [1300, 1310], 1210], 1110]
+
+In [10]: data = [ 100, [200, [300, 310], 210], 110]
+
+In [11]: paths = []
+    ...: def func(obj, index, val, parents, *args, **kwargs):
+    ...:     global paths
+    ...:     index_paths = [ str(x) for x in parents ]
+    ...:     paths.append( ' '.join(index_paths))
+    ...:
+    ...: d_traverse(data, func)
+
+In [12]: data
+Out[12]: [100, [200, [300, 310], 210], 110]
+
+In [13]: data = { "a": { "x": [ 100, 200], "y": 3, "z": { "ok": 5, }, },
+    ...:          "b": { "x": [ 110, 210], "y": 11, "z": { "ok": 13, }, },
+    ...:          "c": { "x": [ 120, 220], "y": 19, "z": { "ok": 13, }, },
+    ...:        }
+    ...:
+    ...: paths = []
+    ...: def func(obj, key, val, parents, *args, **kwargs):
+    ...:     global paths
+    ...:     if not isinstance(val, dict) and not isinstance(val, list):
+    ...:         obj[key] = val + 1
+    ...:
+    ...: d_traverse(data, func)
+
+In [14]: data
+Out[14]:
+{'a': {'x': [101, 201], 'y': 4, 'z': {'ok': 6}},
+ 'b': {'x': [111, 211], 'y': 12, 'z': {'ok': 14}},
+ 'c': {'x': [121, 221], 'y': 20, 'z': {'ok': 14}}}
+
+In [15]: aths = []
+    ...: def func(obj, key, val, parents, *args, **kwargs):
+    ...:     global paths
+    ...:     if not isinstance(val, dict) and  not isinstance(val, list):
+    ...:         obj[key] = val + 1
+    ...:         index_paths = [ str(x) for x in parents ]
+    ...:         paths.append( ' '.join(index_paths))
+    ...:
+    ...: d_traverse(data, func)
+
+In [16]: data
+Out[16]:
+{'a': {'x': [102, 202], 'y': 5, 'z': {'ok': 7}},
+ 'b': {'x': [112, 212], 'y': 13, 'z': {'ok': 15}},
+ 'c': {'x': [122, 222], 'y': 21, 'z': {'ok': 15}}}
+
+In [17]:
+```
+
+
+### unique() and d_unique()
+
+```python
+def d_unique(
+        obj: dict,
+    ) -> list:
+```
+
+Return unique values from dict.
+
+```python
+In [1]: from datajuggler.dicthelper import  d_unique
+   ...:
+   ...: data = { "a": { "x": 1, "y": 1, },
+   ...:          "b": { "x": 2, "y": 2, },
+   ...:          "c": { "x": 1, "y": 1, },
+   ...:          "d": { "x": 1, },
+   ...:          "e": { "x": 1, "y": 1, "z": 1, },
+   ...:          "f": { "x": 2, "y": 2, },
+   ...: }
+
+In [2]: d_unique(data)
+Out[2]: [{'x': 1, 'y': 1}, {'x': 2, 'y': 2}, {'x': 1}, {'x': 1, 'y': 1, 'z': 1}]
+
+In [3]:
+```
+
+### get_keys()
+
+```python
+def get_keys(
+        obj: Optional[dict]=None,
+        indexes: bool=False,
+        *,
+        output_for: Optional[DictKey]=None,
+        separator: str=Default_Keypath_Separator,
+    ) -> list:
+```
+Get all keys from dictionary as a List
+This function is able to process on nested dictionary.
+`output_for` accept "keylist" and "keypath".
+
+```python
+In [1]: from datajuggler.dicthelper import get_keys
+
+In [2]: data = { "a": 1,
+   ...:                  "b": { "c": { "x": 2, "y": 3, },
+   ...:                         "d": { "x": 4, "y": 5, },
+   ...:                       },
+   ...:                 }
+
+In [3]: get_keys(data)
+Out[3]: ['a', 'b', 'c', 'x', 'y', 'd', 'x', 'y']
+
+In [4]: get_keys(data, output_for="keylist")
+Out[4]:
+[['a'],
+ ['b'],
+ ['b', 'c'],
+ ['b', 'c', 'x'],
+ ['b', 'c', 'y'],
+ ['b', 'd'],
+ ['b', 'd', 'x'],
+ ['b', 'd', 'y']]
+
+In [5]: get_keys(data, output_for="keypath")
+Out[5]: ['a', 'b', 'b.c', 'b.c.x', 'b.c.y', 'b.d', 'b.d.x', 'b.d.y']
+
+In [6]: get_keys(data, output_for="keypath", separator='_')
+Out[6]: ['a', 'b', 'b_c', 'b_c_x', 'b_c_y', 'b_d', 'b_d_x', 'b_d_y']
+
+In [7]:
+```
+
+### keylists()
+```python
+def keylists(
+        obj: Any,
+        indexes: bool=False,
+    ) -> list:
+```
+
+keylist is the list of key as keys from dict/list.
+
+this function is just calling Keylist.keylists()
+
+### keypaths()
+
+```python
+def keypaths(
+        obj: dict,
+        indexes: bool=False,
+        separator: str=Default_Keypath_Separator,
+    ) -> str:
+```
+Keypath is the string for  attribute-sytle access to value.
+(dot-notation by default).
+
+this function is just calling Keypath.keypaths()
+
+
+
+
+### get_values()
+
+```python
+def get_values(
+        obj: Union[dict, Sequence],
+        keys: Union[Hashable, Sequence],
+        *,
+        wild: bool=False,
+        with_keys: bool=False,
+        verbatim: bool=False,
+    ) -> Union[list, dict]:
+```
+Search the key in the objet(s) and return a list of values
+
+
+### get_items()
+
+```python
+def get_items(
+        obj: dict,
+        loc: Hashable,
+        value: Any,
+        func: Optional[Callable]=None,
+        *,
+        separator: str=Default_Keypath_Separator,
+        factory: Type[dict]=dict,
+    ):
+```
+Create new dictionary with new key value pair as d[key]=val.
+If set `True` to `inplace`, perform operation in-place.
+otherwise, not modify the initial dictionary.
+
+###  pop_items()
+
+```python
+ef pop_items(
+        obj: dict,
+        loc: Hashable,
+        value: Optional[Any]=None,
+        func: Optional[Callable]=None,
+        *,
+        separator: str=Default_Keypath_Separator,
+        factory: Type[dict]=dict,
+    ):
+```
+Create new dictionary with new key value pair as d[key]=val.
+If set `True` to `inplace`, perform operation in-place.
+otherwise, not modify the initial dictionary.
+
+
+### del_items()
+
+```python
+def del_items(
+        obj: dict,
+        loc: Union[Hashable, list, tuple],
+        *.
+        separator: str=Default_Keypath_Separator,
+        inplace: bool=False,
+        factory: Type[dict]=dict,
+    ):
+```
+Create new dicttionary with the given key(s) removed.
+New dictionary has d[key] deleted for each supplied key.
+If set `True` to `inplace`, perform operation in-place.
+otherwise, not modify the initial dictionary.
+
+### set_items()
+
+```python
+def set_items(
+        obj: Union[dict, Sequence],
+        loc: Union[str, Sequence],
+        value: Any,
+        func: Optional[Callable]=None,
+        separator: str=Default_Keypath_Separator,
+        factory: Type[dict]=dict,
+    ):
+```
+
+Create new dict with new, potentially nested, key value pair.
+
+
+## class iList
+
+`iList` class support immutable and hashable for list.
+
+ - `freeze()` change status of object in frozen.
+ - `unfreeze()` unfreeze for object.
+
+if called `freeze()`, following method will raise AttiributeError.
+
+ - `__hash__()`
+ - `__radd__()`
+ - `__rand__()`
+ - `__ior__()`
+ - `__isub__()`
+ - `__setitem__()`
+ - `__reversed__()`
+ - `append()`
+ - `reverse()`
+ - `clear()`
+ - `expand()`
+ - `pop()`
+ - `remove()`
+ - `sort()`
+
+and add new helper mehtods.
+
+ - `copy(freeze: bool=False)`
+ - `clone(empty: bool=False)`
+ - `find(val)`
+ - `without(items)`
+ - `replace(old, new)`
+
+### copy()
+
+```python
+    def copy(self, freeze: bool=False):
+```
+Creaate the new list that is copied this list.
+this method could not copy self.attrs..
+if pass `freeze=True`, return frozen list object.
+
+
+### clone()
+
+```python
+    def clone(self, empty: bool=False):
+```
+Creaate the new list that is cloned this list.
+this method copy self.attrs.
+if pass `empty=True`, keep self.attrs but list will be cleared.
+
+### without()
+
+```python
+   def without(self, *items):
+```
+
+Create new list without items and return iterable.
+
+
+### find()
+
+```python
+    def find(self,
+            val: Union[Any, list, tuple],
+        ) -> list:
+```
+Return the list of index that found val in list.
+otherwise return None
+
+### replace()
+
+```python
+    def replace(self,
+            old: Any,
+            new: Any,
+            func: Optional[Callable]=None,
+        ) ->list:
+```
+
+Return a new list that has new instead of old.
+if old is not found, it will raise an ItemNotFountError.
+callback function will be called as follows.
+
+ - `func(index, old, new)`
 
 
 ## class StrCase
@@ -1802,11 +2852,11 @@ Out[3]:
  'lower': 'convert case',
  'upper': 'CONVERT CASE'}
 
-In [4]: c.convert_case('sentence', 'The sky is the limits')
-Out[4]: 'The sky is the limits'
-
 In [5]: c.convert_case('The sky is the limits')
-Out[5]: 'the_sky_is_the_limits'
+Out[4]: 'the_sky_is_the_limits'
+
+In [5]: c.convert_case('sentence', 'The sky is the limits')
+Out[5]: 'The sky is the limits'
 
 In [6]: c.convert_case('const', 'The sky is the limits')
 Out[6]: 'THE_SKY_IS_THE_LIMITS'
@@ -1817,7 +2867,7 @@ Out[7]: ['goodMorning', 'thankYou']
 In [8]:
 ```
 
-`StrCase` class support str, list, dict.
+`StrCase` class accept str, list, dict objects for inputs.
 
 ```python
 In [8]: data = "The sky is the limit"
@@ -1860,67 +2910,6 @@ In [13]: data = ["Good luck", "The sky is the limit",
 
 In [14]:
 ```
-
-
-### ordereddict_to_dict()
-
-Convert objects from OrderedDict to Dict.
-
-```python
-In [1]: from collections import OrderedDict
-   ...: from datajuggler import ordereddict_to_dict
-   ...:
-   ...: data = OrderedDict([('month', 'January'), ('day', 13 )])
-   ...: expect = dict({'month': 'January', 'day': 13})
-   ...: result = ordereddict_to_dict(data)
-   ...: assert result == expect
-
-In [2]: data = OrderedDict([('month', 'January'), ('day', 13 ),
-   ...:                     ('time', OrderedDict([('hours', 7), ('minutes', 30
-   ...: )]))])
-   ...: expect = dict({'month': 'January', 'day': 13,
-   ...:                'time': {'hours': 7, 'minutes': 30}})
-   ...: result = ordereddict_to_dict(data)
-   ...: assert result == expect
-
-In [3]:
-```
-
-### chnage_dict_keys()
-
-Change keys for dict objects.
-if you want to change nested object, you should try `replace_values()`.
-and uDict object has `replace_key()` and `replace_key_map()` method.
-
-```python
-In [1]: from datajuggler import change_dict_keys
-   ...:
-   ...: data = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
-   ...: replace = { 'March': 3, 'April': 4 }
-   ...: expect = { 'January': 1, 'February': 2, 3: 3, 4: 4 }
-   ...: result = change_dict_keys(data, replace)
-   ...: assert result == expect
-
-In [2]: data = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
-   ...: replace = { 'March': 3, 'April': 4 }
-   ...: expect = { 'January': 1, 'February': 2, 3: 3, 4: 4 }
-   ...: change_dict_keys(data, replace, inplace=True)
-   ...: assert data == expect
-   ...:
-
-In [3]: data = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
-   ...: expect = { 'January': 1, 'February': 2, 'March': 3, 'Apr': 4 }
-   ...: result = change_dict_keys(data, 'April', 'Apr')
-   ...: assert result == expect
-
-In [4]: data = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
-   ...: expect = { 'January': 1, 'February': 2, 'March': 3, 'Apr': 4 }
-   ...: change_dict_keys(data, 'April', 'Apr', inplace=True)
-   ...: assert data == expect
-
-In [5]:
-```
-
 
 ### split_chunks()
 

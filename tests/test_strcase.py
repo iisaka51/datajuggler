@@ -2,8 +2,6 @@ import sys
 import time
 import pytest
 
-sys.path.insert(0,"../datajuggler")
-
 from datajuggler import StrCase
 import numpy as np
 import pandas as pd

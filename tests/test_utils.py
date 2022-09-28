@@ -6,7 +6,7 @@ sys.path.insert(0,"../datajuggler")
 
 from datajuggler import (
     is_alpha, is_alnum, omit_values, replace_values,
-    add_df, df_compare, change_dict_keys,
+    add_df, df_compare,
     split_chunks, urange, rename_duplicates,
 )
 import pandas as pd

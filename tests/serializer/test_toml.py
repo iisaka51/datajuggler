@@ -2,15 +2,8 @@ import sys
 import time
 import pytest
 
-sys.path.insert(0,"../datajuggler")
+from datajuggler import uDict, aDict
 
-from datajuggler import (
-    uDict, iDict, aDict,
-    change_dict_keys, ordereddict_to_dict,
-)
-
-from collections import OrderedDict
-import pandas as pd
 import toml
 
 data = {'target': {'ip': 'xx.xx.xx.xx',

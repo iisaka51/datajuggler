@@ -1,12 +1,15 @@
-from typing import Any, Optional
+# -*- coding: utf-8 -*-
+
+from datajuggler.serializer.abstract import AbstractSerializer
+from datajuggler.serializer.json import JSONSerializer
+from pathlib import Path
+from typing import Optional, Type, Union
 
 try:
     import yaml
     from yaml.representer import Representer, SafeRepresenter
 
-    def yaml_initializer(cls, factory=None):
-        from pathlib import Path
-
+    def yaml_initializer(cls, factory: Optional[Type[dict]]=None):
         """class method to initialize for YAML"""
 
         def _from_yaml(loader, node):
@@ -49,29 +52,47 @@ try:
         Representer.add_representer(cls, _to_yaml)
         Representer.add_multi_representer(cls, _to_yaml)
 
-    def to_yaml(self, obj: Optional[Any]=None, **options):
-        """instance method for convert to YAML"""
-        obj = obj or self
-        opts = dict(indent=4, default_flow_style=False, allow_unicode=True)
-        opts.update(options)
-        if 'Dumper' not in opts:
-            return yaml.safe_dump(obj, **opts)
-        else:
-            return yaml.dump(obj, **opts)
 
-    def from_yaml(self, stream, *args, inplace: bool=False, **kwargs):
-        """instance method for convert from YAML"""
-        factory = lambda d: dict(*(args + (d,)), **kwargs)
-        loader_class = kwargs.pop('Loader', yaml.FullLoader)
-        return self.from_dict(yaml.load(stream, Loader=loader_class),
-                              factory=factory, inplace=inplace)
+    class YAMLSerializer(AbstractSerializer):
+        """
+        This class describes an yaml serializer.
+        """
+
+        def __init__(self, factory: Optional[Type[dict]]=None):
+            super().__init__()
+            self._json_serializer = JSONSerializer()
+
+        def decode(self, s, **kwargs):
+            factory = lambda d: dict(*(args + (d,)), **kwargs)
+            loader_class = kwargs.pop('Loader', yaml.FullLoader)
+            return self.from_dict(yaml.load(stream, Loader=loader_class),
+                                  factory=factory, inplace=inplace)
+
+        def encode(self, d, **options):
+            d = self._json_serializer.decode(self._json_serializer.encode(d))
+            opts = dict(indent=4, default_flow_style=False, allow_unicode=True)
+            opts.update(options)
+            if 'Dumper' not in opts:
+                return yaml.safe_dump(d, **opts)
+            else:
+                return yaml.dump(d, **opts)
+            return data
 
 except ImportError:
-    def to_yaml(self, **options):
-        raise NotImplementedError('You should install PyYAML.')
-
-    def from_yaml(cls, stream, *args, **kwargs):
-        raise NotImplementedError('You should install PyYAML.')
-
-    def yaml_initializer(cls):
+    def yaml_initializer(cls, factory: Optional[Type[dict]]=None):
         pass
+
+    class YAMLSerializer(AbstractSerializer):
+        """
+        This class describes an yaml serializer.
+        """
+
+        def __init__(self):
+            super().__init__()
+
+        def decode(self, s, **kwargs):
+            raise NotImplementedError('You should install PyYAML.')
+
+        def encode(self, d, **kwargs):
+            raise NotImplementedError('You should install PyYAML.')
+

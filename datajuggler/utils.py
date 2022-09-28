@@ -1,8 +1,7 @@
+# -*- coding: utf-8 -*-
+
 import re
-from typing import (
-    Any, Dict, Union, Optional, Hashable, Iterable, Sequence, Pattern,
-    Literal, get_args
-)
+from typing import Any, Dict, Union, Optional, Hashable
 from collections.abc import Mapping
 from functools import partial
 from unicodedata import normalize
@@ -10,8 +9,12 @@ from unicodedata import normalize
 import numpy as np
 import pandas as pd
 from multimethod import multidispatch, multimethod
-from .dict import iDict, uDict, DictItem, DictItemType, validate_DictItem
-from .strings import substr
+from datajuggler.validator import (
+    DictItem, DictItemType, validate_DictItem, validate_DictItem
+)
+
+from datajuggler.strings import substr
+from datajuggler.validator import TypeValidator as _type
 
 class StrCase(object):
 
@@ -19,7 +22,7 @@ class StrCase(object):
         self.depth = 0
         self.__NULL_VALUES = {"", None, np.nan, pd.NA}
 
-        self.supported_case = iDict({
+        self.supported_case = {
             "snake": {
                 'sample': 'convert_case',
                 'separaator': '_',
@@ -64,7 +67,7 @@ class StrCase(object):
                 'separaator': ' ',
                 'splitor': self.split_string,
                  'convertor': lambda x: " ".join(x).upper() },
-        })
+        }
 
         if len(args) == 0:
             self.__origin = None
@@ -78,10 +81,7 @@ class StrCase(object):
             val: Union[str, list, dict]
         )-> Union[str, list, dict]:
 
-        if ( isinstance(val, str)
-             or isinstance(val, list)
-             or isinstance(val, dict)
-             ):
+        if _type.is_str(val) or _type.is_list(val) or _type.is_dict(val):
             return val
         else:
             raise TypeError( 'Expected str or list, dict objects, got {}.'
@@ -182,8 +182,7 @@ class StrCase(object):
         converted data: str
         """
 
-        if replace_for not in get_args(DictItemType):
-            raise ValueError("replace_for must be 'key' or 'value'.")
+        validate_DictItem(replace_for, thrown_error=True)
 
         if data is None:
             if self.depth == 0:
@@ -194,15 +193,15 @@ class StrCase(object):
             else:
                 return data
 
-        if isinstance(data, str):
+        if _type.is_str(data):
             return self.__convert_case_str(case, data)
-        elif isinstance(data, list):
+        elif _type.is_list(data):
             self.depth += 1
             convobj = [ self.convert_case(case, x, replace_for)
                         for x in data ]
             self.depth -= 1
             return convobj
-        elif isinstance(data, dict):
+        elif _type.is_dict(data):
             return self.__convert_case_dict(case, data, replace_for)
         else:
             return data
@@ -211,7 +210,7 @@ class StrCase(object):
         return str(self.origin)
 
     def __repr__(self) -> str:
-        if isinstance(self.__origin, str):
+        if _type.is_str(self.__origin):
             return 'StrCase("{}")'.format(self.__origin)
         else:
             return 'StrCase({})'.format(self.__origin)
@@ -306,12 +305,12 @@ def rename_duplicates(
 
     counts: Dict[str, int] = {}
 
-    if isinstance(data, list):
+    if _type.is_list(data):
         for i, val in enumerate(data):
-            if isinstance(val, list):
+            if _type.is_list(val):
                 new_val = rename_duplicates(val)
                 data[i] = new_val
-            elif isinstance(val, str):
+            elif _type.is_str(val):
                 cur_count = counts.get(val, 0)
                 if cur_count > 0:
                     data[i] = ( "{}{}".format(val, separator)
@@ -353,20 +352,20 @@ def _replace_values_dict_multi(
         inplace: bool=False,
         replace_for: DictItemType = DictItem.VALUE
     )-> Optional[list]:
-   """replace values of dict
-   Parameters
-   ----------
-   values: dict
-      to replace data
-   replace: dict
-      replace map. { old: new,....}
-   replace_for: avaiable 'key', 'value'.
-      If replace_for set 'value', replace 'value' of dict.
-      If replace_value set 'key', replace 'key' of dict.
-      default is 'value'
-   """
+    """replace values of dict
+    Parameters
+    ----------
+    values: dict
+       to replace data
+    replace: dict
+       replace map. { old: new,....}
+    replace_for: avaiable 'key', 'value'.
+       If replace_for set 'value', replace 'value' of dict.
+       If replace_value set 'key', replace 'key' of dict.
+       default is 'value'
+    """
 
-   def replace_val(value, replace, ignore_case):
+    def replace_val(value, replace, ignore_case):
        for old, new in replace.items():
            if ignore_case :
                if value.lower() == old.lower():
@@ -380,26 +379,26 @@ def _replace_values_dict_multi(
                    value
        return value
 
-   validate_DictItem(replace_for, thrown_error=True)
+    validate_DictItem(replace_for, thrown_error=True)
 
-   mapper={}
-   if replace_for == DictItem.KEY:
+    mapper={}
+    if replace_for == DictItem.KEY:
        keys = [ replace_val(x, replace, ignore_case)
                 for x in values.keys() ]
        vals = list(values.values())
-   elif replace_for == DictItem.VALUE:
+    elif replace_for == DictItem.VALUE:
        keys = list(values.keys())
        vals = [replace_val(x, replace, ignore_case)
                for x in values.values() ]
-   else:
+    else:
        return None
 
-   workdict = uDict().fromlists(keys, vals)
+    workdict = dict(zip(keys, vals))
 
-   if inplace:
-       values.update(workdict)
-   else:
-       return workdict
+    if inplace:
+        values.update(workdict)
+    else:
+        return workdict
 
 @replace_values.register(list, list, str)
 def _replace_values_single_str(
@@ -438,7 +437,7 @@ def _replace_values_single_obj(
 
    for n in range(len(values)):
        for old in replace_from:
-           if isinstance(values[n], str) and ignore_case:
+           if _type.is_str(values[n]) and ignore_case:
                new = replace_values(values[n], [old], replace_to)
            if values[n] ==  old:
                values[n] = new
@@ -458,8 +457,8 @@ def _replace_values_text(
     )-> Hashable:
 
    for old in replace_from:
-       if isinstance(old, str):
-           if not isinstance(replace_to, str):
+       if _type.is_str(old):
+           if not _type.is_str(replace_to):
                replace_to = str(replace_to)
            values = substr(old, replace_to, values, ignore_case=ignore_case)
        else:
@@ -478,8 +477,8 @@ def _replace_values_text_multi(
     )-> Hashable:
 
    for old, replace_to in replace.items():
-       if isinstance(old, str):
-           if not isinstance(replace_to, str):
+       if _type.is_str(old):
+           if not _type.is_str(replace_to):
                replace_to = str(replace_to)
            values = substr(old, replace_to, values,
                                 ignore_case =ignore_case)

@@ -1,22 +1,29 @@
+# -*- coding: utf-8 -*-
+
 import re
 from typing import (
     Any, Dict, Union, Optional, Hashable, Iterable, Sequence,
-    Pattern, Callable,
+    Pattern, Match, Callable,
     Literal, get_args
 )
+
 
 __RE_FLAGS = [ re.UNICODE, ( re.IGNORECASE + re.UNICODE) ]
 
 def searchstr(
         pattern: Pattern,
         string: str,
+        wild: bool=False,
         ignore_case: bool=False,
-    ):
+    ) -> Match:
     """ almost same as re.search.
     Scan through string looking for a match to the pattern, returning
     a Match object, or None if no match was found.
     """
-    re.search(pattern, string, flags = __RE_FLAGS[ignore_case])
+    if wild:
+        return re.search(pattern, string, flags = __RE_FLAGS[ignore_case])
+    else:
+        return re.match(pattern, string, flags = __RE_FLAGS[ignore_case])
 
 def substr(
         pattern: Pattern,
