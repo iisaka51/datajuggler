@@ -2935,6 +2935,86 @@ and add new helper mehtods.
  - `without(items)`
  - `replace(old, new)`
 
+
+### Getting staart with iList
+
+```python
+In [1]: from datajuggler import iList
+
+In [2]: l = iList()
+   ...: assert l == []
+
+In [3]: l = iList([1,2,3])
+   ...: assert l == [1,2,3]
+
+In [4]: l = iList()
+   ...: try:
+   ...:     l[0] = 1
+   ...: except IndexError as e:
+   ...:     print(e)
+   ...:
+list assignment index out of range
+
+In [5]: l = iList([1])
+   ...: l[0] = 10
+
+In [6]: l1 = iList([1,2,3,4,5])
+   ...: l2 = iList([1,2,3,4,5])
+
+In [7]: assert l1 == l2
+
+In [8]: l1 = iList([1,2,3,4,5])
+   ...: l2 = list([1,2,3,4,5])
+
+In [9]: assert l1 == l2
+
+In [10]: l1 = iList([5,4,3,2,1])
+    ...: l2 = list([1,2,3,4,5])
+    ...: assert l1 != l2
+
+In [11]: l1 = iList([1, 2, 3])
+
+In [12]: try:
+    ...:     hash(l1)
+    ...: except AttributeError as e:
+    ...:     print(e)
+    ...:
+unhashable not frozen object.
+
+In [13]: l1.freeze()
+
+In [14]: hash(l1)
+Out[14]: 7029740037309777799
+
+In [15]: try:
+    ...:     l1[0] = 10
+    ...: except AttributeError as e:
+    ...:     print(e)
+    ...:
+iList frozen object cannot be modified.
+
+In [16]: l1.unfreeze()
+
+In [17]: l1[0] = 10
+
+In [18]: l = iList([1,2,3])
+
+In [19]: l.Hello='Python'
+
+In [20]: l.Hello
+Out[20]: 'Python'
+
+In [21]: l == [1,2,3]
+Out[21]: True
+
+In [22]: l.get_attrs()
+Out[22]: {'Hello': 'Python'}
+
+In [23]:
+```
+
+
+
 ### copy()
 
 ```python
@@ -2943,6 +3023,25 @@ and add new helper mehtods.
 Creaate the new list that is copied this list.
 this method could not copy self.attrs..
 if pass `freeze=True`, return frozen list object.
+
+```python
+In [1]: from datajuggler import iList
+
+In [2]: l1 = iList([1,2,3])
+   ...: l1.Hello = 'Python'
+   ...: l2 = l1.copy()
+   ...: assert l2 == l1
+
+In [3]: l2.get_attrs()
+Out[3]: {}
+
+In [4]: l1 = iList([1])
+   ...: l2 = l1.copy(freeze=True)
+   ...: hash(l2)
+Out[4]: -4714387948668998104
+
+In [5]:
+```
 
 
 ### clone()
@@ -2954,6 +3053,26 @@ Creaate the new list that is cloned this list.
 this method copy self.attrs.
 if pass `empty=True`, keep self.attrs but list will be cleared.
 
+```python
+In [5]: l1 = iList([1,2,3])
+   ...: l1.Hello = 'Python'
+   ...: l2 = l1.clone()
+   ...: assert l2 == l1
+
+In [6]: l2.get_attrs()
+Out[6]: {'Hello': 'Python'}
+
+In [7]: l3 = l1.clone(empty=True)
+
+In [8]: l3
+Out[8]: iList([])
+
+In [9]: l3.get_attrs()
+Out[9]: {'Hello': 'Python'}
+
+In [10]:
+```
+
 ### without()
 
 ```python
@@ -2962,6 +3081,17 @@ if pass `empty=True`, keep self.attrs but list will be cleared.
 
 Create new list without items and return iterable.
 
+```python
+In [13]: l1 = iList([1,2,3,4,5,6,7,8,9])
+
+In [14]: l1.without([2,4,6,8])
+Out[14]: [1, 3, 5, 7, 9]
+
+In [15]: l1
+Out[15]: iList([1, 2, 3, 4, 5, 6, 7, 8, 9])
+
+In [16]:
+```
 
 ### find()
 
@@ -2972,6 +3102,18 @@ Create new list without items and return iterable.
 ```
 Return the list of index that found val in list.
 otherwise return None
+
+```python
+In [2]: l1 = iList([1,2,3,4,5,6,7,8,9])
+
+In [3]: l1.find(2)
+Out[3]: [1]
+
+In [4]: l1.find([2,4,6,8])
+Out[4]: [1, 3, 5, 7]
+
+In [5]:
+```
 
 ### replace()
 
@@ -2989,7 +3131,29 @@ callback function will be called as follows.
 
  - `func(index, old, new)`
 
-## get_keys
+```python
+In [1]: from datajuggler import iList
+
+In [2]: l1 = iList([1,2,3,1,2,3])
+
+In [3]: l1.replace(3, 5)
+Out[3]: [1, 2, 5, 1, 2, 5]
+
+In [4]: def func(index, old, new):
+   ...:     if index > 3:
+   ...:         return new
+   ...:     else:
+   ...:         return old
+   ...:
+
+In [5]: l1 = iList([1,2,3,1,2,3])
+
+In [6]: l1.replace(3, 5, func)
+Out[6]: [1, 2, 3, 1, 2, 5]
+
+In [7]:
+```
+
 
 ## class TypeValidator
 
