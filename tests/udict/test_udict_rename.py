@@ -1,7 +1,6 @@
-import sys
-import pytest
+# -*- coding: utf-8 -*-
 
-sys.path.insert(0,"../datajuggler")
+import pytest
 
 from datajuggler import  aDict, uDict
 

@@ -1,9 +1,8 @@
-import sys
+# -*- coding: utf-8 -*-
+
 import pytest
 
-sys.path.insert(0,"../datajuggler")
-
-from datajuggler import aDict
+from datajuggler import aDict, Keypath, Keylist
 from datajuggler.dicthelper import (
     get_items, set_items,  del_items, pop_items,
 )
@@ -57,14 +56,27 @@ class TestClass:
     def test_setitem_case08(self):
         data = {'x': {'y': {'z': {'a': 'v1', 'b': 'v2', 'c': 'v3'}}}}
         expect = {'x': {'y': {'z': {'a': 'v11', 'b': 'v2', 'c': 'v3'}}}}
-        set_items(data, 'x y z a', 'v11', separator=' ')
+        set_items(data, Keypath('x.y.z.a'), 'v11')
         assert data == expect
 
     def test_setitem_case09(self):
         data = {'x': {'y': {'z': {'a': 'v1', 'b': 'v2', 'c': 'v3'}}}}
         expect = {'x': {'y': {'z': {'a': 'v11', 'b': 'v2', 'c': 'v3'}}}}
+        set_items(data, Keypath('x y z a', separator=' '), 'v11')
+        assert data == expect
+
+    def test_setitem_case10(self):
+        data = {'x': {'y': {'z': {'a': 'v1', 'b': 'v2', 'c': 'v3'}}}}
+        expect = {'x': {'y': {'z': {'a': 'v11', 'b': 'v2', 'c': 'v3'}}}}
         set_items(data, ['x','y','z','a'], 'v11')
         assert data == expect
+
+    def test_setitem_case11(self):
+        data = {'x': {'y': {'z': {'a': 'v1', 'b': 'v2', 'c': 'v3'}}}}
+        expect = {'x': {'y': {'z': {'a': 'v11', 'b': 'v2', 'c': 'v3'}}}}
+        set_items(data, Keylist(['x','y','z','a']), 'v11')
+        assert data == expect
+
 
 
 
@@ -110,13 +122,25 @@ class TestClass:
     def test_getitem_case07(self):
         data = {'x': {'y': {'z': {'a': 'v1', 'b': 'v2', 'c': 'v3'}}}}
         expect = {'a': 'v11', 'b': 'v2', 'c': 'v3'}
-        result = get_items(data, 'x_y_z_a', 'v11', separator='_')
+        result = get_items(data, Keypath('x_y_z_a', separator='_'), 'v11')
         assert result == expect
 
     def test_getitem_case08(self):
         data = {'x': {'y': {'z': {'a': 'v1', 'b': 'v2', 'c': 'v3'}}}}
         expect = {'a': 'v11', 'b': 'v2', 'c': 'v3'}
         result = get_items(data, ['x','y','z','a'], 'v11')
+        assert result == expect
+
+    def test_getitem_case09(self):
+        data = {'x': {'y': {'z': {'a': 'v1', 'b': 'v2', 'c': 'v3'}}}}
+        expect = {'a': 'v11', 'b': 'v2', 'c': 'v3'}
+        result = get_items(data, ('x','y','z','a'), 'v11')
+        assert result == expect
+
+    def test_getitem_case10(self):
+        data = {'x': {'y': {'z': {'a': 'v1', 'b': 'v2', 'c': 'v3'}}}}
+        expect = {'a': 'v11', 'b': 'v2', 'c': 'v3'}
+        result = get_items(data, Keylist(['x','y','z','a']), 'v11')
         assert result == expect
 
 
@@ -165,12 +189,23 @@ class TestClass:
     def test_delitem_case08(self):
         data = {'x': {'y': {'z': {'a': 'v1', 'b': 'v2', 'c': 'v3'}}}}
         expect = {'x': {'y': {'z': {'b': 'v2', 'c': 'v3'}}}}
-        result = del_items(data, 'x_y_z_a', separator='_')
+        result = del_items(data, Keypath('x_y_z_a', separator='_'))
         assert result == expect
-
 
     def test_delitem_case09(self):
         data = {'x': {'y': {'z': {'a': 'v1', 'b': 'v2', 'c': 'v3'}}}}
         expect = {'x': {'y': {'z': {'b': 'v2', 'c': 'v3'}}}}
         result = del_items(data, ['x','y','z','a'])
+        assert result == expect
+
+    def test_delitem_case10(self):
+        data = {'x': {'y': {'z': {'a': 'v1', 'b': 'v2', 'c': 'v3'}}}}
+        expect = {'x': {'y': {'z': {'b': 'v2', 'c': 'v3'}}}}
+        result = del_items(data, ('x','y','z','a'))
+        assert result == expect
+
+    def test_delitem_case11(self):
+        data = {'x': {'y': {'z': {'a': 'v1', 'b': 'v2', 'c': 'v3'}}}}
+        expect = {'x': {'y': {'z': {'b': 'v2', 'c': 'v3'}}}}
+        result = del_items(data, Keylist(['x','y','z','a']))
         assert result == expect

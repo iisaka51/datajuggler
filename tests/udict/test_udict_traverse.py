@@ -1,10 +1,8 @@
-import sys
-import time
+# -*- coding: utf-8 -*-
+
 import pytest
 
-sys.path.insert(0,"../datajuggler")
-
-from datajuggler import uDict
+from datajuggler import uDict, Keylist
 
 class TestClass:
 
@@ -74,12 +72,19 @@ class TestClass:
     def test_udict_traverse_case04(self):
         def func(obj, index, val, parents, *args, **kwargs):
             nonlocal paths
-            index_paths = [ str(x) for x in parents ]
-            paths.append( ' '.join(index_paths))
+            keypath = Keylist(parents).to_keypath().value()
+            paths.append( f'{keypath}={val}' )
 
         data = [ 100, [200, [300, 310], 210], 110]
 
-        expect = ['0', '1', '1 0', '1 1', '1 1 0', '1 1 1', '1 2', '2']
+        expect = ['[0]=100',
+                  '[1]=[200, [300, 310], 210]',
+                  '[1][0]=200',
+                  '[1][1]=[300, 310]',
+                  '[1][1][0]=300',
+                  '[1][1][1]=310',
+                  '[1][2]=210',
+                  '[2]=110']
 
         paths = []
         uDict().traverse(func, data)
@@ -88,7 +93,7 @@ class TestClass:
     def test_udict_traverse_case05(self):
         def func(obj, key, val, parents, *args, **kwargs):
             nonlocal paths
-            if not isinstance(val, dict) and not isinstance(val, list):
+            if not isinstance(val, dict) and  not isinstance(val, list):
                 obj[key] = val + 1
 
         data = { "a": { "x": [ 100, 200], "y": 3, "z": { "ok": 5, }, },
@@ -100,33 +105,34 @@ class TestClass:
                   'c': {'x': [121, 221], 'y': 20, 'z': {'ok': 14}}}
 
         paths = []
-        uDict(data).traverse(func)
-        assert data == expect
+        obj = uDict(data)
+        obj.traverse(func)
+        assert obj == expect
 
     def test_udict_traverse_case06(self):
         def func(obj, key, val, parents, *args, **kwargs):
             nonlocal paths
             if not isinstance(val, dict) and  not isinstance(val, list):
                 obj[key] = val + 1
-                index_paths = [ str(x) for x in parents ]
-                paths.append( ' '.join(index_paths))
+                keypath = Keylist(parents).to_keypath(separator='_')
+                paths.append(keypath)
 
         data = { "a": { "x": [ 100, 200], "y": 3, "z": { "ok": 5, }, },
                  "b": { "x": [ 110, 210], "y": 11, "z": { "ok": 13, }, },
                  "c": { "x": [ 120, 220], "y": 19, "z": { "ok": 13, }, },
                }
-        expect = ['a x 0',
-                  'a x 1',
-                  'a y',
-                  'a z ok',
-                  'b x 0',
-                  'b x 1',
-                  'b y',
-                  'b z ok',
-                  'c x 0',
-                  'c x 1',
-                  'c y',
-                  'c z ok']
+        expect = ['a_x[0]',
+                  'a_x[1]',
+                  'a_y',
+                  'a_z_ok',
+                  'b_x[0]',
+                  'b_x[1]',
+                  'b_y',
+                  'b_z_ok',
+                  'c_x[0]',
+                  'c_x[1]',
+                  'c_y',
+                  'c_z_ok']
 
         paths = []
         uDict(data).traverse(func)

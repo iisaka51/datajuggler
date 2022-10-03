@@ -1,28 +1,23 @@
-import sys
+# -*- coding: utf-8 -*-
+
 import pytest
 
-sys.path.insert(0,"../datajuggler")
-
 from datajuggler.dicthelper import get_keys
+
+data = { "a": 1,
+         "b": { "c": { "x": 2, "y": 3, },
+                "d": { "x": 4, "y": 5, },
+              },
+        }
 
 class TestClass:
 
     def test_getkeys_case01(self):
-        data = { "a": 1,
-                 "b": { "c": { "x": 2, "y": 3, },
-                        "d": { "x": 4, "y": 5, },
-                      },
-                }
         expect = ['a', 'b', 'c', 'x', 'y', 'd', 'x', 'y']
         result = get_keys(data)
         assert result == expect
 
     def test_getkeys_case02(self):
-        data = { "a": 1,
-                 "b": { "c": { "x": 2, "y": 3, },
-                        "d": { "x": 4, "y": 5, },
-                      },
-                }
         expect = ['a', 'b', 'c', 'x', 'y', 'd', 'x', 'y']
         expect = [['a'],
                   ['b'],
@@ -33,15 +28,10 @@ class TestClass:
                   ['b', 'd', 'x'],
                   ['b', 'd', 'y']
                 ]
-        result = get_keys(data, output_for="keylist")
+        result = get_keys(data, output_as="keylist")
         assert result == expect
 
     def test_getkeys_case03(self):
-        data = { "a": 1,
-                 "b": { "c": { "x": 2, "y": 3, },
-                        "d": { "x": 4, "y": 5, },
-                      },
-                }
         expect = ['a',
                   'b',
                   'b.c',
@@ -50,15 +40,10 @@ class TestClass:
                   'b.d',
                   'b.d.x',
                   'b.d.y']
-        result = get_keys(data, output_for="keypath")
+        result = get_keys(data, output_as="keypath")
         assert result == expect
 
     def test_getkeys_case04(self):
-        data = { "a": 1,
-                 "b": { "c": { "x": 2, "y": 3, },
-                        "d": { "x": 4, "y": 5, },
-                      },
-                }
         expect = ['a',
                   'b',
                   'b_c',
@@ -67,6 +52,6 @@ class TestClass:
                   'b_d',
                   'b_d_x',
                   'b_d_y']
-        result = get_keys(data, output_for="keypath", separator='_')
+        result = get_keys(data, output_as="keypath", separator='_')
         assert result == expect
 

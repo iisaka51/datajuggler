@@ -1,7 +1,4 @@
-import sys
 import pytest
-
-sys.path.insert(0,"../datajuggler")
 
 from datajuggler import aDict, Keylist, Keypath
 from datajuggler.dicthelper import d_compare

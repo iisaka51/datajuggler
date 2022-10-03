@@ -1,13 +1,12 @@
-import sys
+# -*- coding: utf-8 -*-
+
 import pytest
 
-sys.path.insert(0,"../datajuggler")
-
-from datajuggler import aDict, uDict
+from datajuggler import aDict, uDict, Keypath, Keylist
 
 class TestClass:
     def test_udict_setitem_case01(self):
-        expect = {'a': None}
+        expect = uDict({'a': None})
         obj = dict()
         uDict().set_items('a', None, obj)
         assert obj == expect
@@ -23,10 +22,12 @@ class TestClass:
         assert obj == expect
 
     def test_udict_setitem_case03(self):
-        expect = {'a': {'b': {'c': 0}}}
+        expect = uDict({'a': uDict({'b': uDict({'c': 0})})})
+        expect_dict = {'a': {'b': {'c': 0}}}
         obj = uDict(())
         obj.set_items(['a', 'b', 'c'], 0)
         assert obj == expect
+        assert obj.to_dict() == expect_dict
 
     def test_udict_setitem_case04(self):
         data = { 'a': 1, 'b': 2}
@@ -48,30 +49,43 @@ class TestClass:
         data = {'x': {'y': {'z': {'a': 'v1', 'b': 'v2', 'c': 'v3'}}}}
         expect = {'x': {'y': {'z': {'a': 'v11', 'b': 'v2', 'c': 'v3'}}}}
         obj = uDict(data)
-        obj.set_items(['x', 'y', 'z', 'a'], 'v11')
+        obj.set_items(Keylist(['x', 'y', 'z', 'a']), 'v11')
         assert obj == expect
 
     def test_udict_setitem_case07(self):
         data = {'x': {'y': {'z': {'a': 'v1', 'b': 'v2', 'c': 'v3'}}}}
         expect = {'x': {'y': {'z': {'a': 'v11', 'b': 'v2', 'c': 'v3'}}}}
         obj = uDict(data)
-        obj.set_items('x.y.z.a', 'v11')
+        obj.set_items(Keypath('x.y.z.a'), 'v11')
         assert obj == expect
 
     def test_udict_setitem_case08(self):
         data = {'x': {'y': {'z': {'a': 'v1', 'b': 'v2', 'c': 'v3'}}}}
         expect = {'x': {'y': {'z': {'a': 'v11', 'b': 'v2', 'c': 'v3'}}}}
         obj = uDict(data)
-        obj.set_items('x y z a', 'v11', separator=' ')
+        obj.set_items(Keypath('x y z a',  separator=' '), 'v11')
         assert obj == expect
 
     def test_udict_setitem_case09(self):
         data = {'x': {'y': {'z': {'a': 'v1', 'b': 'v2', 'c': 'v3'}}}}
         expect = {'x': {'y': {'z': {'a': 'v11', 'b': 'v2', 'c': 'v3'}}}}
         obj = uDict(data)
-        obj.set_items(['x','y','z','a'], 'v11')
+        obj.set_items(Keylist(['x','y','z','a']), 'v11')
         assert obj == expect
 
+    def test_udict_setitem_case10(self):
+        data = {'x': {'y': {'z': {'a': 'v1', 'b': 'v2', 'c': 'v3'}}}}
+        expect = {'x': {'y': {'z': {'a': 'v11', 'b': 'v2', 'c': 'v3'}}}}
+        d = uDict(data)
+        d.set_items(['x','y','z','a'], 'v11')
+        assert d == expect
+
+    def test_udict_setitem_case11(self):
+        data = {'x': {'y': {'z': {'a': 'v1', 'b': 'v2', 'c': 'v3'}}}}
+        expect = {'x': {'y': {'z': {'a': 'v11', 'b': 'v2', 'c': 'v3'}}}}
+        d = uDict(data)
+        d.set_items(Keylist(['x','y','z','a']), 'v11')
+        assert d == expect
 
 
     def test_udict_getitem_case01(self):
@@ -115,19 +129,31 @@ class TestClass:
     def test_udict_getitem_case06(self):
         data = {'x': {'y': {'z': {'a': 'v1', 'b': 'v2', 'c': 'v3'}}}}
         expect = {'a': 'v11', 'b': 'v2', 'c': 'v3'}
-        result = uDict(data).get_items('x.y.z.a', 'v11')
+        result = uDict(data).get_items(Keypath('x.y.z.a'), 'v11')
         assert result == expect
 
     def test_udict_getitem_case07(self):
         data = {'x': {'y': {'z': {'a': 'v1', 'b': 'v2', 'c': 'v3'}}}}
         expect = {'a': 'v11', 'b': 'v2', 'c': 'v3'}
-        result = uDict(data).get_items('x_y_z_a', 'v11', separator='_')
+        result = uDict(data).get_items(Keypath('x_y_z_a', separator='_'), 'v11')
         assert result == expect
 
     def test_udict_getitem_case08(self):
         data = {'x': {'y': {'z': {'a': 'v1', 'b': 'v2', 'c': 'v3'}}}}
+        expect = uDict({'a': 'v11', 'b': 'v2', 'c': 'v3'})
+        result = uDict(data).get_items(Keylist(['x','y','z','a']), 'v11')
+        assert result == expect
+
+    def test_udict_getitem_case09(self):
+        data = {'x': {'y': {'z': {'a': 'v1', 'b': 'v2', 'c': 'v3'}}}}
         expect = {'a': 'v11', 'b': 'v2', 'c': 'v3'}
-        result = uDict(data).get_items(['x','y','z','a'], 'v11')
+        result = uDict(data).get_items(('x','y','z','a'), 'v11')
+        assert result == expect
+
+    def test_udict_getitem_case10(self):
+        data = {'x': {'y': {'z': {'a': 'v1', 'b': 'v2', 'c': 'v3'}}}}
+        expect = {'a': 'v11', 'b': 'v2', 'c': 'v3'}
+        result = uDict(data).get_items(Keylist(['x','y','z','a']), 'v11')
         assert result == expect
 
 
@@ -174,17 +200,29 @@ class TestClass:
     def test_udict_delitem_case07(self):
         data = {'x': {'y': {'z': {'a': 'v1', 'b': 'v2', 'c': 'v3'}}}}
         expect = {'x': {'y': {'z': {'b': 'v2', 'c': 'v3'}}}}
-        result = uDict(data).del_items('x.y.z.a')
+        result = uDict(data).del_items(Keypath('x.y.z.a'))
         assert result == expect
 
     def test_udict_delitem_case08(self):
         data = {'x': {'y': {'z': {'a': 'v1', 'b': 'v2', 'c': 'v3'}}}}
         expect = {'x': {'y': {'z': {'b': 'v2', 'c': 'v3'}}}}
-        result = uDict(data).del_items('x_y_z_a', separator='_')
+        result = uDict(data).del_items(Keypath('x_y_z_a', separator='_'))
         assert result == expect
 
     def test_udict_delitem_case09(self):
         data = {'x': {'y': {'z': {'a': 'v1', 'b': 'v2', 'c': 'v3'}}}}
         expect = {'x': {'y': {'z': {'b': 'v2', 'c': 'v3'}}}}
         result = uDict(data).del_items(['x','y','z','a'])
+        assert result == expect
+
+    def test_delitem_case10(self):
+        data = {'x': {'y': {'z': {'a': 'v1', 'b': 'v2', 'c': 'v3'}}}}
+        expect = {'x': {'y': {'z': {'b': 'v2', 'c': 'v3'}}}}
+        result = uDict(data).del_items(('x','y','z','a'))
+        assert result == expect
+
+    def test_delitem_case11(self):
+        data = {'x': {'y': {'z': {'a': 'v1', 'b': 'v2', 'c': 'v3'}}}}
+        expect = {'x': {'y': {'z': {'b': 'v2', 'c': 'v3'}}}}
+        result = uDict(data).del_items(Keylist(['x','y','z','a']))
         assert result == expect

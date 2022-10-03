@@ -8,11 +8,11 @@ from typing import (
     Callable, Pattern, Match, Literal, get_args
     )
 
-from collections import OrderedDict, defaultdict
+from collections import defaultdict
 
 from datajuggler.utils import StrCase
 from datajuggler.keys import (
-     Keylist, Keypath, Default_Keypath_Separator
+     Keylist, Keypath, Default_Keypath_Separator, get_index_from_key
      )
 from datajuggler.strings import is_match_string, searchstr
 from datajuggler.validator import (
@@ -86,7 +86,7 @@ def d_compare(
         d1: dict,
         d2: dict,
         *,
-        keys: Optional[Union[Hashable,list, Keylist, Keypath]]=None,
+        keys: Optional[Union[Hashable, list, Keylist, Keypath]]=None,
         thrown_error: bool=False,
     ):
     """Compare tow dictionary with keys.
@@ -115,13 +115,10 @@ def d_compare(
         keys = get_keys(d1)
         check_key = d1 == d2
     else:
-        if _type.is_keylist(keys):
-            d1 = get_items(d1, keys, None)
-            d2 = get_items(d2, keys, None)
-        elif _type.is_keypath(keys):
-            d1 = get_items(d1, keys, None)
-            d2 = get_items(d2, keys, None)
-            keys = keys[-1]
+        if _type.is_keylist_or_keypath(keys):
+            d1 = get_values(d1, keys)
+            d2 = get_values(d2, keys)
+            keys = get_keys(d1)
         else:
             keys = [keys] if _type.is_str(keys) else keys
 
@@ -650,7 +647,12 @@ def d_search(
         ignore_case: bool=False,
         use_keypath: bool=True,
     ):
-    """ Search and return a list of items matching the given query.  """
+    """ Search and return a list of items matching the given query.
+    search_for accept 'key', 'value' or others.
+    if pass `search_for='all'`, search key and value.
+    if pass `ignore_case=True`, match search string with ignore case.
+    if pass `use_keypath`, return result with keypath.
+    """
 
     def get_match(
             query: Pattern,
@@ -683,10 +685,9 @@ def d_search(
         match_key = in_keys and get_match(query, key, exact, ignore_case)
         match_val = in_values and get_match(query, value, exact, ignore_case)
         if any([match_key, match_val]):
-            keylist = [ str(x) for x in parents ]
-            keypath = Keylist(keylist).to_keypath()
+            keypath = Keylist(parents).to_keypath(separator=separator)
             if not use_keypath:
-                keypath = keypath.value()
+                keypath = str(keypath)
             items[keypath] =  value
 
     items = defaultdict(str)
@@ -797,7 +798,6 @@ def d_unflatten(
         value = obj.get(key, default)
         new_keys, new_value = _unflatten_item(key, value, separator)
         new = update_items(new, new_keys, new_value,
-                                 separator=separator,
                                  inplace=False, factory=factory)
 
     return _dict_updator(obj, new, inplace=inplace, factory=factory)
@@ -845,7 +845,7 @@ def d_traverse(
             d_traverse(value, callback, *args, parents=parents, **kwargs)
             parents.pop()
 
-    if not callable(callback):
+    if not _type.is_function(callback):
             raise ValueError("callback argument must be a callable.")
     if _type.is_mapping(obj):
         _traverse_dict(obj, callback, *args, parents=parents, **kwargs)
@@ -943,14 +943,14 @@ def get_item_hierarchy(
 
 def get_keys(
         obj: Optional[dict]=None,
-        indexes: bool=False,
         *,
-        output_for: Optional[DictKey]=None,
+        indexes: bool=False,
+        output_as: Optional[DictKey]=None,
         separator: str=Default_Keypath_Separator,
     ) -> list:
     """ Get to get all keys from dictionary as a List
     This method is able to process on nested dictionary.
-    if output_for accept "keylist" and "keypath".
+    if output_as accept "keylist" and "keypath".
     """
 
     def get_deeply( obj):
@@ -968,12 +968,12 @@ def get_keys(
         return found_keys
 
 
-    if not output_for:
+    if not output_as:
         all_keys = get_deeply(obj)
     else:
-        validate_DictKey(output_for, thrown_error=True)
+        validate_DictKey(output_as, thrown_error=True)
 
-        if output_for == DictKey.KEYLIST:
+        if output_as == DictKey.KEYLIST:
             all_keys = Keylist.keylists(obj, indexes=indexes)
         else:
             all_keys = Keypath.keypaths(obj, indexes=indexes,
@@ -981,24 +981,19 @@ def get_keys(
 
     return all_keys
 
+
 def get_values(
         obj: Union[dict, Sequence],
-        keys: Union[Hashable, Sequence],
-        *,
-        wild: bool=False,
-        with_keys: bool=False,
-        verbatim: bool=False,
-    ) -> Union[list, dict]:
-    """Search the key in the objet(s).
+        keys: Union[Hashable, Keylist, Keypath],
+    ) -> Any:
+    """Get the value of key in the objet(s).
     `obj` : dict, dict[dict], dict[list], list[dict]
-    return a list of values
+    return value, list, dict.
     """
 
     def deep_lookup(
             key: Hashable,
             obj: Union[dict, list, tuple],
-            wild: bool=False,
-            verbatim: bool=False,
         ):
         """Lookup a key in a nested object(s).
         yield a value
@@ -1006,56 +1001,55 @@ def get_values(
 
         if _type.is_mapping(obj):
             for k, v in obj.items():
-                if is_match_string(key, k, wild):
-                    if verbatim:
-                        yield k, v
-                    else:
-                        yield key, v
+                if key == k:
+                    yield k, v
                 if _type.is_mapping(v):
-                    for kk, v in deep_lookup(key, v,
-                                      wild=wild, verbatim=verbatim):
+                    for kk, v in deep_lookup(key, v):
                         yield (kk, v)
                 elif _type.is_list_or_tuple(v):
                     for element in v:
-                        for kk, v in deep_lookup( key, element,
-                                         wild=wild, verbatim=verbatim):
+                        for kk, v in deep_lookup( key, element):
                             yield (kk, v)
 
         elif _type.is_list_or_tuple(obj):
-            for element in obj:
-                for k, v in deep_lookup(key, element,
-                                 wild=wild, verbatim=verbatim):
-                    if verbatim:
+            index = get_index_from_key(key)
+            if _type.is_not_none(index):
+                yield (index, obj[index] )
+            else:
+                for element in obj:
+                    for k, v in deep_lookup(key, element):
                         yield (k, v)
-                    else:
-                        yield (key, v)
 
-    if _type.is_str(keys):
+    as_dict = False
+    if _type.is_keypath(keys):
+        keys = keys.to_keylist().value()
+    elif _type.is_keylist(keys):
+        keys = keys.value()
+    elif _type.is_tuple(keys):
+        keys = list(keys)
+    elif _type.is_str(keys):
         keys = [keys]
-        as_dict = False
-    else:
+    elif not _type.is_list_not_empty(keys):
+        keys = list(keys)
         as_dict = True
 
-    keys = list(keys) if not _type.is_list(keys) else keys
-
     values = defaultdict(list)
+    v = obj
     for key in keys:
-        for k, v in deep_lookup(key, obj, wild=wild, verbatim=verbatim):
+        for k, v in deep_lookup(key, v):
             values[k].append(v)
 
-    if with_keys or as_dict:
+    if as_dict:
         return values
     else:
-        return list(values.values())[0]
-
+        return values[k][-1]
 
 def get_items(
         obj: dict,
-        loc: Hashable,
+        loc: Union[Hashable, Keylist, Keypath],
         value: Any,
-        func: Optional[Callable]=None,
         *,
-        separator: str=Default_Keypath_Separator,
+        func: Optional[Callable]=None,
         factory: Type[dict]=dict,
     ):
     """
@@ -1073,26 +1067,22 @@ def get_items(
         keylist: if set ['a', 'b1', 'c1',  'x'] to `loc`, val is 1.
         keypath: if 'a.b1.c1.x'  to `loc`, val is 1.
         giving the location of the value to be changed in `obj`.
-        if set loc as str and has `.keypath_separator`,
-        convert keypath to str using
-        `str.split(keys, sep=separator)`.
     value: the value to aplly
     """
 
     new = factory(obj)
 
-    new = update_items(new, loc, value, func=func, separator=separator,
+    new = update_items(new, loc, value, func=func,
                         action=DictAction.GET,
                         inplace=False, factory=factory)
     return new
 
 def pop_items(
         obj: dict,
-        loc: Hashable,
-        value: Optional[Any]=None,
+        loc: Union[Hashable, Keylist, Keypath],
+        value: Any,
         *,
         func: Optional[Callable]=None,
-        separator: str=Default_Keypath_Separator,
         factory: Type[dict]=dict,
     ):
     """ Create new dictionary with new key value pair as d[key]=val.
@@ -1114,16 +1104,15 @@ def pop_items(
         `str.split(keys, sep=separator)`.
     value: the value to aplly
     """
-    item = update_items(obj, loc, value, func=func, separator=separator,
+    item = update_items(obj, loc, value, func=func,
                         action=DictAction.POP,
                         inplace=True, factory=factory)
     return item
 
 def del_items(
         obj: dict,
-        loc: Union[Hashable, list, tuple],
+        loc: Union[Hashable, Keylist, Keypath],
         *,
-        separator: str=Default_Keypath_Separator,
         inplace: bool=False,
         factory: Type[dict]=dict,
     ):
@@ -1142,9 +1131,6 @@ def del_items(
         keylist: if set ['a', 'b1', 'c1',  'x'] to `loc`, val is 1.
         keypath: if 'a.b1.c1.x'  to `loc`, val is 1.
         giving the location of the value to be changed in `obj`.
-        if set loc as str and has `separator`,
-        convert keypath to str using
-        `str.split(keys, sep=separator)`.
     value: the value to aplly
     func:
         the function to apply the object(s)..
@@ -1155,17 +1141,17 @@ def del_items(
 
     obj = obj if inplace else factory(obj)
 
-    new = update_items(obj, loc, None, func=None, separator=separator,
+    new = update_items(obj, loc, None, func=None,
                         action=DictAction.DEL,
                         inplace=False, factory=factory)
+
     return _dict_updator(obj, new, inplace=inplace, factory=factory)
 
 def set_items(
         obj: Union[dict, Sequence],
-        loc: Union[str, Sequence],
+        loc: Union[Hashable, Keylist, Keypath],
         value: Any,
         func: Optional[Callable]=None,
-        separator: str=Default_Keypath_Separator,
         factory: Type[dict]=dict,
     ):
     """ Create new dict with new, potentially nested, key value pair
@@ -1181,8 +1167,6 @@ def set_items(
         keypath: if 'a.b1.c1.x'  to `loc`, val is 1.
         giving the location of the value to be changed in `obj`.
         if set loc as str and has `.keypath_separator`,
-        convert keypath to str using
-        `str.split(keys, sep=separator)`.
     value: the value to aplly
     func:
         the function to apply the object(s)..
@@ -1191,18 +1175,18 @@ def set_items(
         otherwise, not modify the initial dictionary.
     """
 
-    new = update_items(obj, loc, value, func=func, separator=separator,
+    new = update_items(obj, loc, value, func=func,
                          factory=factory, inplace=False)
     return _dict_updator(obj, new, inplace=True, factory=factory)
 
 
 def update_items(
         obj: Union[dict, Sequence],
-        loc: Union[str, Sequence],
-        value: Any,
-        func: Optional[Callable]=None,
+        loc: Union[Hashable, Keylist, Keypath],
+        value: Optional[Any]=None,
+        *,
         default: Optional[Any]=None,
-        separator: str=Default_Keypath_Separator,
+        func: Optional[Callable]=None,
         action: DictActionType=DictAction.SET,
         inplace: bool=False,
         factory: Type[dict]=dict,
@@ -1237,9 +1221,14 @@ def update_items(
 
     validate_DictAction(action, thrown_error=True)
 
+    if _type.is_keylist(loc):
+        loc = loc.value()
+    elif _type.is_keypath(loc):
+        loc = loc.to_keylist().value()
+    elif _type.is_str_not_empty(loc):
+        loc = Keypath(loc).to_keylist().value()
     if _type.is_tuple(loc):
         loc = list(loc)
-    loc = Keypath.path2list(loc, separator=separator)
 
     iter_key = iter(loc)
     k = next(iter_key)
@@ -1247,7 +1236,10 @@ def update_items(
     new = inner = factory()
     new.update(obj)
 
-    func = func if func else lambda x: value
+    if _type.is_not_none(value):
+        func = func if func else lambda x: value
+    else:
+        func = func if func else lambda x: x
 
     for key in iter_key:
         if k in obj:
@@ -1330,6 +1322,5 @@ __all__ = [
     "del_items",
     "set_items",
     "update_items",
-    "ordereddict_to_dict",
 ]
 

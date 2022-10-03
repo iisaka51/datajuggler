@@ -12,6 +12,10 @@ class TestClass:
         expect = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
         d = aDict(data)
         assert d == data
+        d.clear()
+        assert d == {}
+        d.update(data)
+        assert d== data
 
     def test_adict_case02(self):
         data = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
@@ -37,12 +41,16 @@ class TestClass:
 
     def test_adict_case06(self):
         data = { 'one': { 'two': { 'three': { 'four': 4 }}}}
-        expect = ( "aDict({'one': "
+        expect_repr = ( "aDict({'one': "
                      "aDict({'two': "
                        "aDict({'three': "
                          "aDict({'four': 4})})})})" )
+        expect_str = "{'one': {'two': {'three': {'four': 4}}}}"
         d = aDict(data)
-        assert d.__repr__() == expect
+        assert d.__repr__() == expect_repr
+        assert repr(d) == expect_repr
+        assert d.__str__() == expect_str
+        assert str(d) == expect_str
 
     def test_adict_case07(self):
         data = [ 'January', 'February', 'March', 'April' ]

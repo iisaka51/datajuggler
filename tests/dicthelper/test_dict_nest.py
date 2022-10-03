@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import sys
 import pytest
-
-sys.path.insert(0,"../datajuggler")
 
 from datajuggler.dicthelper import d_nest
 

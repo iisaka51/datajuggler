@@ -1,8 +1,8 @@
-import sys
+# -*- coding: utf-8 -*-
+
 import pytest
 
-sys.path.insert(0,"../datajuggler")
-
+from datajuggler import Keylist
 from datajuggler.dicthelper import keylists
 
 class TestClass:
@@ -28,11 +28,20 @@ class TestClass:
     def test_keylists_case02(self):
         data = { 1: { 1: 1, },
                  2: { 2: 1, },
-                 3: { None: 1, },
+                 3: { 3: 1, },
                }
-        expect = [[1], [1, 1], [2], [2, 2], [3], [3, None]]
+        expect_list = [[1], [1, 1], [2], [2, 2], [3], [3, 3]]
+        expect = [
+                Keylist([1]),
+                Keylist([1, 1]),
+                Keylist([2]),
+                Keylist([2, 2]),
+                Keylist([3]),
+                Keylist([3, 3])
+            ]
         result = keylists(data)
         assert result == expect
+        assert result == expect_list
 
     def test_keylists_case03(self):
         data = { "a": 1,

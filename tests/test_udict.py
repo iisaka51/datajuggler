@@ -37,11 +37,16 @@ class TestClass:
 
     def test_udict_case06(self):
         data = { 'one': { 'two': { 'three': { 'four': 4 }}}}
-        expect = ( "uDict("
-                   "{'one': {'two': {'three': {'four': 4}}}}"
-                   ")" )
+        expect_repr = ( "uDict({'one': "
+                      "uDict({'two': "
+                         "uDict({'three': "
+                           "uDict({'four': 4})})})})" )
+        expect_str = "{'one': {'two': {'three': {'four': 4}}}}"
         obj = uDict(data)
-        assert obj.__repr__() == expect
+        assert obj.__repr__() == expect_repr
+        assert repr(obj) == expect_repr
+        assert obj.__str__() == expect_str
+        assert str(obj) == expect_str
 
     def test_udict_case07(self):
         data = [ 'January', 'February', 'March', 'April' ]

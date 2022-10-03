@@ -1,7 +1,6 @@
-import sys
-import pytest
+# -*- coding: utf-8 -*-
 
-sys.path.insert(0,"../datajuggler")
+import pytest
 
 from datajuggler import uDict
 
@@ -30,7 +29,7 @@ class TestClass:
                   ['b', 'd', 'x'],
                   ['b', 'd', 'y']
                 ]
-        result = uDict(data).get_keys(output_for="keylist")
+        result = uDict(data).get_keys(output_as="keylist")
         assert result == expect
 
     def test_getkeys_case03(self):
@@ -42,7 +41,7 @@ class TestClass:
                   'b.d',
                   'b.d.x',
                   'b.d.y']
-        result = uDict(data).get_keys(output_for="keypath")
+        result = uDict(data).get_keys(output_as="keypath")
         assert result == expect
 
     def test_getkeys_case04(self):
@@ -54,7 +53,7 @@ class TestClass:
                   'b_d',
                   'b_d_x',
                   'b_d_y']
-        result = uDict(data).get_keys(data, output_for="keypath",
+        result = uDict(data).get_keys(data, output_as="keypath",
                                             separator='_')
         assert result == expect
 

@@ -47,6 +47,13 @@ class BaseDict(dict):
         self.clear()
         self.update(state)
 
+    def __deepcopy__(self, memo):
+        other = self.__class__()
+        memo[id(self)] = other
+        for key, value in self.items():
+            other[copy.deepcopy(key, memo)] = copy.deepcopy(value, memo)
+        return other
+
     def copy(self,
             factory: Optional[Type[dict]]=None,
         ):
@@ -600,28 +607,6 @@ class aDict(IODict):
         else:
             raise AttributeError('unhashable not frozen object.')
 
-    def __deepcopy__(self, memo):
-        other = self.__class__()
-        memo[id(self)] = other
-        for key, value in self.items():
-            other[copy.deepcopy(key, memo)] = copy.deepcopy(value, memo)
-        return other
-
-    def update(self, *args, **kwargs):
-        self._check_frozen(thrown_error=True)
-        other = {}
-        if args:
-            if len(args) > 1:
-                raise TypeError()
-            other.update(args[0])
-        other.update(kwargs)
-        for k, v in other.items():
-            if ((k not in self) or
-                (not _type.is_dict(self[k])) or
-                (not _type.is_dict(v))):
-                self[k] = v
-            else:
-                self[k].update(v)
 
     def __getnewargs__(self):
         return tuple(self.items())
@@ -634,21 +619,11 @@ class aDict(IODict):
         self.update(state)
 
     def __or__(self, other):
-        # if not _type.is_dict(other):
-        #    return NotImplemented
-        # new = copy.copy(self)
-        # new.update(other)
-        # return new
         return d.d_merge(self, other,
                          overwrite=True, concat=True,
                          inplace=False, factory=type(self))
 
     def __ror__(self, other):
-        # if not _type.is_dict(other):
-        #     return NotImplemented
-        # new = copy.copy(other)
-        # new.update(self)
-        # return new
         return d.d_merge(other, self,
                          overwrite=True, concat=True,
                          inplace=False, factory=type(self))
@@ -680,8 +655,8 @@ class aDict(IODict):
                 else:
                     self[k] = v
             except:
-                if not self._check_frozen(thrown_error=False):
-                    raise AttributeError(k)
+                self._check_frozen(thrown_error=True)
+                raise AttributeError(k)
         else:
             object.__setattr__(self, k, v)
 
@@ -697,22 +672,43 @@ class aDict(IODict):
         else:
             object.__delattr__(self, k)
 
-    def copy(self):
-        return copy.copy(self)
+    def copy(self, freeze: bool=False):
+        """
+        Creaate the new dictionary that is copied this dictionary..
+        if pass `freeze=True`, return frozen list object.
+        """
+        new =  copy.copy(self)
+        new.freeze(freeze)
+        return new
 
     def clear(self):
+        """ Remove all items from this dictionary."""
         self._check_frozen(thrown_error=True)
         return super().clear()
 
-    def pop(self, key, value):
+    def pop(self, key: Hashable, default: Optional[Any]=None):
+        """
+        remove specified key and return the corresponding value.
+        If the key is not found, return the default if given; otherwise,
+        raise a KeyError.
+        """
         self._check_frozen(thrown_error=True)
-        return super().pop(key, value)
+        return super().pop(key, default)
 
-    def popitem(self, key, value):
+    def popitem(self, key: Hashable, value: Optional[Any]=None):
+        """
+        Remove and return a (key, value) pair as a 2-tuple.
+        Pairs are returned in LIFO (last-in, first-out) order.
+        Raises KeyError if the dict is empty.
+        """
         self._check_frozen(thrown_error=True)
-        return super().pop(key, value)
+        return super().popitem(key, value)
 
     def setdefault(self, key, default=None):
+        """
+        Insert key with a value of default if key is not in the dictionary.
+        Return the value for key if key is in the dictionary, else default.
+        """
         self._check_frozen(thrown_error=True)
         if key in self:
             return self[key]
@@ -721,22 +717,23 @@ class aDict(IODict):
             return default
 
     def freeze(self, shouldFreeze=True):
+        """ Freeze this object.  """
         object.__setattr__(self, '__frozen', shouldFreeze)
         for key, val in self.items():
             if _type.is_same_as(val, self):
                 val.freeze(shouldFreeze)
 
     def unfreeze(self):
+        """ Unfreeze this object.  """
         self.freeze(False)
 
     def update(self, *args, **kwargs):
         self._check_frozen(thrown_error=True)
         for key, val in dict(*args, **kwargs).items():
-            if _type.is_dict_and_not_other(dict, self):
+            if _type.is_dict_and_not_other(val, self):
                 self[key] = self.from_dict(val)
             else:
                 self[key] = val
-
 
 
 class uDict(IODict):
@@ -750,7 +747,7 @@ class uDict(IODict):
         ):
         if separator:
             self._keypath_separator = separator
-        super().__init__(*args, **kwargs)
+        self.update(dict(*args, **kwargs))
 
     def __is_keypath_or_keylist(self, x):
         return ( self._keypath_separator is not None
@@ -794,6 +791,7 @@ class uDict(IODict):
 
         return super().__contains__(key)
 
+
     def __delitem__(self,
             key: Union[str, Keylist, Keypath],
         ):
@@ -803,14 +801,15 @@ class uDict(IODict):
         super().__delitem__(key)
 
     def __getitem__(self,
-            key: Union[str, list, tuple, Keylist, Keypath],
+            key: Union[Hashable, Keylist, Keypath],
         ):
-        if self.__is_keypath_or_keylist(key):
-            return self.get_items(key)
+        if ( self.__is_keypath_or_keylist(key)
+             or _type.is_tuple(key) ):
+            return self.get_values(key)
         return super().__getitem__(key)
 
     def __setitem__(self,
-            key: Union[str, Keylist, Keypath],
+            key: Union[Hashable, Keylist, Keypath],
             val: Any,
         ):
         if self.__is_keypath_or_keylist(key):
@@ -831,24 +830,27 @@ class uDict(IODict):
         self.update(other)
         return self
 
+    def __str__(self):
+        return f'{self.to_dict(self)}'
 
     def get(self,
             key: Union[str, Keylist, Keypath],
             default=None,
         ):
         if self.__is_keypath_or_keylist(key):
-            return self.get_items(key, default)
+            return self.get_values(key)
         return super().get(key, default)
 
     def pop(self,
             key: Union[str, Keylist, Keypath],
             *args: Any,
         ):
+
+        default=args[0] if args else None
         if self.__is_keypath_or_keylist(key):
-            return self.pop_items(key)
-        if args:
-            return args[0]
-        raise KeyError(f"Invalid keys: '{keys}'")
+            return self.pop_items(key, default=default)
+        else:
+            return super().pop(key, default)
 
     def set(self,
             key: Union[str, Keylist, Keypath],
@@ -911,15 +913,11 @@ class uDict(IODict):
         d1: dict,
         d2: Optional[dict]=None,
         *,
-        keys: Optional[Union[Hashable,list]]=None,
-        keylist: bool=False,
-        keypath: bool=False,
+        keys: Optional[Union[Hashable,list, Keylist, Keypath]]=None,
         thrown_error: bool=False,
         ):
         d2 = d2 or self
-        return d.d_compare(d1, d2, keys=keys,
-                         keylist=keylist, keypath=keypath,
-                         thrown_error=thrown_error)
+        return d.d_compare(d1, d2, keys=keys, thrown_error=thrown_error)
 
     compare.__doc__ = _get_docstring(d.d_compare, 'd2')
 
@@ -960,7 +958,7 @@ class uDict(IODict):
             factory: Optional[Type[dict]]=None,
         ) -> dict:
         factory = factory or type(self)
-        return d.d_groupby(seq, key, factory)
+        return d.d_groupby(seq, key, factory=factory)
 
     groupby.__doc__ = _get_docstring(d.d_groupby)
 
@@ -1084,11 +1082,13 @@ class uDict(IODict):
     def get_keys(self,
             obj: Optional[dict]=None,
             *,
-            output_for: Optional[DictKeyType]=None,
+            indexes: bool=False,
+            output_as: Optional[DictKeyType]=None,
             separator: str=Default_Keypath_Separator,
         ) -> list:
         obj = obj if obj or obj == {} else self
-        return d.get_keys(obj, output_for=output_for,
+        return d.get_keys(obj, indexes=indexes,
+                               output_as=output_as,
                                separator=separator)
 
     get_keys.__doc__ = _get_docstring(d.get_keys, 'obj')
@@ -1096,32 +1096,24 @@ class uDict(IODict):
     def get_values(self,
             keys: Union[Hashable, Sequence],
             obj: Optional[Union[dict, Sequence]] = None,
-            *,
-            wild: bool=False,
-            with_keys: bool=False,
-            verbatim: bool=False,
         ) -> Union[list, dict]:
         obj = obj if obj or obj == {} else self
-        return d.get_values(obj, keys,
-                        wild=wild, with_keys=with_keys, verbatim=verbatim)
+        return d.get_values(obj, keys)
 
     get_values.__doc__ = _get_docstring(d.get_values, 'obj')
 
     def get_items(self,
-            loc: Hashable,
+            loc: Union[Hashable, Keylist, Keypath],
             value: Optional[Any]=None,
             obj: Optional[dict]=None,
-            func: Optional[Callable]=None,
             *,
-            separator: Optional[str]=None,
+            func: Optional[Callable]=None,
             factory: Optional[Type[dict]]=None,
         ):
-        separator = separator or self.keypath_separator
         obj = obj if obj or obj == {} else self
         factory = factory or type(self)
         new = factory(obj)
-        new = d.get_items(new, loc, value, func=func,
-                          separator=separator, factory=factory)
+        new = d.get_items(new, loc, value, func=func, factory=factory)
         return new
 
     get_items.__doc__ = _get_docstring(d.get_items, 'obj')
@@ -1130,34 +1122,28 @@ class uDict(IODict):
             loc: Hashable,
             value: Optional[Any]=None,
             obj: Optional[dict]=None,
-            func: Optional[Callable]=None,
             *,
-            separator: Optional[str]=None,
+            func: Optional[Callable]=None,
             factory: Optional[Type[dict]]=None,
         ):
-        separator = separator or self.keypath_separator
         obj = obj if obj or obj == {} else self
         factory = factory or type(self)
-        item = d.pop_items(obj, loc, value, func=func,
-                          separator=separator, factory=factory)
+        item = d.pop_items(obj, loc, value, func=func, factory=factory)
         return item
 
     pop_items.__doc__ = _get_docstring(d.pop_items, 'obj')
 
     def del_items(self,
-            loc: Union[Hashable, list, tuple],
+            loc: Union[Hashable, Keylist, Keypath],
             obj: Optional[dict]=None,
             *,
-            separator: Optional[str]=None,
             inplace: bool=False,
             factory: Optional[Type[dict]]=None,
         ):
         obj = obj if obj or obj == {} else self
         factory = factory or type(self)
-        separator = separator or self.keypath_separator
 
-        return d.del_items(obj, loc, separator=separator,
-                                inplace=inplace, factory=factory)
+        return d.del_items(obj, loc, inplace=inplace, factory=dict)
 
     del_items.__doc__ = _get_docstring(d.del_items, 'obj')
 
@@ -1167,15 +1153,12 @@ class uDict(IODict):
             obj: Optional[Union[dict, Sequence]]=None,
             func: Optional[Callable]=None,
             *,
-            separator: Optional[str]=None,
             factory: Optional[Type[dict]]=None,
         ):
         obj = obj if obj or obj == {} else self
         factory = factory or type(self)
-        separator = separator or self.keypath_separator
 
-        d.set_items(obj, loc, value, func=func,
-                          separator=separator, factory=factory)
+        d.set_items(obj, loc, value, func=func, factory=factory)
 
     set_items.__doc__ = _get_docstring(d.set_items, 'obj')
 
@@ -1257,7 +1240,8 @@ class uDict(IODict):
             *,
             search_for: DictItemType=DictItem.KEY,
             exact: bool=False,
-            ignore_case: bool=False
+            ignore_case: bool=False,
+            use_keypath: bool=True,
         ):
         obj = obj if obj or obj == {} else self
         return d.d_search(obj, query,
@@ -1338,6 +1322,13 @@ class uDict(IODict):
         return d.d_unique(obj)
 
     unique.__doc__ = _get_docstring(d.d_unique, 'obj')
+
+    def update(self, *args, **kwargs):
+        for key, val in dict(*args, **kwargs).items():
+            if _type.is_dict_and_not_other(val, self):
+                self[key] = self.from_dict(val)
+            else:
+                self[key] = val
 
 
 
@@ -1589,3 +1580,7 @@ class iList(list):
 
     def unfreeze(self):
         self._attrs.unfreeze()
+
+    def update(self, *args, **kwargs):
+        self._check_frozen(thrown_error=True)
+        self.__init__(*args, **kwargs)

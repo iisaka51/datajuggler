@@ -12,6 +12,11 @@ from datetime import datetime
 from decimal import Decimal
 from datajuggler.keys import Keylist, Keypath
 
+try:
+    import emoji
+except ImportError:
+    def is_emoji(s: str):
+        raise NotImplementedError('You should install emoji.')
 
 class DictKey(str, Enum):
     KEYLIST = "keylist"
@@ -83,10 +88,11 @@ def validate_DictAction(
 
 class TypeValidator(object):
     regex = re.compile("").__class__
-    uuid_re = re.compile(
+    re_uuid = re.compile(
         "^([0-9a-f]{32}){1}$|^([0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}){1}$",
         flags=re.IGNORECASE,
     )
+    re_financial_number = re.compile(r"(?=\d+,\d+).*")
 
 
     @classmethod
@@ -187,6 +193,10 @@ class TypeValidator(object):
         return isinstance(obj, list)
 
     @classmethod
+    def is_list_not_empty(cls, obj: Any):
+        return obj and isinstance(obj, list)
+
+    @classmethod
     def is_list_or_tuple(cls, obj: Any):
         return isinstance(obj, (list, tuple))
 
@@ -239,17 +249,52 @@ class TypeValidator(object):
         return isinstance(obj, set)
 
     @classmethod
+    def is_set_not_empty(cls, obj: Any):
+        return obj and isinstance(obj, set)
+
+    @classmethod
     def is_str(cls, obj: Any):
         return isinstance(obj, str)
 
     @classmethod
     def is_str_not_empty(cls, obj: Any):
-        return isinstance(obj, str) and obj != ''
+        return obj and isinstance(obj, str)
 
     @classmethod
     def is_tuple(cls, obj: Any):
         return isinstance(obj, tuple)
 
     @classmethod
+    def is_tuple_not_empty(cls, obj: Any):
+        return obj and isinstance(obj, tuple)
+
+    @classmethod
     def is_uuid(cls, obj: Any):
-        return isinstance(obj, str) and cls.uuid_re.match(obj)
+        return obj and isinstance(obj, str) and cls.re_uuid.match(obj)
+
+    @classmethod
+    def is_str_alnum(cls, obj: Any):
+        def is_alnum(obj):
+            try:
+                return isinstance(obj, str) and obj.encode('ascii').isalnum()
+            except:
+                False
+        return True if is_alnum(obj) else False
+
+    @classmethod
+    def is_str_alpha(cls, obj: Any):
+        def is_alpha(obj):
+            try:
+                return isinstance(obj, str) and obj.encode('ascii').isalpha()
+            except:
+                False
+        return True if is_alpha(obj) else False
+
+    @classmethod
+    def is_str_finance(cls, obj: Any):
+        return obj and isinstance(obj, str) and cls.re_financial_number.match(obj)
+
+    @classmethod
+    def is_str_emoji(cls, obj: Any):
+        return obj and isinstance(obj, str) and is_empji(obj)
+

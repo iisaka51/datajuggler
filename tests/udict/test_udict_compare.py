@@ -1,9 +1,8 @@
-import sys
+# -*- coding: utf-8 -*-
+
 import pytest
 
-sys.path.insert(0,"../datajuggler")
-
-from datajuggler import aDict, uDict
+from datajuggler import aDict, uDict, Keypath, Keylist
 
 class TestClass:
 
@@ -144,7 +143,7 @@ class TestClass:
                     }
                  },
               }
-        result = uDict().compare(d1, d2, keys=['c', 'd', 'g'], keylist=True)
+        result = uDict().compare(d1, d2, keys=Keylist(['c', 'd', 'g']))
         assert result == True
 
     def test_udict_compare_keypath_case01(self):
@@ -168,6 +167,6 @@ class TestClass:
                     }
                  },
               }
-        result = uDict().compare(d1, d2, keys='c.d.g', keypath=True)
+        result = uDict().compare(d1, d2, keys=Keypath('c.d.g'))
         assert result == True
 

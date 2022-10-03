@@ -20,6 +20,8 @@ This project is inspired by [python-benedict](https://github.com/fabiocaccamo/py
 
  - class BaseDict
    Factory class for custom dictionary.
+ - class IODict
+   Factory class for IO serializable dictionary. .
  - class aDict
    Allow to access using dot notation for dictionary.
  - class Keypath and Keylist
@@ -30,6 +32,8 @@ This project is inspired by [python-benedict](https://github.com/fabiocaccamo/py
    Allow hashable and immutable list. when call freeze().
  - class StrCase
    Convert case for object(s).
+ - class TypeValidator
+   drop in replace for isinstance() for convinient.
 
 utilities for string manupulate helper functions.
 
@@ -42,6 +46,49 @@ utilities for string manupulate helper functions.
  -  `df_compare()` - Check DataFrame is equals.
  -  `split_chunks()` - Split iterable object into chunks.
  -  `urange()` - Return an object that produces a sequence of integes.
+
+## Getting Start
+
+```python
+In [1]: from datajuggler import aDict, uDict, iList
+
+In [2]: data = { 'one': { 'two': { 'three': { 'four': 4 }}}}
+
+In [3]: a = aDict(data)
+
+In [4]: a.one.two.three.four
+Out[4]: 4
+
+In [5]: a.one.two.three.four = 3
+
+In [6]: a.one.two.three.four
+Out[6]: 3
+
+In [7]: a.freeze()
+
+In [8]: hash(a)
+Out[8]: 2318099281826460897
+
+In [9]: try:
+   ...:     a.one.two.three.four=10
+   ...: except AttributeError as e:
+   ...:     print(e)
+   ...:
+aDict frozen object cannot be modified.
+
+In [10]: a.unfreeze()
+
+In [11]: a.one.two.three.four = 10
+
+In [12]: try:
+    ...:     hash(a)
+    ...: except AttributeError as e:
+    ...:     print(e)
+    ...:
+unhashable not frozen object.
+
+In [13]:
+```
 
 
 ## class BaseDict
@@ -67,27 +114,6 @@ this class has follows methods.
 
 aDict and uDict are subclass of BaseDict.
 
-if pass `as_default_dict=True` to custructor,
-use aDict, uDict insted of dict.
-
-```python
-In [1]: from datajuggler import aDict, uDict
-
-In [2]: aDict({1: 1, 2: 2, 3: {3: '3'}})
-Out[2]: aDict({1: 1, 2: 2, 3: {3: '3'}})
-
-In [3]: aDict({1: 1, 2: 2, 3: {3: '3'}}, as_default_dict=True)
-Out[3]: aDict({1: 1, 2: 2, 3: aDict({3: '3'})})
-
-In [4]: uDict({1: 1, 2: 2, 3: {3: '3'}})
-Out[4]: uDict({1: 1, 2: 2, 3: {3: '3'}})
-
-In [5]: uDict({1: 1, 2: 2, 3: {3: '3'}}, as_default_dict=True)
-Out[5]: uDict({1: 1, 2: 2, 3: uDict({3: '3'})})
-
-In [6]:
-
-```
 
 ### fromkeys()
 
@@ -646,8 +672,18 @@ This is utility class for uDict and manage for keypath and Keylist
            { 'b2': { 'c1': {'x': 3 },
                      'c2': {'x': 4 }} }}}
 ```
-Keylist(['a','b', 'c1', 'x']) point to value `1`.
+Keylist(['a','b1', 'c1', 'x']) point to value `1`.
 Keypath(['a.b1.c1.x']) point to value `1`.
+
+The following keylists is evaluated as the same value.
+
+ - Keylist(['a', 'b', 1, 'c', 1, 'x']
+ - Keylist(['a', 'b[1]', 'c[1]', 'x']
+ - ('a', 'b', 1, 'c', 1, 'x')
+ - ('a', 'b[1]', 'c[1], 'x')
+
+tuple() object is short notation as Keylist() object.
+however, Keylist() is accept separator of keypath.
 
 ### methods for Keylist class
 
@@ -964,21 +1000,19 @@ uDict has following  methods.
  - `compare(d1: dict, d2: dict, keys=None, thrown_error=False)`
  - `counts(pattern, d=None, count_for"key", wild=False, verbatim=False)`
  - `filter(predicate, d=None, factory=dict)`
- - `get_keys(d=None, output_for=None)`
- - `get_values(keys, d=None, wild=False, with_keys=False, verbatim=Flase)`
+ - `get_keys(d=None, output_as=None)`
+ - `get_values(keys, d=None)`
  - `groupby(seq, key, factory=dict)`
  - `invert(d=None, flat=False, inplace=False, factory=dict)`
- - `key_path2list(keypaths)`
- - `key_list2path(keylists)`
  - `keylists(d=None, indexes=False)`
  - `keypaths(d=None, indexes=False, separator=".")`
  - `map(func, d=None, map_for=None, inplace=False, factory=dict)`
  - `merge(other, d=None, overwrite=False, inplace=False, factory=dict)`
  - `move(key_src, key_dest, d=None, overwrite=False, inplace=False, factory=dict)`
+ - `nest(items, key, patrent_key, children_key)`
  - `rename(key, key_new, d=None, case_name=None, overwrite=False,
            inplace=False, factory=dict)`
  - `remove(keys, d=None, inplace=False, factory=dict)`
- - `nest(items, key, patrent_key, children_key)`
  - `subset(keys, d=None, default=None, use_keypath=False,
            separator=".", inplace=False, factory=dict)`
  - `find(keys, d=None, default=None, first_one=True, factory=dict)`
@@ -1022,6 +1056,12 @@ helper functions are defined in datajuggler.dicthelper for normal dict objects.
  - `d_unflatten()`
  - `d_traverse()`
  - `d_unique()`
+ - `get_keys()`
+ - `get_values()`
+ - `get_items()`
+ - `pop_items()`
+ - `del_items()`
+ - `set_items()`
 
 ### clean() and d_clean()
 
@@ -2588,13 +2628,13 @@ def get_keys(
         obj: Optional[dict]=None,
         indexes: bool=False,
         *,
-        output_for: Optional[DictKey]=None,
+        output_as: Optional[DictKey]=None,
         separator: str=Default_Keypath_Separator,
     ) -> list:
 ```
 Get all keys from dictionary as a List
 This function is able to process on nested dictionary.
-`output_for` accept "keylist" and "keypath".
+`output_as` accept "keylist" and "keypath".
 
 ```python
 In [1]: from datajuggler.dicthelper import get_keys
@@ -2608,7 +2648,7 @@ In [2]: data = { "a": 1,
 In [3]: get_keys(data)
 Out[3]: ['a', 'b', 'c', 'x', 'y', 'd', 'x', 'y']
 
-In [4]: get_keys(data, output_for="keylist")
+In [4]: get_keys(data, output_as="keylist")
 Out[4]:
 [['a'],
  ['b'],
@@ -2619,14 +2659,85 @@ Out[4]:
  ['b', 'd', 'x'],
  ['b', 'd', 'y']]
 
-In [5]: get_keys(data, output_for="keypath")
+In [5]: get_keys(data, output_as="keypath")
 Out[5]: ['a', 'b', 'b.c', 'b.c.x', 'b.c.y', 'b.d', 'b.d.x', 'b.d.y']
 
-In [6]: get_keys(data, output_for="keypath", separator='_')
+In [6]: get_keys(data, output_as="keypath", separator='_')
 Out[6]: ['a', 'b', 'b_c', 'b_c_x', 'b_c_y', 'b_d', 'b_d_x', 'b_d_y']
 
 In [7]:
 ```
+
+### get_values()
+
+```python
+def get_values(
+        obj: Union[dict, Sequence],
+        keys: Union[Hashable, Keylist, Keypath],
+    ) -> Any:
+```
+
+Get the value of key in the objet(s).
+`obj` : dict, dict[dict], dict[list], list[dict]
+return value, list, dict.
+
+
+```python
+In [1]: from datajuggler import uDict, Keypath, Keylist
+   ...: from datajuggler.dicthelper import get_values
+
+In [2]: data = { "a": 1,
+   ...:          "b": { "c": { "x": 2, "y": 3, },
+   ...:                 "d": { "x": 4, "y": 5, },
+   ...:                 "e": [ { "x": 1, "y": -1, "z": [1, 2, 3], },
+   ...:                        { "x": 2, "y": -2, "z": [2, 3, 4], },
+   ...:                        { "x": 3, "y": -3, "z": [3, 4, 5], },
+   ...:                      ],
+   ...:               },
+   ...:       }
+   ...:
+
+In [3]: get_values(data, 'a')
+Out[3]: 1
+
+In [4]: get_values(data, ('b', 'c'))
+Out[4]: {'x': 2, 'y': 3}
+
+In [5]: get_values(data, Keylist(['b', 'c']))
+Out[5]: {'x': 2, 'y': 3}
+
+In [6]: get_values(data, Keylist(['b', 'e[1]', 'z[2]']))
+Out[6]: 4
+
+In [7]: get_values(data, Keypath('b.c'))
+Out[7]: {'x': 2, 'y': 3}
+
+In [8]: get_values(data, Keypath('b.e[1].z[2]'))
+Out[8]: 4
+
+In [9]: d = uDict(data)
+
+In [10]: d['a']
+Out[10]: 1
+
+In [11]: d[('b', 'c')]
+Out[11]: uDict({'x': 2, 'y': 3})
+
+In [12]: d[Keylist(['b', 'c'])]
+Out[12]: uDict({'x': 2, 'y': 3})
+
+In [13]: d[Keylist(['b', 'e[1]', 'z[2]'])]
+Out[13]: 4
+
+In [14]: d[Keypath('b.c')]
+Out[14]: uDict({'x': 2, 'y': 3})
+
+In [15]: d[Keypath('b.e[1].z[2]')]
+Out[15]: 4
+
+In [16]:
+```
+
 
 ### keylists()
 ```python
@@ -2657,21 +2768,6 @@ this function is just calling Keypath.keypaths()
 
 
 
-### get_values()
-
-```python
-def get_values(
-        obj: Union[dict, Sequence],
-        keys: Union[Hashable, Sequence],
-        *,
-        wild: bool=False,
-        with_keys: bool=False,
-        verbatim: bool=False,
-    ) -> Union[list, dict]:
-```
-Search the key in the objet(s) and return a list of values
-
-
 ### get_items()
 
 ```python
@@ -2688,6 +2784,73 @@ def get_items(
 Create new dictionary with new key value pair as d[key]=val.
 If set `True` to `inplace`, perform operation in-place.
 otherwise, not modify the initial dictionary.
+
+```python
+In [1]: from datajuggler import uDict, Keypath, Keylist
+   ...: from datajuggler.dicthelper import get_items
+
+In [2]: get_items({}, 'a', 1)
+Out[2]: {'a': 1}
+
+In [3]: data = { 'a': 1, 'b': 2}
+   ...: get_items(data, 'a', 3)
+Out[3]: {'a': 3, 'b': 2}
+
+In [4]: data = { 'a': 1, 'b': [{'c': 11, 'd': 12 },
+   ...:                        {'c': 22, 'd': 22 }] }
+   ...:
+   ...: get_items(data, 'b', 2)
+Out[4]: {'a': 1, 'b': 2}
+
+In [5]: data = { 'a': 1, 'b': [{'c': 11, 'd': 12 },
+   ...:                        {'c': 22, 'd': 22 }] }
+   ...:
+   ...: get_items(data, 'c', 4)
+Out[5]: {'a': 1, 'b': [{'c': 11, 'd': 12}, {'c': 22, 'd': 22}], 'c': 4}
+
+In [6]: data = { 'a': 1, 'b': [{'c': 11, 'd': 12 },
+   ...:                        {'c': 22, 'd': 22 }] }
+   ...:
+   ...: get_items(data, ('b','c'), 4)
+Out[6]: {'a': 1, 'b': {'c': 4}}
+
+In [7]: data = { 'a': 1, 'b': [{'c': 11, 'd': 12 },
+   ...:                        {'c': 22, 'd': 22 }] }
+   ...:
+   ...: get_items(data, Keylist('b','c'), 4)
+Out[7]: {'a': 1, 'b': 4}
+
+In [8]: data = { 'a': 1, 'b': [{'c': 11, 'd': 12 },
+   ...:                        {'c': 22, 'd': 22 }] }
+   ...:
+   ...: get_items(data, Keypath('b.c'), 4)
+Out[8]: {'a': 1, 'b': {'c': 4}}
+
+In [9]: d = uDict(data)
+
+In [10]: d
+Out[10]: uDict({'a': 1, 'b': [{'c': 11, 'd': 12}, {'c': 22, 'd': 22}]})
+
+In [11]: d.get_items('a', 3)
+Out[11]: uDict({'a': 3, 'b': [{'c': 11, 'd': 12}, {'c': 22, 'd': 22}]})
+
+In [12]: d.get_items('c', 4)
+Out[12]: uDict({'a': 1, 'b': [{'c': 11, 'd': 12}, {'c': 22, 'd': 22}], 'c': 4})
+
+In [13]: d.get_items('b', 2)
+Out[13]: uDict({'a': 1, 'b': 2})
+
+In [14]: d.get_items(('b','c'), 4)
+Out[14]: uDict({'a': 1, 'b': uDict({'c': 4})})
+
+In [15]: d.get_items(Keylist('b','c'), 4)
+Out[15]: uDict({'a': 1, 'b': 4})
+
+In [16]: d.get_items(Keypath('b.c'), 4)
+Out[16]: uDict({'a': 1, 'b': uDict({'c': 4})})
+
+In [17]:
+```
 
 ###  pop_items()
 
@@ -2825,6 +2988,80 @@ if old is not found, it will raise an ItemNotFountError.
 callback function will be called as follows.
 
  - `func(index, old, new)`
+
+## get_keys
+
+## class TypeValidator
+
+TypeValidator class has following classmethods.
+using TypeValidator not necessary including typing module.
+
+ - `is_bool(cls, obj: Any)`
+ - `is_collection(cls, obj: Any)`
+ - `is_callable(cls, obj: Any)`
+ - `is_datetime(cls, obj: Any)`
+ - `is_decimal(cls, obj: Any)`
+ - `is_dict(cls, obj: Any)`
+ - `is_dict_or_other(cls, obj: Any, other: Any)`
+ - `is_dict_and_not_other(cls, obj: Any, other: Any)`
+ - `is_dict_keys(cls, obj: Any)`
+ - `is_dict_values(cls, obj: Any)`
+ - `is_dict_items(cls, obj: Any)`
+ - `is_dict_or_list(cls, obj: Any)`
+ - `is_dict_or_list_or_tuple(cls, obj: Any)`
+ - `is_float(cls, obj: Any)`
+ - `is_function(cls, obj: Any)`
+ - `is_hashable(cls, obj: Any)`
+ - `is_integer(cls, obj: Any)`
+ - `is_integer_or_float(cls, obj: Any)`
+ - `is_iterable(cls, obj: Any)`
+ - `is_json_serializable(cls, obj: Any)`
+ - `is_keylist(cls, obj: Any)`
+ - `is_keypath(cls, obj: Any)`
+ - `is_keylist_or_keypath(cls, obj: Any)`
+ - `is_list(cls, obj: Any)`
+ - `is_list_not_empty(cls, obj: Any)`
+ - `is_list_or_tuple(cls, obj: Any)`
+ - `is_list_of_keylists(cls, obj: Any)`
+ - `is_list_of_keypaths(cls, obj: Any)`
+ - `is_mapping(cls, obj: Any)`
+ - `is_match(cls, obj: Any)`
+ - `is_none(cls, obj: Any)`
+ - `is_not_none(cls, obj: Any)`
+ - `is_pattern(cls, obj: Any)`
+ - `is_regex(cls, obj: Any)`
+ - `is_same_as(cls, obj: Any, other: Any)`
+ - `is_sequence(cls, obj: Any)`
+ - `is_set(cls, obj: Any)`
+ - `is_set_not_empty(cls, obj: Any)`
+ - `is_str(cls, obj: Any)`
+ - `is_str_not_empty(cls, obj: Any)`
+ - `is_tuple(cls, obj: Any)`
+ - `is_tuple_not_empty(cls, obj: Any)`
+ - `is_uuid(cls, obj: Any)`
+
+Using TypeValidator class no need to include typing module compare with objects.
+
+i.e.:
+```python
+In [1]: from datajuggler.validator import TypeValidator as _type
+
+In [2]: data = { "a": 1,
+   ...:                  "b": { "c": { "x": 2, "y": 3, },
+   ...:                         "d": { "x": 4, "y": 5, },
+   ...:                       },
+   ...:                 }
+
+In [3]: keys = data.keys()
+
+In [4]: keys
+Out[4]: dict_keys(['a', 'b'])
+
+In [5]: _type.is_dict_keys(keys)
+Out[5]: True
+
+In [6]:
+```
 
 
 ## class StrCase
@@ -3063,25 +3300,6 @@ In [4]: data = ["Apple", ["Apple", "Apple", "Banana", "Maple" ]]
    ...: assert result == expect
 
 In [5]:
-```
-
-### is_alpha() and is_alnum()
-
-```python
-assert is_alpha('iisaka') == True
-assert is_alpha('iisaka51') == False
-assert is_alpha('@iisaka51') == False
-assert is_alpha('Goichi (iisaka) Yukawa') == False
-assert is_alpha('京都市') == False
-assert is_alpha('１２３') == False
-
-assert is_alnum('iisaka') == True
-assert is_alnum('iisaka51') == True
-assert is_alnum('@iisaka51') == False
-assert is_alnum('Goichi (iisaka) Yukawa') == False
-
-assert ( is_alnum('京都市') == False )
-assert ( is_alnum('１２３') == False )
 ```
 
 ### df_compare()

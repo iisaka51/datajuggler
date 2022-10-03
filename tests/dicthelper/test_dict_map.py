@@ -1,5 +1,5 @@
-import sys
-import time
+# -*- coding: utf-8 -*-
+
 import pytest
 
 from datajuggler import uDict, aDict

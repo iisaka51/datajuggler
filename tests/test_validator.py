@@ -1,8 +1,13 @@
-import sys
+# -*- coding: utf-8 -*-
+
+import codecs, sys
+
+sys.stdout = codecs.getwriter('utf_8')(sys.stdout)
+sys.stdin = codecs.getreader('utf_8')(sys.stdin)
+
 from datetime import datetime
 import pytest
 
-sys.path.insert(0,"../datajuggler")
 
 from datajuggler import Keylist, Keypath
 from datajuggler.validator import TypeValidator as _type
@@ -205,4 +210,52 @@ class TestClass:
 
     def test_is_uuid(self):
         pass
+
+    def test_is_str_alpha_case01(self):
+        assert ( _type.is_str_alpha('iisaka')
+                 == True )
+
+    def test_is_str_alpha_case02(self):
+        assert ( _type.is_str_alpha('iisaka51')
+                 == False )
+
+    def test_is_str_alpha_case03(self):
+        assert ( _type.is_str_alpha('@iisaka51')
+                 == False )
+
+    def test_is_str_alpha_case04(self):
+        assert ( _type.is_str_alpha('Goichi (iisaka) Yukawa')
+                 == False )
+
+    def test_is_str_alpha_case05(self):
+        assert ( _type.is_str_alpha('京都市')
+                 == False )
+
+    def test_is_str_alpha_case06(self):
+        assert ( _type.is_str_alpha('１２３')
+                 == False )
+
+    def test_is_str_alnum_case01(self):
+        assert ( _type.is_str_alnum('iisaka')
+                 == True )
+
+    def test_is_str_alnum_case02(self):
+        assert ( _type.is_str_alnum('iisaka51')
+                 == True )
+
+    def test_is_str_alnum_case03(self):
+        assert ( _type.is_str_alnum('@iisaka51')
+                 == False )
+
+    def test_is_str_alnum_case04(self):
+        assert ( _type.is_str_alnum('Goichi (iisaka) Yukawa')
+                 == False )
+
+    def test_is_str_alnum_case05(self):
+        assert ( _type.is_str_alnum('京都市')
+                 == False )
+
+    def test_is_str_alnum_case06(self):
+        assert ( _type.is_str_alnum('１２３')
+                 == False )
 

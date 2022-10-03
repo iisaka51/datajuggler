@@ -8,7 +8,7 @@ from datajuggler.utils import (
     split_chunks, add_df, df_compare, rename_duplicates,
 )
 from datajuggler.strings import (
-    searchstr, substr, is_match_string, is_alpha, is_alnum, remove_accents,
+    searchstr, substr, is_match_string, remove_accents,
 )
 
 __all__ = [
@@ -28,7 +28,5 @@ __all__ = [
     "searchstr",
     "substr",
     "is_match_string",
-    "is_alpha",
-    "is_alnum",
     "remove_accents",
 ]

@@ -1,8 +1,6 @@
-import sys
-import time
-import pytest
+# -*- coding: utf-8 -*-
 
-sys.path.insert(0,"../datajuggler")
+import pytest
 
 from datajuggler import Keylist, Keypath
 from datajuggler.dicthelper import d_traverse
@@ -109,16 +107,16 @@ class TestClass:
                  "b": { "x": [ 110, 210], "y": 11, "z": { "ok": 13, }, },
                  "c": { "x": [ 120, 220], "y": 19, "z": { "ok": 13, }, },
                }
-        expect = [ Keypath("a_x_[0]"),
-                   Keypath("a_x_[1]"),
+        expect = [ Keypath("a_x[0]"),
+                   Keypath("a_x[1]"),
                    Keypath("a_y"),
                    Keypath("a_z_ok"),
-                   Keypath("b_x_[0]"),
-                   Keypath("b_x_[1]"),
+                   Keypath("b_x[0]"),
+                   Keypath("b_x[1]"),
                    Keypath("b_y"),
                    Keypath("b_z_ok"),
-                   Keypath("c_x_[0]"),
-                   Keypath("c_x_[1]"),
+                   Keypath("c_x[0]"),
+                   Keypath("c_x[1]"),
                    Keypath("c_y"),
                    Keypath("c_z_ok"),
                 ]

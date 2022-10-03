@@ -5,60 +5,13 @@ import pytest
 sys.path.insert(0,"../datajuggler")
 
 from datajuggler import (
-    is_alpha, is_alnum, omit_values, replace_values,
+    omit_values, replace_values,
     add_df, df_compare,
     split_chunks, urange, rename_duplicates,
 )
 import pandas as pd
 
 class TestClass:
-    def test_is_alpha_case01(self):
-        assert ( is_alpha('iisaka')
-                 == True )
-
-    def test_is_alpha_case02(self):
-        assert ( is_alpha('iisaka51')
-                 == False )
-
-    def test_is_alpha_case03(self):
-        assert ( is_alpha('@iisaka51')
-                 == False )
-
-    def test_is_alpha_case04(self):
-        assert ( is_alpha('Goichi (iisaka) Yukawa')
-                 == False )
-
-    def test_is_alpha_case05(self):
-        assert ( is_alpha('京都市')
-                 == False )
-
-    def test_is_alpha_case06(self):
-        assert ( is_alpha('１２３')
-                 == False )
-
-    def test_is_alnum_case01(self):
-        assert ( is_alnum('iisaka')
-                 == True )
-
-    def test_is_alnum_case02(self):
-        assert ( is_alnum('iisaka51')
-                 == True )
-
-    def test_is_alnum_case03(self):
-        assert ( is_alnum('@iisaka51')
-                 == False )
-
-    def test_is_alnum_case04(self):
-        assert ( is_alnum('Goichi (iisaka) Yukawa')
-                 == False )
-
-    def test_is_alnum_case05(self):
-        assert ( is_alnum('京都市')
-                 == False )
-
-    def test_is_alnum_case06(self):
-        assert ( is_alnum('１２３')
-                 == False )
 
     def test_df_compare(self):
         d1 = pd.DataFrame([ ['Kyoto', 35.0117,135.452],

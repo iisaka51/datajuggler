@@ -1,7 +1,6 @@
-import sys
-import pytest
+# -*- coding: utf-8 -*-
 
-sys.path.insert(0,"../datajuggler")
+import pytest
 
 from datajuggler import uDict, Keypath
 
@@ -136,16 +135,21 @@ class TestClass:
                          ],
                     },
                 }
-        expect = [ "a",
-                   "b",
-                   "b.c",
-                   "b.c.x",
-                   "b.c.y",
-                   "b.d",
-                   "b.d.x",
-                   "b.d.y",
-                   "b.e",
-               ]
         obj = uDict(data)
         assert obj['a'] == 1
-        assert obj['b.c'] == { "x": 2, "y": 3, }
+        assert obj['b.c'] == None
+
+    def test_udict_access_by_keypath_case02(self):
+        data = { "a": 1,
+                 "b": {
+                    "c": { "x": 2, "y": 3, },
+                    "d": { "x": 4, "y": 5, },
+                    "e": [ { "x": 1, "y": -1, "z": [1, 2, 3], },
+                           { "x": 2, "y": -2, "z": [2, 3, 4], },
+                           { "x": 3, "y": -3, "z": [3, 4, 5], },
+                         ],
+                    },
+                }
+        obj = uDict(data)
+        assert obj['a'] == 1
+        assert obj[Keypath('b.c')] == { "x": 2, "y": 3, }
