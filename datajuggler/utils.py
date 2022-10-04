@@ -722,3 +722,15 @@ def _split_chunks_str(
         yield chunk_data
 
 
+def parse_slice(expr: str):
+    """ Parse slice expression and return tupele. """
+    def to_piece(s):
+        try:
+            return s and int(s) or None
+        except:
+            return None
+    pieces = list(map(to_piece, expr.split(':')))
+    if len(pieces) == 1:
+        return slice(pieces[0], pieces[0] + 1)
+    else:
+        return slice(*pieces)

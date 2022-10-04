@@ -253,6 +253,10 @@ class TypeValidator(object):
         return obj and isinstance(obj, set)
 
     @classmethod
+    def is_slice(cls, obj: Any):
+        return isinstance(obj, slice)
+
+    @classmethod
     def is_str(cls, obj: Any):
         return isinstance(obj, str)
 

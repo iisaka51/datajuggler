@@ -246,7 +246,7 @@ class IODict(BaseDict):
         # if first argument is data-string, url or filepath try to decode it.
         # use 'format' kwarg to specify the decoder to use, default 'json'.
         if format and format.lower():
-            d = IODict._decode_init(format, *args, **kwargs)
+            d = IODict._decode_init(*args, format=format, **kwargs)
             super().__init__(d, **kwargs)
             return
         super().__init__(*args, **kwargs)
@@ -256,23 +256,30 @@ class IODict(BaseDict):
         pass
 
     @staticmethod
-    def _decode_init(s, **kwargs):
+    def _decode_init(s,
+            format: Optional[str]=None,
+            **kwargs: Any
+        ) ->dict:
         autodetected_format = io.autodetect_format(s)
         default_format = autodetected_format or "json"
-        format = kwargs.pop("format", default_format).lower()
+        # format = kwargs.pop("format", default_format).lower()
+        format = format or default_format
         if format in ["b64", "base64"]:
             kwargs.setdefault("subformat", "json")
         elif format in ["yml", "yaml"]:
             self.yaml_initializer()
         # decode data-string and initialize with dict data.
-        return IODict._decode(s, format, **kwargs)
+        return IODict._decode(s, format=format, **kwargs)
 
     @staticmethod
-    def _decode(s, format, **kwargs):
+    def _decode(s,
+            format: str,
+            **kwargs: Any
+        ) ->dict:
         try:
             content = io.read_content(s)
             # decode content using the given format
-            data = io.decode(content, format, **kwargs)
+            data = io.decode(content, format=format, **kwargs)
             if _type.is_dict(data):
                 return data
             elif _type.is_list(data):
@@ -410,7 +417,7 @@ class IODict(BaseDict):
         """
         kwargs["subformat"] = subformat
         kwargs["encoding"] = encoding
-        return self._encode(self.dict(), "base64", **kwargs)
+        return self._encode(self.to_dict(), "base64", **kwargs)
 
     def to_csv(self, key="values", columns=None, columns_row=True, **kwargs):
         """
@@ -422,7 +429,7 @@ class IODict(BaseDict):
         """
         kwargs["columns"] = columns
         kwargs["columns_row"] = columns_row
-        return self._encode(self.dict()[key], "csv", **kwargs)
+        return self._encode(self.to_dict()[key], "csv", **kwargs)
 
     def to_ini(self, **kwargs):
         """
@@ -432,7 +439,7 @@ class IODict(BaseDict):
         Return the encoded string and optionally save it at 'filepath'.
         A ValueError is raised in case of failure.
         """
-        return self._encode(self.dict(), "ini", **kwargs)
+        return self._encode(self.to_dict(), "ini", **kwargs)
 
     def to_json(self, **kwargs):
         """
@@ -442,7 +449,7 @@ class IODict(BaseDict):
         Return the encoded string and optionally save it at 'filepath'.
         A ValueError is raised in case of failure.
         """
-        return self._encode(self.dict(), "json", **kwargs)
+        return self._encode(self.to_dict(), "json", **kwargs)
 
     def to_pickle(self, **kwargs):
         """
@@ -453,7 +460,7 @@ class IODict(BaseDict):
         Return the encoded string and optionally save it at 'filepath'.
         A ValueError is raised in case of failure.
         """
-        return self._encode(self.dict(), "pickle", **kwargs)
+        return self._encode(self.to_dict(), "pickle", **kwargs)
 
     def to_plist(self, **kwargs):
         """
@@ -463,7 +470,7 @@ class IODict(BaseDict):
         Return the encoded string and optionally save it at 'filepath'.
         A ValueError is raised in case of failure.
         """
-        return self._encode(self.dict(), "plist", **kwargs)
+        return self._encode(self.to_dict(), "plist", **kwargs)
 
     def to_query_string(self, **kwargs):
         """
@@ -471,7 +478,7 @@ class IODict(BaseDict):
         Return the encoded string and optionally save it at 'filepath'.
         A ValueError is raised in case of failure.
         """
-        return self._encode(self.dict(), "query_string", **kwargs)
+        return self._encode(self.to_dict(), "query_string", **kwargs)
 
     def to_toml(self, **kwargs):
         """
@@ -481,7 +488,7 @@ class IODict(BaseDict):
         Return the encoded string and optionally save it at 'filepath'.
         A ValueError is raised in case of failure.
         """
-        return self._encode(self.dict(), "toml", **kwargs)
+        return self._encode(self.to_dict(), "toml", **kwargs)
 
     def to_xml(self, **kwargs):
         """
@@ -491,7 +498,7 @@ class IODict(BaseDict):
         Return the encoded string and optionally save it at 'filepath'.
         A ValueError is raised in case of failure.
         """
-        return self._encode(self.dict(), "xml", **kwargs)
+        return self._encode(self.to_dict(), "xml", **kwargs)
 
     def to_yaml(self, **kwargs):
         """
@@ -501,7 +508,7 @@ class IODict(BaseDict):
         Return the encoded string and optionally save it at 'filepath'.
         A ValueError is raised in case of failure.
         """
-        return self._encode(self.dict(), "yaml", **kwargs)
+        return self._encode(self.to_dict(), "yaml", **kwargs)
 
 
 class aDict(IODict):
@@ -515,7 +522,7 @@ class aDict(IODict):
         object.__setattr__(__self, '__key', kwargs.pop('__key', None))
         object.__setattr__(__self, '__frozen', False)
         if format:
-            args = super()._decode_init(format, *args, **kwargs)
+            args = (super()._decode_init(*args, format=format, **kwargs),)
 
         for arg in args:
             if not arg:
@@ -743,10 +750,13 @@ class uDict(IODict):
     def __init__(self,
             *args: Any,
             separator: str=Default_Keypath_Separator,
+            format: Optional[str]=None,
             **kwargs: Any
         ):
         if separator:
             self._keypath_separator = separator
+        if format:
+            args = (super()._decode_init(*args, format=format, **kwargs),)
         self.update(dict(*args, **kwargs))
 
     def __is_keypath_or_keylist(self, x):
@@ -1522,7 +1532,9 @@ class iList(list):
         self._check_frozen(thrown_error=True)
         return super().remove(val)
 
-    def without(self, *items):
+    def without(self,
+            *items: Any,
+        ) ->list:
         """ Create new list without items and return iterable.  """
         return list(set(self).difference(*items))
 
