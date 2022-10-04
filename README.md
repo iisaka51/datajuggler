@@ -49,6 +49,11 @@ utilities for string manupulate helper functions.
 
 ## Getting Start
 
+### aDict
+
+aDict allow to access using dot notation for values of dictionary.
+and support freeze/unfreeze object.
+
 ```python
 In [1]: from datajuggler import aDict, uDict, iList
 
@@ -90,6 +95,118 @@ unhashable not frozen object.
 In [13]:
 ```
 
+### uDict
+
+uDict is utilized dictionary support keylist and keypath accessing  to values.
+
+```python
+In [1]: from datajuggler import uDict, Keypath, Keylist
+
+In [2]: data = { "a": 1,
+   ...:              "b": { "c": { "x": 2, "y": 3, },
+   ...:                     "d": { "x": 4, "y": 5, },
+   ...:                     "e": [ { "x": 1, "y": -1, "z": [1, 2, 3], },
+   ...:                            { "x": 2, "y": -2, "z": [2, 3, 4], },
+   ...:                            { "x": 3, "y": -3, "z": [3, 4, 5], },
+   ...:                          ],
+   ...:                   },
+   ...:           }
+
+In [3]: d = uDict(data)
+
+In [4]: d['a']
+Out[4]: 1
+
+In [5]: d['b', 'c']
+Out[5]: uDict({'x': 2, 'y': 3})
+
+In [6]: d[Keylist(['b', 'e[1]', 'z[2]'])]
+Out[6]: 4
+
+In [7]: d[Keypath('b.e[1].z[2]')]
+Out[7]: 4
+
+In [8]:
+```
+
+### iList
+
+iList is universal object with list and aDict.
+
+```python
+In [1]: from datajuggler import iList
+
+In [2]: l = iList()
+   ...: assert l == []
+
+In [3]: l = iList([1,2,3])
+   ...: assert l == [1,2,3]
+
+In [4]: l = iList()
+   ...: try:
+   ...:     l[0] = 1
+   ...: except IndexError as e:
+   ...:     print(e)
+   ...:
+list assignment index out of range
+
+In [5]: l = iList([1])
+   ...: l[0] = 10
+
+In [6]: l1 = iList([1,2,3,4,5])
+   ...: l2 = iList([1,2,3,4,5])
+
+In [7]: assert l1 == l2
+
+In [8]: l1 = iList([1,2,3,4,5])
+   ...: l2 = list([1,2,3,4,5])
+
+In [9]: assert l1 == l2
+
+In [10]: l1 = iList([5,4,3,2,1])
+    ...: l2 = list([1,2,3,4,5])
+    ...: assert l1 != l2
+
+In [11]: l1 = iList([1, 2, 3])
+
+In [12]: try:
+    ...:     hash(l1)
+    ...: except AttributeError as e:
+    ...:     print(e)
+    ...:
+unhashable not frozen object.
+
+In [13]: l1.freeze()
+
+In [14]: hash(l1)
+Out[14]: 7029740037309777799
+
+In [15]: try:
+    ...:     l1[0] = 10
+    ...: except AttributeError as e:
+    ...:     print(e)
+    ...:
+iList frozen object cannot be modified.
+
+In [16]: l1.unfreeze()
+
+In [17]: l1[0] = 10
+
+In [18]: l = iList([1,2,3])
+
+In [19]: l.Hello='Python'
+
+In [20]: l.Hello
+Out[20]: 'Python'
+
+In [21]: l == [1,2,3]
+Out[21]: True
+
+In [22]: l.get_attrs()
+Out[22]: {'Hello': 'Python'}
+
+In [23]:
+```
 
 ## class BaseDict
 
@@ -105,14 +222,7 @@ this class has follows methods.
  - `fromlists(keys: Sequence, values: Sequence, inplace:bool=False)`
  - `to_dict(obj: Any)`
  - `from_dict(obj: Any, factory=None, inplace: bool=False)`
- - `to_json(**options: Any)`
- - `from_json(json_data: str, inplace: bool=False, **options)`
- - `to_yaml(**options: Any)`
- - `from_yaml(stream, *args: Any, inplace: bool=False, **kwargs: Any)`
- - `to_toml(**options: Any)`
- - `from_toml(stream, *args: Any, inplace: bool=False, **kwargs: Any)`
 
-aDict and uDict are subclass of BaseDict.
 
 
 ### fromkeys()
@@ -196,7 +306,65 @@ In [6]:
 ```
 
 
+## class IODict
+
+this class support serialize method. Base64, INI, JSON, YAML, TOML, XML.
+
+if not installed PyYAML and/or toml and call from_yaml(), from_tomo(),
+will raise NotImpelementedError.
+
+aDict and uDict are subclass of IODict.
+
+ - `from_base64(cls, s, subformat="json", encoding="utf-8", **kwargs)`
+ - `from_csv(cls, s, columns=None, columns_row=True, **kwargs)`
+ - `from_ini(cls, s, **kwargs)`
+ - `from_json(self, s, **kwargs)`
+ - `from_pickle(cls, s, **kwargs)`
+ - `from_plist(cls, s, **kwargs)`
+ - `from_query_string(cls, s, **kwargs)`
+ - `from_toml(cls, s, **kwargs)`
+ - `from_xml(cls, s, **kwargs)`
+ - `from_yaml(cls, s, **kwargs)`
+
 ## Serialization
+
+Supported serializer is follows.
+
+ - `Base64Serializer`
+ - `CSVSerializer`
+ - `INISerializer`
+ - `JSONSerializer`
+ - `PickleSerializer`
+ - `PListSerializer`
+ - `QueryStringSerializer``
+ - `TOMLSerializer`
+ - `XMLSerializer`
+ - `YAMLSerializer`
+
+```python
+from datajuggler import serializer as io
+
+data = {"console": "Nintendo Switch",
+        "games": ["The Legend of Zelda", "Mario Golf"]}
+
+s = io.JSONSerializer()
+s.encode(data)
+```
+
+and provide helper functions.
+
+ - `get_format_by_path(path)`
+ - `get_serializer_by_format(format)`
+ - `get_serializers_extensions()`
+ - `autodetect_format(s)`
+ - `is_filepath(s)`
+ - `is_url(s)`
+ - `read_content(s)`
+ - `read_url(url, **options)`
+ - `read_file(filepath, encording="utf-8", **options)`
+ - `write_file(filepath, content, encording="utf-8", **options)`
+
+
 
 ### JSON
 
@@ -544,13 +712,6 @@ In [8]: obj = uDict()
    ...: assert obj == data
 
 ```
-
-## class IODict
-
-this class support serialize method. Base64, INI, JSON, YAML, TOML, XML.
-
-if not installed PyYAML and/or toml and call from_yaml(), from_tomo(),
-will raise NotImpelementedError.
 
 ## class aDict
 
@@ -2935,83 +3096,6 @@ and add new helper mehtods.
  - `without(items)`
  - `replace(old, new)`
 
-
-### Getting staart with iList
-
-```python
-In [1]: from datajuggler import iList
-
-In [2]: l = iList()
-   ...: assert l == []
-
-In [3]: l = iList([1,2,3])
-   ...: assert l == [1,2,3]
-
-In [4]: l = iList()
-   ...: try:
-   ...:     l[0] = 1
-   ...: except IndexError as e:
-   ...:     print(e)
-   ...:
-list assignment index out of range
-
-In [5]: l = iList([1])
-   ...: l[0] = 10
-
-In [6]: l1 = iList([1,2,3,4,5])
-   ...: l2 = iList([1,2,3,4,5])
-
-In [7]: assert l1 == l2
-
-In [8]: l1 = iList([1,2,3,4,5])
-   ...: l2 = list([1,2,3,4,5])
-
-In [9]: assert l1 == l2
-
-In [10]: l1 = iList([5,4,3,2,1])
-    ...: l2 = list([1,2,3,4,5])
-    ...: assert l1 != l2
-
-In [11]: l1 = iList([1, 2, 3])
-
-In [12]: try:
-    ...:     hash(l1)
-    ...: except AttributeError as e:
-    ...:     print(e)
-    ...:
-unhashable not frozen object.
-
-In [13]: l1.freeze()
-
-In [14]: hash(l1)
-Out[14]: 7029740037309777799
-
-In [15]: try:
-    ...:     l1[0] = 10
-    ...: except AttributeError as e:
-    ...:     print(e)
-    ...:
-iList frozen object cannot be modified.
-
-In [16]: l1.unfreeze()
-
-In [17]: l1[0] = 10
-
-In [18]: l = iList([1,2,3])
-
-In [19]: l.Hello='Python'
-
-In [20]: l.Hello
-Out[20]: 'Python'
-
-In [21]: l == [1,2,3]
-Out[21]: True
-
-In [22]: l.get_attrs()
-Out[22]: {'Hello': 'Python'}
-
-In [23]:
-```
 
 
 
