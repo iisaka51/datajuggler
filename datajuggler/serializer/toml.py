@@ -18,12 +18,10 @@ try:
             super(TOMLSerializer, self).__init__()
 
         def decode(self, s, **kwargs):
-            data = toml.loads(s, **kwargs)
-            return data
+            return toml.loads(s, **kwargs)
 
         def encode(self, d, **kwargs):
-            data = toml.dumps(dict(d), **kwargs)
-            return data
+            return toml.dumps(dict(d), **kwargs)
 
 
 except ImportError:

@@ -27,7 +27,7 @@ try:
 
         factory = factory or cls
         factory_name=factory.__name__
-        module_name = Path(__file__).parent.name
+        module_name = Path(__file__).parent.parent.name
 
         for loader_name in ( "BaseLoader", "FullLoader", "SafeLoader",
                              "Loader", "UnsafeLoader", "DangerLoader" ):
@@ -65,8 +65,7 @@ try:
         def decode(self, s, **kwargs):
             factory = lambda d: dict(*(args + (d,)), **kwargs)
             loader_class = kwargs.pop('Loader', yaml.FullLoader)
-            return self.from_dict(yaml.load(stream, Loader=loader_class),
-                                  factory=factory, inplace=inplace)
+            return yaml.load(s, Loader=loader_class)
 
         def encode(self, d, **options):
             d = self._json_serializer.decode(self._json_serializer.encode(d))

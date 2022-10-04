@@ -245,7 +245,9 @@ class IODict(BaseDict):
         """
         # if first argument is data-string, url or filepath try to decode it.
         # use 'format' kwarg to specify the decoder to use, default 'json'.
-        if format and format.lower():
+        if format:
+            if  format.lower() in ["yml", "yaml"]:
+                self.yaml_initializer()
             d = IODict._decode_init(*args, format=format, **kwargs)
             super().__init__(d, **kwargs)
             return
@@ -266,8 +268,6 @@ class IODict(BaseDict):
         format = format or default_format
         if format in ["b64", "base64"]:
             kwargs.setdefault("subformat", "json")
-        elif format in ["yml", "yaml"]:
-            self.yaml_initializer()
         # decode data-string and initialize with dict data.
         return IODict._decode(s, format=format, **kwargs)
 
@@ -522,7 +522,11 @@ class aDict(IODict):
         object.__setattr__(__self, '__key', kwargs.pop('__key', None))
         object.__setattr__(__self, '__frozen', False)
         if format:
-            args = (super()._decode_init(*args, format=format, **kwargs),)
+            if format.lower() in ["yml", "yaml"]:
+                io.yaml_initializer(cls=aDict)
+            args = (super()._decode_init(*args,
+                        format=format, factory=aDict, **kwargs),)
+
 
         for arg in args:
             if not arg:
@@ -756,6 +760,8 @@ class uDict(IODict):
         if separator:
             self._keypath_separator = separator
         if format:
+            if format.lower() in ["yml", "yaml"]:
+                io.yaml_initializer(cls=uDict)
             args = (super()._decode_init(*args, format=format, **kwargs),)
         self.update(dict(*args, **kwargs))
 
