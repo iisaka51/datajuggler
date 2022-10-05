@@ -24,9 +24,8 @@ class TestClass:
 
 
     def test_dict_access_get_values_case02(self):
-        expect = { "x": 2, "y": 3, }
         d = uDict(self.data)
-        assert d.get_values(('b', 'c')) == expect
+        assert d.get_values(('b', 'c')) == None
 
     def test_dict_access_get_values_case03(self):
         expect = { "x": 2, "y": 3, }

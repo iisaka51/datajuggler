@@ -82,7 +82,8 @@ def is_match_string(
     if pattern == string:
         return True
     else:
-        if not isinstance(string, str):
+        if not ( isinstance(string, str)
+                 and isinstance(pattern, (str, Pattern))):
             return False
 
         match = re.search(pattern, string, flags = __RE_FLAGS[wild])

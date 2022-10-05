@@ -158,9 +158,9 @@ class TestClass:
               }
         obj = uDict(data)
         assert obj['a'] == 1
-        assert obj['b', 'c'] == { "x": 2, "y": 3, }
-        assert obj['b', 'c', 'x'] == 2
-        assert obj['b', 'd', 'x'] == 4
+        assert obj['b', 'c'] == None
+        assert obj['b', 'c', 'x'] == None
+        assert obj['b', 'd', 'x'] == None
 
     def test_udict_access_by_keylist_case02(self):
         data = { "a": 1,

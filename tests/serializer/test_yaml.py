@@ -50,22 +50,27 @@ class TestClass:
     def test_yaml_decode_adict_case04(self):
         filepath='tests/serializer/data/valid-content.yml'
         d = aDict(filepath, format='yaml')
-        assert d == data
+        assert d == valid_content
 
     def test_yaml_decode_adict_case05(self):
         filepath='tests/serializer/data/valid-content.yml'
         d = aDict(filepath, format='yml')
-        assert d == data
+        assert d == valid_content
 
     def test_yaml_decode_adict_case06(self):
         filepath='tests/serializer/data/valid-content.yml'
         d = aDict(filepath)
-        assert d == data
+        assert d == valid_content
 
     def test_yaml_decode_adict_case07(self):
+        expect = ("Invalid data or url or filepath argument: "
+                  "tests/serializer/data/invalid-content.yml\n"
+                  "Invalid data type: <class 'str'>, expected dict or list.")
+
         filepath='tests/serializer/data/invalid-content.yml'
-        d = aDict(filepath, format='yaml')
-        assert d == data
+        with pytest.raises(ValueError) as e:
+            d = aDict(filepath, format='yaml')
+        assert str(e.value) == expect
 
 
 

@@ -811,11 +811,6 @@ The following keylists is evaluated as the same value.
 
  - Keylist(['a', 'b', 1, 'c', 1, 'x']
  - Keylist(['a', 'b[1]', 'c[1]', 'x']
- - ('a', 'b', 1, 'c', 1, 'x')
- - ('a', 'b[1]', 'c[1], 'x')
-
-tuple() object is short notation as Keylist() object.
-however, Keylist() is accept separator of keypath.
 
 ### methods for Keylist class
 

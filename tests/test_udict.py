@@ -126,4 +126,14 @@ class TestClass:
         obj = uDict().fromlists(keys, values)
         assert obj.__repr__() == expect
 
+    def test_udict_case18(self):
+        obj = uDict()
+        result = obj[('a', 'b', 'c')]
+        assert result == None
+
+    def test_udict_case19(self):
+        obj = uDict()
+        obj[('a', 'b', 'c')]=1
+        result = obj[('a', 'b', 'c')]
+        assert result == 1
 
