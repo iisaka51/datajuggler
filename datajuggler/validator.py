@@ -13,7 +13,7 @@ from decimal import Decimal
 from datajuggler.keys import Keylist, Keypath
 
 try:
-    import emoji
+    from emoji import is_emoji
 except ImportError:
     def is_emoji(s: str):
         raise NotImplementedError('You should install emoji.')
@@ -295,10 +295,10 @@ class TypeValidator(object):
         return True if is_alpha(obj) else False
 
     @classmethod
-    def is_str_finance(cls, obj: Any):
+    def is_str_financial_number(cls, obj: Any):
         return obj and isinstance(obj, str) and cls.re_financial_number.match(obj)
 
     @classmethod
     def is_str_emoji(cls, obj: Any):
-        return obj and isinstance(obj, str) and is_empji(obj)
+        return obj and isinstance(obj, str) and is_emoji(obj)
 

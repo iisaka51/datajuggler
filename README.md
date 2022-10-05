@@ -2,7 +2,11 @@
 
 This library provides utility classes and helper functions for data processing.
 This is spin-off project from [scrapinghelper](https://github.com/iisaka51/scrapinghelper).
-This project is inspired by [python-benedict](https://github.com/fabiocaccamo/python-benedict) and [munch](https://github.com/Infinidat/munch) and [adict](https://github.com/mewwts/addict).
+This project is inspired by follow greate projects.
+
+ - [python-benedict](https://github.com/fabiocaccamo/python-benedict)
+ - [munch](https://github.com/Infinidat/munch)
+ - [adict](https://github.com/mewwts/addict).
 
 
 ## Features
@@ -21,7 +25,7 @@ This project is inspired by [python-benedict](https://github.com/fabiocaccamo/py
  - class BaseDict
    Factory class for custom dictionary.
  - class IODict
-   Factory class for IO serializable dictionary. .
+   Factory class for IO serializable dictionary.
  - class aDict
    Allow to access using dot notation for dictionary.
  - class Keypath and Keylist
@@ -37,8 +41,6 @@ This project is inspired by [python-benedict](https://github.com/fabiocaccamo/py
 
 utilities for string manupulate helper functions.
 
- -  `is_alpha()` - Check word is alphabet.
- -  `is_alnum()` - Check word is alphabet and digits.
  -  `replace_values()` - Replace objects for object(s).
  -  `omit_values()` - Omit values for object(s).
  -  `rename_duplicates()` - Rename duplicated strings to append a number at the end.
@@ -328,7 +330,7 @@ aDict and uDict are subclass of IODict.
 
 ## Serialization
 
-Supported serializer is follows.
+Provides serializer are follows.
 
  - `Base64Serializer`
  - `CSVSerializer`
@@ -357,9 +359,9 @@ and provide helper functions.
  - `get_serializer_by_format(format)`
  - `get_serializers_extensions()`
  - `autodetect_format(s)`
- - `is_filepath(s)`
+ - `validate_file(s)`
  - `is_url(s)`
- - `read_content(s)`
+ - `read_contents(s)`
  - `read_url(url, **options)`
  - `read_file(filepath, encording="utf-8", **options)`
  - `write_file(filepath, content, encording="utf-8", **options)`
@@ -767,53 +769,12 @@ In [4]: d.one.two.three.four = 1
 
 In [5]: d.freeze()
 
-In [6]: d.one.two.three.four = 2
----------------------------------------------------------------------------
-AttributeError                            Traceback (most recent call last)
-File ~/Projects/GitHub/datajuggler/datajuggler/core.py:679, in aDict.__setattr__(self, k, v)
-    678 try:
---> 679     object.__getattribute__(self, k)
-    680 except AttributeError:
-
-AttributeError: 'aDict' object has no attribute 'four'
-
-During handling of the above exception, another exception occurred:
-
-AttributeError                            Traceback (most recent call last)
-File ~/Projects/GitHub/datajuggler/datajuggler/core.py:685, in aDict.__setattr__(self, k, v)
-    684     else:
---> 685         self[k] = v
-    686 except:
-
-File ~/Projects/GitHub/datajuggler/datajuggler/core.py:556, in aDict.__setitem__(self, name, value)
-    555     else:
---> 556         raise AttributeError("'aDict' object attribute "
-    557                          "'{0}' is read-only".format(name))
-    559 super().__setitem__(name, value)
-
-AttributeError: 'aDict' object attribute 'four' is read-only
-
-During handling of the above exception, another exception occurred:
-
-AttributeError                            Traceback (most recent call last)
-Input In [6], in <cell line: 1>()
-----> 1 d.one.two.three.four = 2
-
-File ~/Projects/GitHub/datajuggler/datajuggler/core.py:687, in aDict.__setattr__(self, k, v)
-    685             self[k] = v
-    686     except:
---> 687         if not self._check_frozen():
-    688             raise AttributeError(k)
-    689 else:
-
-File ~/Projects/GitHub/datajuggler/datajuggler/core.py:538, in aDict._check_frozen(self, thrown_error, msg)
-    536 if object.__getattribute__(self, '__frozen'):
-    537     if thrown_error:
---> 538         raise AttributeError( f"{self.__class__.__name__} {msg}" )
-    539     else:
-    540         return True
-
-AttributeError: aDict frozen object cannot be modified.
+In [6]: try:
+   ...:     d.one.two.three.four = 2
+   ...: except AttributeError as e:
+   ...:     print(e)
+   ...:
+aDict frozen object cannot be modified.
 
 In [7]: d.unfreeze()
 
@@ -3071,7 +3032,7 @@ Create new dict with new, potentially nested, key value pair.
  - `freeze()` change status of object in frozen.
  - `unfreeze()` unfreeze for object.
 
-if called `freeze()`, following method will raise AttiributeError.
+if call `freeze()`, following method will raise AttiributeError.
 
  - `__hash__()`
  - `__radd__()`
@@ -3287,6 +3248,10 @@ using TypeValidator not necessary including typing module.
  - `is_tuple(cls, obj: Any)`
  - `is_tuple_not_empty(cls, obj: Any)`
  - `is_uuid(cls, obj: Any)`
+ - `is_str_alnum(cls, obj: Any)`
+ - `is_str_alpha(cls, obj: Any)`
+ - `is_str_financial_number(cls, obj: Any)`
+ - `is_str_emoji(cls, obj: Any)`
 
 Using TypeValidator class no need to include typing module compare with objects.
 

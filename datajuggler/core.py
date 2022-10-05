@@ -277,7 +277,7 @@ class IODict(BaseDict):
             **kwargs: Any
         ) ->dict:
         try:
-            content = io.read_content(s)
+            content = io.read_contents(s)
             # decode content using the given format
             data = io.decode(content, format=format, **kwargs)
             if _type.is_dict(data):
@@ -419,7 +419,7 @@ class IODict(BaseDict):
         kwargs["encoding"] = encoding
         return self._encode(self.to_dict(), "base64", **kwargs)
 
-    def to_csv(self, key="values", columns=None, columns_row=True, **kwargs):
+    def to_csv(self, key=None, columns=None, columns_row=True, **kwargs):
         """
         Encode a list of dicts in the current dict instance in CSV format.
         Encoder specific options can be passed using kwargs:
@@ -429,7 +429,9 @@ class IODict(BaseDict):
         """
         kwargs["columns"] = columns
         kwargs["columns_row"] = columns_row
-        return self._encode(self.to_dict()[key], "csv", **kwargs)
+        d = self.to_dict()
+        key = key or list(d.keys())[0]
+        return self._encode(d[key], "csv", **kwargs)
 
     def to_ini(self, **kwargs):
         """
@@ -524,9 +526,11 @@ class aDict(IODict):
         if format:
             if format.lower() in ["yml", "yaml"]:
                 io.yaml_initializer(cls=aDict)
-            args = (super()._decode_init(*args,
-                        format=format, factory=aDict, **kwargs),)
-
+            args = (super()._decode_init(*args, format=format, **kwargs),)
+        else:
+            if args and isinstance(args[0], str) and io.validate_file(args[0]):
+                format = io.autodetect_format(args[0])
+                args = (super()._decode_init(*args, format=format, **kwargs),)
 
         for arg in args:
             if not arg:
@@ -760,9 +764,14 @@ class uDict(IODict):
         if separator:
             self._keypath_separator = separator
         if format:
-            if format.lower() in ["yml", "yaml"]:
+            format = str(format).lower()
+            if format in ["yml", "yaml"]:
                 io.yaml_initializer(cls=uDict)
             args = (super()._decode_init(*args, format=format, **kwargs),)
+        else:
+            if args and isinstance(args[0], str) and io.validate_file(args[0]):
+                format = io.autodetect_format(args[0])
+                args = (super()._decode_init(*args, format=format, **kwargs),)
         self.update(dict(*args, **kwargs))
 
     def __is_keypath_or_keylist(self, x):

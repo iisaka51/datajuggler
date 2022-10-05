@@ -19,6 +19,8 @@ try:
             return data
 
         def encode(self, d, **kwargs):
+            if len(list(d.keys())) != 1:
+                raise ValueError('dict must have exactly one root.')
             data = xmltodict.unparse(d, **kwargs)
             return data
 

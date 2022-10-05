@@ -23,6 +23,7 @@ from datajuggler.serializer.toml import TOMLSerializer
 from datajuggler.serializer.xml import XMLSerializer
 from datajuggler.serializer.yaml import YAMLSerializer, yaml_initializer
 
+
 __all__ = [
     "AbstractSerializer",
     "Base64Serializer",
@@ -36,6 +37,14 @@ __all__ = [
     "XMLSerializer",
     "YAMLSerializer",
     "yaml_initializer",
+    "get_format_by_path",
+    "autodetect_format",
+    "validate_file",
+    "is_url",
+    "read_contents",
+    "read_url",
+    "read_file",
+    "write_file",
 ]
 
 _BASE64_SERIALIZER = Base64Serializer()
@@ -87,7 +96,7 @@ def get_serializers_extensions():
 
 
 def autodetect_format(s):
-    if is_url(s) or is_filepath(s):
+    if isinstance(s, str) and (is_url(s) or validate_file(s)):
         return get_format_by_path(s)
     return None
 
@@ -101,7 +110,8 @@ def decode(
     if not serializer:
         raise ValueError(f"Invalid format: {format}.")
     decode_opts = kwargs.copy()
-    data = serializer.decode(s.strip(), **decode_opts)
+    data = s.strip() if isinstance(s, str) else s
+    data = serializer.decode(s, **decode_opts)
     return data
 
 
@@ -118,13 +128,27 @@ def encode(
 
 
 def is_data(s):
-    return len(s.splitlines()) > 1
+    if isinstance(s, dict):
+        return True
+    else:
+        return len(s.splitlines()) > 1
 
 
-def is_filepath(s):
-    if Path(s).is_file():
-        if any([s.endswith(ext) for ext in get_serializers_extensions()]):
-            return True
+def validate_file(s, thrown_error: bool=False):
+    filepath = Path(s)
+    if filepath.exists():
+        if filepath.is_file():
+            file = str(s)
+            if any([file.endswith(ext)
+                    for ext in get_serializers_extensions()]):
+                return True
+            elif thrown_error:
+                raise RuntimeError(f'Unsupported file extension: {filepath}')
+        else:
+            raise RuntimeError(f'filepath is not file: {filepath}')
+    elif thrown_error:
+        raise FileNotFoundError(f'No such file or directory: {filepath}')
+
     return False
 
 
@@ -132,17 +156,14 @@ def is_url(s):
     return any([s.startswith(protocol) for protocol in ["http://", "https://"]])
 
 
-def read_content(s):
+def read_contents(s, thrown_error: bool=False):
     # s -> filepath or url or data
-    if is_data(s):
-        # data
+    if is_data(s): # data
         return s
-    elif is_url(s):
-        # url
+    elif is_url(s): # url
         return read_url(s)
-    elif is_filepath(s):
-        # filepath
-        return read_file(s)
+    elif validate_file(s, thrown_error=thrown_error):
+        return read_file(s, thrown_error=thrown_error)
     # one-line data?!
     return s
 
@@ -151,10 +172,10 @@ def read_url(
         url: str,
         **options: Any
     ):
-    if not request_installed:
+    if not requests_installed:
         raise ModuleNotInstalledError("'requests' module is not installed.")
 
-    response = requests.get(url, **kwargs)
+    response = requests.get(url, **options)
     response.raise_for_status()
     content = response.text
     return content
@@ -163,15 +184,16 @@ def read_url(
 def read_file(
         filepath: Union[str, Path],
         encording: str="utf-8",
+        thrown_error: bool=False,
         **options: Any
     ):
-    content = ""
-    if Path(filepath).is_file():
+    contents = ""
+    if validate_file(filepath, thrown_error=thrown_error):
         ops = dict(encording=encording)
         ops.update(options)
         with open(filepath, 'r', **options) as file:
-            content = file.read()
-    return content
+            contents = file.read()
+    return contents
 
 
 def write_file(
