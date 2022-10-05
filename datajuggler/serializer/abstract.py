@@ -6,7 +6,7 @@ class AbstractSerializer(object):
     """
 
     def __init__(self):
-        super(AbstractSerializer, self).__init__()
+        super().__init__()
 
     def decode(self, s, **kwargs):
         raise NotImplementedError()

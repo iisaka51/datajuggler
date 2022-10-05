@@ -14,7 +14,7 @@ class CSVSerializer(AbstractSerializer):
     """
 
     def __init__(self):
-        super(CSVSerializer, self).__init__()
+        super().__init__()
 
     def decode(self, s, **kwargs):
         # kwargs.setdefault('delimiter', ',')
