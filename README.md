@@ -1,3 +1,9 @@
+[![](https://img.shields.io/pypi/pyversions/datajuggler.svg?color=blue&logo=python&logoColor=white)](https://www.python.org/)
+[![](https://img.shields.io/pypi/v/datajuggler.svg?color=blue&logo=pypi&logoColor=white)](https://pypi.org/project/datajuggler/)
+[![](https://pepy.tech/badge/datajuggler/month)](https://pepy.tech/project/datajuggler)
+[![](https://img.shields.io/github/stars/iisaka51/datajuggler?logo=github)](https://github.com/iisaka51/datajuggler/)
+[![](https://img.shields.io/pypi/l/datajuggler.svg?color=blue)](https://github.com/iisaka51/datajuggler/blob/master/LICENSE.txt)
+
 # DataJuggler
 
 This library provides utility classes and helper functions for data processing.
@@ -49,6 +55,10 @@ utilities for string manupulate helper functions.
  -  `split_chunks()` - Split iterable object into chunks.
  -  `urange()` - Return an object that produces a sequence of integes.
 
+## Installation
+
+ - Run `pip install datajuggler`
+
 ## Getting Start
 
 ### aDict
@@ -99,7 +109,7 @@ In [13]:
 
 ### uDict
 
-uDict is utilized dictionary support keylist and keypath accessing  to values.
+uDict is utilized class support keylist and keypath accessing to values.
 
 ```python
 In [1]: from datajuggler import uDict, Keypath, Keylist
