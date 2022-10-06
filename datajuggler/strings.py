@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import re
-from typing import Any, Union, Pattern, Match, Callable
+from typing import Any, Union, Pattern, Match, Callable, Optional
 
 
 __RE_FLAGS = [ re.UNICODE, ( re.IGNORECASE + re.UNICODE) ]
@@ -104,7 +104,7 @@ def remove_accents(data: Any) -> Any:
     return data
 
 def remove_character(
-        string: srr,
+        string: str,
         punctuations_list: Optional[list]=None
     ) ->str:
     if not stop_words_list:
