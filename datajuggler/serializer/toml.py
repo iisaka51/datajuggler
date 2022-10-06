@@ -35,7 +35,7 @@ except ImportError:
             super().__init__()
 
         def decode(self, s, **kwargs):
-            raise NotImplementedError('You should install toml.')
+            raise NotImplementedError("You should install 'toml'.")
 
         def encode(self, d, **kwargs):
-            raise NotImplementedError('You should install toml.')
+            raise NotImplementedError("You should install 'toml'.")

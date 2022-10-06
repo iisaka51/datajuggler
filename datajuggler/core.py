@@ -264,7 +264,6 @@ class IODict(BaseDict):
         ) ->dict:
         autodetected_format = io.autodetect_format(s)
         default_format = autodetected_format or "json"
-        # format = kwargs.pop("format", default_format).lower()
         format = format or default_format
         if format in ["b64", "base64"]:
             kwargs.setdefault("subformat", "json")
@@ -278,6 +277,9 @@ class IODict(BaseDict):
         ) ->dict:
         try:
             content = io.read_contents(s)
+            if io.is_dsn(s):
+                return {"values": content}
+
             # decode content using the given format
             data = io.decode(content, format=format, **kwargs)
             if _type.is_dict(data):
@@ -512,7 +514,6 @@ class IODict(BaseDict):
         """
         return self._encode(self.to_dict(), "yaml", **kwargs)
 
-
 class aDict(IODict):
 
     def __init__(__self,
@@ -528,7 +529,7 @@ class aDict(IODict):
                 io.yaml_initializer(cls=aDict)
             args = (super()._decode_init(*args, format=format, **kwargs),)
         else:
-            if args and isinstance(args[0], str) and io.validate_file(args[0]):
+            if args and isinstance(args[0], str):
                 format = io.autodetect_format(args[0])
                 args = (super()._decode_init(*args, format=format, **kwargs),)
 
@@ -769,7 +770,7 @@ class uDict(IODict):
                 io.yaml_initializer(cls=uDict)
             args = (super()._decode_init(*args, format=format, **kwargs),)
         else:
-            if args and isinstance(args[0], str) and io.validate_file(args[0]):
+            if args and isinstance(args[0], str):
                 format = io.autodetect_format(args[0])
                 args = (super()._decode_init(*args, format=format, **kwargs),)
         self.update(dict(*args, **kwargs))

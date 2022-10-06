@@ -375,12 +375,41 @@ and provide helper functions.
  - `autodetect_format(s)`
  - `validate_file(s)`
  - `is_url(s)`
+ - `is_dsn(s)`
  - `read_contents(s)`
+ - `read_database(s)`
  - `read_url(url, **options)`
  - `read_file(filepath, encording="utf-8", **options)`
  - `write_file(filepath, content, encording="utf-8", **options)`
 
+### read_contents()
 
+read contets from filepath.
+if requests module installed and filepath is starts with 'http://' or 'https://', read coontes from URL.
+if dataset momdule installed and filepath is starts with
+'sqlite://' or 'mysql://', 'postgresql://' read contents form DATABASE.
+
+```python
+In [1]: from datajuggler import serializer as io
+
+In [2]: io.read_contents('sqlite:///users.sqlite#users')
+Out[5]:
+[{'id': 1, 'name': 'Jack Bauer', 'age': 55, 'belongs': 'CTU'},
+ {'id': 2, 'name': "Chloe O'Brian", 'age': 0, 'belongs': 'CTU'},
+ {'id': 3, 'name': 'Anthony Tony', 'age': 29, 'belongs': 'CTU'},
+ {'id': 4, 'name': 'David Gilmour', 'age': 75, 'belongs': 'Pink Floyd'},
+ {'id': 5, 'name': 'Ann Wilson', 'age': 71, 'belongs': 'Heart'},
+ {'id': 6, 'name': 'Nacy Wilson', 'age': 67, 'belongs': 'Heart'}]
+
+In [3]: from datajuggler import uDict
+
+In [4]: d = uDict('sqlite:///users.sqlite#users')
+
+In [5]: d
+Out[5]: uDict({'values': [{'id': 1, 'name': 'Jack Bauer', 'age': 55, 'belongs': 'CTU'}, {'id': 2, 'name': "Chloe O'Brian", 'age': 0, 'belongs': 'CTU'}, {'id': 3, 'name': 'Anthony Tony', 'age': 29, 'belongs': 'CTU'}, {'id': 4, 'name': 'David Gilmour', 'age': 75, 'belongs': 'Pink Floyd'}, {'id': 5, 'name': 'Ann Wilson', 'age': 71, 'belongs': 'Heart'}, {'id': 6, 'name': 'Nacy Wilson', 'age': 67, 'belongs': 'Heart'}]})
+
+In [6]:
+```
 
 ### JSON
 

@@ -11,6 +11,13 @@ try:
 except ImportError:
     requests_installed = False
 
+try:
+    import dataset
+    dataset_installed = True
+except ImportError:
+    dataset_installed = False
+
+
 from datajuggler.serializer.abstract import AbstractSerializer
 from datajuggler.serializer.base64 import Base64Serializer
 from datajuggler.serializer.csv import CSVSerializer
@@ -41,7 +48,10 @@ __all__ = [
     "autodetect_format",
     "validate_file",
     "is_url",
+    "is_dsn",
+    "is_database",
     "read_contents",
+    "read_database",
     "read_url",
     "read_file",
     "write_file",
@@ -75,10 +85,14 @@ _SERIALIZERS = {
 }
 
 _SERIALIZERS_EXTENSIONS = [f".{extension}" for extension in _SERIALIZERS.keys()]
+_SERIALIZERS_SCHEMES = [ "sqlite", "mysql", "postgresql" ]
 
 
 def get_format_by_path(path):
     path = path.lower()
+    for scheme in _SERIALIZERS_SCHEMES:
+        if path.startswith(f'{scheme}://'):
+            return scheme
     for extension in _SERIALIZERS_EXTENSIONS:
         if path.endswith(extension):
             return extension[1:]
@@ -96,10 +110,12 @@ def get_serializers_extensions():
 
 
 def autodetect_format(s):
-    if isinstance(s, str) and (is_url(s) or validate_file(s)):
+    if isinstance(s, str) and (is_url(s) or is_dsn(s) or validate_file(s)):
         return get_format_by_path(s)
     return None
 
+def is_database(f):
+    return f in _SERIALIZERS_SCHEMES
 
 def decode(
         s: str,
@@ -153,15 +169,21 @@ def validate_file(s, thrown_error: bool=False):
 
 
 def is_url(s):
-    return any([s.startswith(protocol) for protocol in ["http://", "https://"]])
+    return any([ s.startswith(protocol)
+                 for protocol in ["http://", "https://"] ])
 
+def is_dsn(s):
+    return any([ s.startswith(protocol)
+                 for protocol in ["sqlite://", "mysql://", "postgresql://"] ])
 
-def read_contents(s, thrown_error: bool=False):
+def read_contents(s, thrown_error: bool=False) ->Union[str, list]:
     # s -> filepath or url or data
     if is_data(s): # data
         return s
     elif is_url(s): # url
         return read_url(s)
+    elif is_dsn(s): # databse
+        return list(read_database(s))
     elif validate_file(s, thrown_error=thrown_error):
         return read_file(s, thrown_error=thrown_error)
     # one-line data?!
@@ -177,9 +199,42 @@ def read_url(
 
     response = requests.get(url, **options)
     response.raise_for_status()
-    content = response.text
-    return content
+    contents = response.text
+    return contents
 
+def read_database(
+        dsn: str,
+        find: dict={},
+        *,
+        as_str: bool=False,
+        **options: Any
+    ):
+    """Read database and return list of dictionary.
+    default table name is 'default'.
+    table name pass to after '#' in dsn.
+    i.e.:  'sqlite:///users.sqlite#users'
+    supported database are 'sqlite', 'mysql', 'postgresql'.
+    """
+    if not dataset_installed:
+        raise ModuleNotInstalledError("'dataset' module is not installed.")
+
+    if dsn.find('#')>0:
+        dsn, table = dsn.split('#')
+    else:
+        table = 'default'
+    db = dataset.connect(dsn, **options)
+    contents = []
+    if table in db:
+        tbl = db[table]
+        if find:
+            data = tbl.find(**find)
+        else:
+            data = tbl.all()
+        for x in data:
+            if as_str:
+                yield str(dict(x))
+            else:
+                yield dict(x)
 
 def read_file(
         filepath: Union[str, Path],

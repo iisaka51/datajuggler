@@ -3,6 +3,7 @@ from typing import (
     Any, Dict, Union, Optional, Hashable, Iterable,
     Callable, Pattern, Match, Literal, get_args
 )
+from collections import OrderedDict
 from collections.abc import (
     Mapping, KeysView, ValuesView, ItemsView, Sequence
 )
@@ -211,6 +212,11 @@ class TypeValidator(object):
         return ( isinstance(obj, list)
                  and len(obj) >= 1
                  and all(map(lambda x: isinstance(x, Keypath), obj)) )
+    @classmethod
+    def is_list_of_ordereddict(cls, obj: Any):
+        return ( isinstance(obj, list)
+                 and len(obj) >= 1
+                 and all(map(lambda x: isinstance(x, OrderedDict), obj)) )
 
     @classmethod
     def is_mapping(cls, obj: Any):
