@@ -7,7 +7,6 @@ from functools import partial
 from unicodedata import normalize
 #
 import numpy as np
-import pandas as pd
 from multimethod import multidispatch, multimethod
 from datajuggler.validator import (
     DictItem, DictItemType, validate_DictItem, validate_DictItem
@@ -16,11 +15,79 @@ from datajuggler.validator import (
 from datajuggler.strings import substr
 from datajuggler.validator import TypeValidator as _type
 
+try:
+    import pandas as pd
+
+    pd_NA = pd.NA
+
+    def add_df(
+            values: list,
+            columns: list,
+            omits: list=[]
+        ) ->pd.DataFrame:
+        """Add values to dataframe"""
+
+       if omits:
+           values = omit_values(values,omits)
+           columns = omit_values(columns,omits)
+
+       # Since Pandas 1.3.0
+       df = pd.DataFrame(values,index=columns)._maybe_depup_names(columns)
+       self.df = pd.concat([self.df,df.T])
+
+    def df_compare(
+            df1: pd.DataFrame,
+            df2: pd.DataFrame,
+        ) -> int:
+        """ Compare DataFrame
+        Parameters
+        ----------
+        df1: pd.DataFrame, df2: pd.DataFrame
+            any DataFrame to compare
+
+        Returns
+        -------
+        validate result: Union[bool,int]
+        """
+
+        diff_df = pd.concat([df1,df2]).drop_duplicates(keep=False)
+        diffs = len(diff_df)
+        return diffs
+
+except ImportError:
+    pd_NA = None
+
+    def add_df(
+            values: list,
+            columns: list,
+            omits: list=[]
+        ) ->pd.DataFrame:
+        """Add values to dataframe"""
+        r8aise NotImplementedError('You should install pandas')
+
+    def df_compare(
+            df1: pd.DataFrame,
+            df2: pd.DataFrame,
+        ) -> int:
+        """ Compare DataFrame
+        Parameters
+        ----------
+        df1: pd.DataFrame, df2: pd.DataFrame
+            any DataFrame to compare
+
+        Returns
+        -------
+        validate result: Union[bool,int]
+        """
+        raise NotImplementedError('You should install pandas')
+
+
+
 class StrCase(object):
 
     def __init__(self, *args: Any):
         self.depth = 0
-        self.__NULL_VALUES = {"", None, np.nan, pd.NA}
+        self.__NULL_VALUES = {"", None, np.nan, pd_NA}
 
         self.supported_case = {
             "snake": {
@@ -537,40 +604,6 @@ def omit_values_single(
         ignore_case: bool=False,
     )-> str:
     return replace_values(values, omits, '', ignore_case=ignore_case)
-
-
-def add_df(
-        values: list,
-        columns: list,
-        omits: list=[]
-    ) ->pd.DataFrame:
-
-   if omits:
-       values = omit_values(values,omits)
-       columns = omit_values(columns,omits)
-
-   # Since Pandas 1.3.0
-   df = pd.DataFrame(values,index=columns)._maybe_depup_names(columns)
-   self.df = pd.concat([self.df,df.T])
-
-def df_compare(
-        df1: pd.DataFrame,
-        df2: pd.DataFrame,
-    ) -> int:
-    """ Compare DataFrame
-    Parameters
-    ----------
-    df1: pd.DataFrame, df2: pd.DataFrame
-        any DataFrame to compare
-
-    Returns
-    -------
-    validate result: Union[bool,int]
-    """
-
-    diff_df = pd.concat([df1,df2]).drop_duplicates(keep=False)
-    diffs = len(diff_df)
-    return diffs
 
 @multidispatch
 def split_chunks( *args: Any, **kwargs: Any ):

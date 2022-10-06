@@ -93,7 +93,7 @@ def is_match_string(
             return False
 
 
-def remove_accents(self, data: Any) -> Any:
+def remove_accents(data: Any) -> Any:
     """Return the normal form for a Unicode string
        using canonical decomposition."""
 
@@ -102,4 +102,22 @@ def remove_accents(self, data: Any) -> Any:
                  .encode("ascii", "ignore")
                  .decode("ascii") )
     return data
+
+def remove_character(
+        string: srr,
+        punctuations_list: Optional[list]=None
+    ) ->str:
+    if not stop_words_list:
+        return string
+    else:
+        return "".join([letter for letter in string.lower() if letter not in punctuations_list])
+
+def remove_words(
+        string: str,
+        stop_words_list: Optional[list]=None
+    ) ->str:
+    if not stop_words_list:
+        return string
+    else:
+        return " ".join([word for word in give_string.split(" ") if word not in stopwords_list])
 

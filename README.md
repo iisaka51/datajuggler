@@ -3696,3 +3696,10 @@ In [13]: data = { 1: 'one', 2: 'two', 3: 'three', 4: 'four' }
 In [14]:
 ```
 
+## KNOWN PROBLEMS
+
+datajuggler is not support followings issues.
+
+ - out-of-core processing.
+
+if you want to processing  huge datasets. you shoud combine [datatables](https://github.com/h2oai/datatable).
