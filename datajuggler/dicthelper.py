@@ -1042,7 +1042,7 @@ def get_values(
     if as_dict:
         return values
     else:
-        return values[k][-1] if k else None
+        return values[k][-1] if k is not None else None
 
 def get_items(
         obj: dict,
