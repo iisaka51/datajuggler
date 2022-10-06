@@ -50,10 +50,14 @@ utilities for string manupulate helper functions.
  -  `replace_values()` - Replace objects for object(s).
  -  `omit_values()` - Omit values for object(s).
  -  `rename_duplicates()` - Rename duplicated strings to append a number at the end.
- -  `add_df()` - Add data into DataFrame.
- -  `df_compare()` - Check DataFrame is equals.
  -  `split_chunks()` - Split iterable object into chunks.
  -  `urange()` - Return an object that produces a sequence of integes.
+
+if pandas installed, follows functions are enabled.
+otherwise raise NotImplementedError when function call it.
+
+ -  `add_df()` - Add data into DataFrame.
+ -  `df_compare()` - Check DataFrame is equals.
 
 ## Installation
 
