@@ -717,7 +717,7 @@ def add_df(
     """Add values to dataframe"""
 
     if not pandas_installed:
-        raise ModuleNotFoundError("'pandas' module is not installed.")
+        raise NotImplementedError("'pandas' module is not installed.")
 
     if omits:
         values = omit_values(values,omits)
@@ -743,7 +743,7 @@ def df_compare(
     """
 
     if not pandas_installed:
-        raise ModuleNotFoundError("'pandas' module is not installed.")
+        raise NotImplementedError("'pandas' module is not installed.")
 
     diff_df = pd.concat([df1,df2]).drop_duplicates(keep=False)
     diffs = len(diff_df)

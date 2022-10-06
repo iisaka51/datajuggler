@@ -195,7 +195,7 @@ def read_url(
         **options: Any
     ):
     if not requests_installed:
-        raise ModuleNotInstalledError("'requests' module is not installed.")
+        raise NotImplementedError("'requests' module is not installed.")
 
     response = requests.get(url, **options)
     response.raise_for_status()
@@ -216,7 +216,7 @@ def read_database(
     supported database are 'sqlite', 'mysql', 'postgresql'.
     """
     if not dataset_installed:
-        raise ModuleNotInstalledError("'dataset' module is not installed.")
+        raise NotImplementedError("'dataset' module is not installed.")
 
     if dsn.find('#')>0:
         dsn, table = dsn.split('#')

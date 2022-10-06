@@ -54,7 +54,7 @@ utilities for string manupulate helper functions.
  -  `urange()` - Return an object that produces a sequence of integes.
 
 if pandas installed, follows functions are enabled.
-otherwise raise ModuleNotInstalledError when function call it.
+otherwise raise NotImplementedError when function call it.
 
  -  `add_df()` - Add data into DataFrame.
  -  `df_compare()` - Check DataFrame is equals.
