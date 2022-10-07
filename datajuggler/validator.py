@@ -268,7 +268,7 @@ class TypeValidator(object):
 
     @classmethod
     def is_str_not_empty(cls, obj: Any):
-        return obj and isinstance(obj, str)
+        return obj != '' and isinstance(obj, str)
 
     @classmethod
     def is_tuple(cls, obj: Any):
@@ -276,7 +276,7 @@ class TypeValidator(object):
 
     @classmethod
     def is_tuple_not_empty(cls, obj: Any):
-        return obj and isinstance(obj, tuple)
+        return obj != () and isinstance(obj, tuple)
 
     @classmethod
     def is_uuid(cls, obj: Any):

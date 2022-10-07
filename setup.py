@@ -17,7 +17,6 @@ SHORT_DESCRIPTION = "Utility for data juggling."
 
 requirements = [
     "numpy",
-    "pandas",
     "multimethod>=1.8",
 ]
 

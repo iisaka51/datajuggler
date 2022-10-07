@@ -6,7 +6,6 @@ from collections.abc import Mapping
 from functools import partial
 from unicodedata import normalize
 #
-import numpy as np
 from multimethod import multidispatch, multimethod
 from datajuggler.validator import (
     DictItem, DictItemType, validate_DictItem, validate_DictItem
@@ -17,18 +16,87 @@ from datajuggler.validator import TypeValidator as _type
 
 try:
     import pandas as pd
+    import numpy as np
     pd_NA = pd.NA
-    pandas_installed = True
+    np_NA = np.nan
+
+    def add_df(
+            values: list,
+            columns: list,
+            omits: list=[]
+        ) ->pd.DataFrame:
+        """Add values to dataframe"""
+
+        if not pandas_installed:
+            raise NotImplementedError("'pandas' module is not installed.")
+
+        if omits:
+            values = omit_values(values,omits)
+            columns = omit_values(columns,omits)
+
+        # Since Pandas 1.3.0
+        df = pd.DataFrame(values,index=columns)._maybe_depup_names(columns)
+        self.df = pd.concat([self.df,df.T])
+
+    def df_compare(
+            df1: pd.DataFrame,
+            df2: pd.DataFrame,
+        ) -> int:
+        """ Compare DataFrame
+        Parameters
+        ----------
+        df1: pd.DataFrame, df2: pd.DataFrame
+            any DataFrame to compare
+
+        Returns
+        -------
+        validate result: Union[bool,int]
+        """
+
+        if not pandas_installed:
+            raise NotImplementedError("'pandas' module is not installed.")
+
+        diff_df = pd.concat([df1,df2]).drop_duplicates(keep=False)
+        diffs = len(diff_df)
+        return diffs
+
+        pandas_installed = True
+
 except ImportError:
     pd_NA = None
+    np_NA = None
     pandas_installed = False
+
+    def add_df(
+            values: list,
+            columns: list,
+            omits: list=[]
+        ):
+        """Add values to dataframe"""
+        raise NotImplementedError("'pandas' module is not installed.")
+
+    def df_compare(
+            df1,
+            df2,
+        ) -> int:
+        """ Compare DataFrame
+        Parameters
+        ----------
+        df1: pd.DataFrame, df2: pd.DataFrame
+            any DataFrame to compare
+
+        Returns
+        -------
+        validate result: Union[bool,int]
+        """
+        raise NotImplementedError("'pandas' module is not installed.")
 
 
 class StrCase(object):
 
     def __init__(self, *args: Any):
         self.depth = 0
-        self.__NULL_VALUES = {"", None, np.nan, pd_NA}
+        self.__NULL_VALUES = {"", None, np_NA, pd_NA}
 
         self.supported_case = {
             "snake": {
@@ -708,44 +776,3 @@ def parse_slice(expr: str):
         return slice(pieces[0], pieces[0] + 1)
     else:
         return slice(*pieces)
-
-def add_df(
-        values: list,
-        columns: list,
-        omits: list=[]
-    ) ->pd.DataFrame:
-    """Add values to dataframe"""
-
-    if not pandas_installed:
-        raise NotImplementedError("'pandas' module is not installed.")
-
-    if omits:
-        values = omit_values(values,omits)
-        columns = omit_values(columns,omits)
-
-    # Since Pandas 1.3.0
-    df = pd.DataFrame(values,index=columns)._maybe_depup_names(columns)
-    self.df = pd.concat([self.df,df.T])
-
-def df_compare(
-        df1: pd.DataFrame,
-        df2: pd.DataFrame,
-    ) -> int:
-    """ Compare DataFrame
-    Parameters
-    ----------
-    df1: pd.DataFrame, df2: pd.DataFrame
-        any DataFrame to compare
-
-    Returns
-    -------
-    validate result: Union[bool,int]
-    """
-
-    if not pandas_installed:
-        raise NotImplementedError("'pandas' module is not installed.")
-
-    diff_df = pd.concat([df1,df2]).drop_duplicates(keep=False)
-    diffs = len(diff_df)
-    return diffs
-

@@ -1,3 +1,1 @@
-numpy
-pandas
 multimethod>=1.8

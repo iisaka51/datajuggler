@@ -63,6 +63,14 @@ otherwise raise NotImplementedError when function call it.
 
  - Run `pip install datajuggler`
 
+ or
+
+ - `pip install "datajuggler[database]"
+ - `pip install "datajuggler[requests]"
+ - `pip install "datajuggler[yaml]"
+
+...etc.
+
 ## Getting Start
 
 ### aDict
@@ -390,7 +398,7 @@ and provide helper functions.
 ### read_contents()
 
 read contets from filepath.
-if requests module installed and filepath is starts with 'http://' or 'https://', read coontes from URL.
+if requests module installed and filepath is starts with 'http://' or 'https://', read contents from URL.
 if dataset momdule installed and filepath is starts with
 'sqlite://' or 'mysql://', 'postgresql://' read contents form DATABASE.
 

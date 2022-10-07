@@ -3,8 +3,16 @@ import time
 import pytest
 
 from datajuggler import StrCase
-import numpy as np
-import pandas as pd
+
+try:
+    import pandas as pd
+    import numpy as np
+    pd_NA = pd.NA
+    np_NA = np.nan
+except ImportError:
+    pd_NA = None
+    np_NA = None
+
 
 class TestClass:
     def test_strcase_case01(self):
@@ -214,16 +222,16 @@ class TestClass:
             assert result == expect[case]
 
     def test_strcase_case27(self):
-        data = ['', None, np.nan, pd.NA]
-        expect = { 'snake': ['', None, np.nan, pd.NA],
-                   'kebab': ['', None, np.nan, pd.NA],
-                   'camel': ['', None, np.nan, pd.NA],
-                   'pascal': ['', None, np.nan, pd.NA],
-                   'const': ['', None, np.nan, pd.NA],
-                   'sentence': ['', None, np.nan, pd.NA],
-                   'title': ['', None, np.nan, pd.NA],
-                   'lower': ['', None, np.nan, pd.NA],
-                   'upper': ['', None, np.nan, pd.NA]}
+        data = ['', None, np_NA, pd_NA]
+        expect = { 'snake': ['', None, np_NA, pd_NA],
+                   'kebab': ['', None, np_NA, pd_NA],
+                   'camel': ['', None, np_NA, pd_NA],
+                   'pascal': ['', None, np_NA, pd_NA],
+                   'const': ['', None, np_NA, pd_NA],
+                   'sentence': ['', None, np_NA, pd_NA],
+                   'title': ['', None, np_NA, pd_NA],
+                   'lower': ['', None, np_NA, pd_NA],
+                   'upper': ['', None, np_NA, pd_NA]}
         s = StrCase()
         for case in expect.keys():
             result = s.convert_case(case, data)
