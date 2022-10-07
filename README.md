@@ -71,7 +71,7 @@ otherwise raise NotImplementedError when function call it.
 
 ...etc.
 
-## Getting Start
+## Getting Started
 
 ### aDict
 
@@ -461,6 +461,22 @@ Out[6]:
  {'id': 6, 'name': 'Nacy Wilson', 'age': 67, 'belongs': 'Heart'}]
 
 In [7]:
+```
+
+and pass to `row_type` parameter as followings.
+
+```python
+In [17]: d = io.read_contents('sqlite:///users.sqlite#users', row_type=aDict)
+
+In [18]: users = list(d)
+
+In [19]: users[0]
+Out[19]: aDict({'id': 1, 'name': 'Jack Bauer', 'age': 55, 'belongs': 'CTU'})
+
+In [20]: users[0].name
+Out[20]: 'Jack Bauer'
+
+In [21]:
 ```
 
 See also: [dataset document](https://dataset.readthedocs.io/en/latest/)
