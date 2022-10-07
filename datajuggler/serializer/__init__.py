@@ -209,6 +209,7 @@ def read_url(
 def read_database(
         dsn: str,
         as_str: bool=False,
+        row_type=None,
         **kwargs: Any
     ):
     """Read database and return list of dictionary.
@@ -224,7 +225,8 @@ def read_database(
         dsn, table = dsn.split('#')
     else:
         table = 'default'
-    db = dataset.connect(dsn)
+    row_type = row_type or dict
+    db = dataset.connect(dsn, row_type=row_type)
     contents = []
     if table in db:
         tbl = db[table]
@@ -236,7 +238,7 @@ def read_database(
             if as_str:
                 yield str(dict(x))
             else:
-                yield dict(x)
+                yield x
 
     db.executable.invalidate()
     db.executable.engine.dispose()
