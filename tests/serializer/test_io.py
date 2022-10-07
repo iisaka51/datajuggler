@@ -13,7 +13,7 @@ expect_csv = ( 'id,name,age,height,weight\n'
            '3,Bob,17,68,120.0\n'
            '4,François,32,75,110.05' )
 
-expect_txt = 'numpy\npandas\nmultimethod>=1.8\n'
+expect_txt = 'multimethod>=1.8\n'
 
 class TestClass:
     def test_read_file_case01(self):
