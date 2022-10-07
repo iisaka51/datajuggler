@@ -92,33 +92,46 @@ class BaseDict(dict):
         """Create a new dictionary with keys from iterable and values set to value.
            If set `True` to `inplace`, perform operation in-place.
         """
-        new = type(self)(dict(self).fromkeys(seq, value))
+        new = super().fromkeys(seq, value)
         if inplace:
             self.clear()
             self.update(new)
         else:
-            return new
+            return type(self)(new)
 
     def fromvalues(self,
             seq: Sequence,
             base: int=1,
             prefix: Optional[str]=None,
+            format: str="{:02}",
             inplace: bool=False,
         ) ->Optional[dict]:
         """Create a new dictionary from list of values.
-           keys automaticaly generate as interger.
-           `base` is the starting number.
-           If set `True` to `inplace`, perform operation in-place.
+        keys automaticaly generate as int or str.
+        `base` is the starting number.
+        if set "name_" to `prefix`, keys will "name_01".
+        and if set "{:03}" to `format`, keys will "name_001".
+        If set `True` to `inplace`, perform operation in-place.
         """
-        if prefix != None:
-            new = type(self)({'{}{}'.format(prefix, base+x): seq[x]
-                                            for x in range(len(seq)) } )
-        else:
-            new = type(self)({base+x: seq[x] for x in range(len(seq))})
+        def make_keyname(
+                x: int,
+                base:int=1,
+                prefix: Optional[str]=None,
+                format: str="{:02}",
+            ) ->Union[int, str]:
+            if _type.is_none(prefix):
+                keyname = base + x
+            else:
+                num_str = format.format(base + x)
+                keyname = f'{prefix}{num_str}'
+            return keyname
+
+        new = { make_keyname(x, base, prefix, format) : seq[x]
+                for x in range(len(seq)) }
         if inplace:
             self.update(new)
         else:
-            return new
+            return type(self)(new)
 
     def fromlists(self,
             keys: Sequence,
@@ -130,11 +143,11 @@ class BaseDict(dict):
            If set `True` to `inplace`, perform operation in-place.
         """
         zipobj = zip(keys, values)
-        new = type(self)(dict(zipobj))
+        new = dict(zipobj)
         if inplace:
             self.update(new)
         else:
-            return new
+            return type(self)(new)
 
     def to_dict(self, obj: Optional[dict]=None):
         """ Recursively converts BaseDict to dict.  """
@@ -180,9 +193,6 @@ class BaseDict(dict):
             factory: Optional[Type[dict]]=None,
         ):
         """ Recursively converts from dict to BaseDict. """
-        factory = factory or type(self)
-        holding_obj = dict()
-        workdict = type(self)()
 
         def convert_loop(obj):
             try:
@@ -219,6 +229,10 @@ class BaseDict(dict):
 
             return partial
 
+        factory = factory or type(self)
+        holding_obj = dict()
+        workdict = dict()
+
         obj = convert_loop(obj)
         try:
             if inplace:
@@ -230,12 +244,10 @@ class BaseDict(dict):
             pass   # obj is not Mapping
 
         if not inplace:
-            return workdict
+            return type(self)(workdict)
 
 
 class IODict(BaseDict):
-    yaml_initializer = classmethod(io.yaml_initializer)
-
     def __init__(self,
             *args: Any,
             format: Optional[str]=None,
@@ -246,11 +258,14 @@ class IODict(BaseDict):
         # if first argument is data-string, url or filepath try to decode it.
         # use 'format' kwarg to specify the decoder to use, default 'json'.
         if format:
-            if  format.lower() in ["yml", "yaml"]:
-                self.yaml_initializer()
-            d = IODict._decode_init(*args, format=format, **kwargs)
-            super().__init__(d, **kwargs)
-            return
+            format = str(format).lower()
+            if format.lower() in ["yml", "yaml"]:
+                io.yaml_initializer(cls=tyle(self))
+            args = (IODict._decode_init(*args, format=format, **kwargs),)
+        else:
+            if args and isinstance(args[0], str):
+                format = io.autodetect_format(args[0])
+            args = (IODict._decode_init(*args, format=format, **kwargs),)
         super().__init__(*args, **kwargs)
 
     @staticmethod
@@ -292,7 +307,8 @@ class IODict(BaseDict):
                     f"Invalid data type: {type(data)}, expected dict or list."
                 )
         except Exception as e:
-            raise ValueError(f"Invalid data or url or filepath argument: {s}\n{e}")
+            raise ValueError( "Invalid data or url or filepath argument:"
+                             f" {s}\n{e}" )
 
     @staticmethod
     def _encode(d, format, **kwargs):

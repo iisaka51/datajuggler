@@ -17,7 +17,7 @@ try:
     from emoji import is_emoji
 except ImportError:
     def is_emoji(s: str):
-        raise NotImplementedError('You should install emoji.')
+        raise NotImplementedError("You should install 'emoji'.")
 
 class DictKey(str, Enum):
     KEYLIST = "keylist"

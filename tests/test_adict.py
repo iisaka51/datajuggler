@@ -52,63 +52,64 @@ class TestClass:
         assert d.__str__() == expect_str
         assert str(d) == expect_str
 
-    def test_adict_case07(self):
+
+    def test_adict_fromkeys_case01(self):
         data = [ 'January', 'February', 'March', 'April' ]
         expect = "aDict({'January': 2, 'February': 2, 'March': 2, 'April': 2})"
         d = aDict().fromkeys(data, 2)
         assert d.__repr__() == expect
 
-    def test_adict_case08(self):
+    def test_adict_fromkeys_case02(self):
         data = [ 'January', 'February', 'March', 'April' ]
         expect = "aDict({'January': 2, 'February': 2, 'March': 2, 'April': 2})"
         d = aDict()
         d.fromkeys(data, 2, inplace=True)
         assert d.__repr__() == expect
 
-    def test_adict_case09(self):
+    def test_adict_fromvalues_case01(self):
         data = [ 'January', 'February', 'March', 'April' ]
         expect = "aDict({1: 'January', 2: 'February', 3: 'March', 4: 'April'})"
         d = aDict().fromvalues(data)
         assert d.__repr__() == expect
 
-    def test_adict_case10(self):
+    def test_adict_fromvalues_case02(self):
         data = [ 'January', 'February', 'March', 'April' ]
         expect = "aDict({0: 'January', 1: 'February', 2: 'March', 3: 'April'})"
         d = aDict().fromvalues(data, base=0)
         assert d.__repr__() == expect
 
-    def test_adict_case11(self):
+    def test_adict_fromvalues_case03(self):
         data = [ 'January', 'February', 'March', 'April' ]
         expect = "aDict({1: 'January', 2: 'February', 3: 'March', 4: 'April'})"
         d = aDict()
         d.fromvalues(data, base=1, inplace=True)
         assert d.__repr__() == expect
 
-    def test_adict_case12(self):
+    def test_adict_fromvalues_case04(self):
         data = [ 'January', 'February', 'March', 'April' ]
         expect = ( "aDict("
-                   "{'1': 'January', '2': 'February', "
-                    "'3': 'March', '4': 'April'})" )
+                   "{'01': 'January', '02': 'February', "
+                    "'03': 'March', '04': 'April'})" )
         d = aDict().fromvalues(data, prefix='')
         assert d.__repr__() == expect
 
-    def test_adict_case13(self):
+    def test_adict_fromvalues_case05(self):
         data = [ 'January', 'February', 'March', 'April' ]
         expect = ( "aDict("
-                   "{'month_1': 'January', 'month_2': 'February', "
-                    "'month_3': 'March', 'month_4': 'April'})" )
+                   "{'month_01': 'January', 'month_02': 'February', "
+                    "'month_03': 'March', 'month_04': 'April'})" )
 
         d = aDict().fromvalues(data, prefix='month_')
         assert d.__repr__() == expect
 
-    def test_adict_case14(self):
+    def test_adict_fromlists_case01(self):
         keys = [ 'January', 'February', 'March', 'April' ]
         values = [ 1, 2, 3, 4 ]
         expect = "aDict({'January': 1, 'February': 2, 'March': 3, 'April': 4})"
         d = aDict().fromlists(keys, values)
         assert d.__repr__() == expect
 
-    def test_adict_case15(self):
+    def test_adict_fromlists_case02(self):
         keys = [ 'January', 'February', 'March', 'April' ]
         values = [ 1, 2, 3, 4 ]
         expect = "aDict({'January': 1, 'February': 2, 'March': 3, 'April': 4})"
@@ -116,14 +117,14 @@ class TestClass:
         d.fromlists(keys, values, inplace=True)
         assert d.__repr__() == expect
 
-    def test_adict_case16(self):
+    def test_adict_fromlists_case03(self):
         keys = [ 'January', 'February' ]
         values = [ 1, 2, 3, 4 ]
         expect = "aDict({'January': 1, 'February': 2})"
         d = aDict().fromlists(keys, values)
         assert d.__repr__() == expect
 
-    def test_adict_case17(self):
+    def test_adict_fromlists_case04(self):
         keys = [ 'January', 'February', 'March', 'April' ]
         values = [ 1, 2 ]
         expect = "aDict({'January': 1, 'February': 2})"

@@ -105,8 +105,7 @@ In [12]: try:
     ...:     hash(a)
     ...: except AttributeError as e:
     ...:     print(e)
-    ...:
-unhashable not frozen object.
+    ...: unhashable not frozen object.
 
 In [13]:
 ```
@@ -232,13 +231,11 @@ this class has follows methods.
  - `update(*args, **kwargs)`
  - `get(key: Hashable, default=None))`
  - `setdefault(key: Hashable, default=None)`
- - `fromkeys(sequence, inplace:bool=False)`
- - `fromvalues(sequence, base: int=1,
-               prefix: Optional[str]=None,inplace:bool=False)`
- - `fromlists(keys: Sequence, values: Sequence, inplace:bool=False)`
- - `to_dict(obj: Any)`
- - `from_dict(obj: Any, factory=None, inplace: bool=False)`
-
+ - `fromkeys(sequence, values, inplace=False)`
+ - `fromvalues(sequence, base=1, prefix=None, format="{:02}",inplace=False)`
+ - `fromlists(keys: Sequence, values: Sequence, inplace=False)`
+ - `to_dict(obj)`
+ - `from_dict(obj, factory=None, inplace=False)`
 
 
 ### fromkeys()
@@ -248,18 +245,21 @@ If set `True` to `inplace`, perform operation in-place.
 
 
 ```python
-In [1]: from datajuggler import aDict,uDict
+In [1]: from datajuggler.core import BaseDict
 
 In [2]: data = [ 'January', 'February', 'March', 'April' ]
 
-In [3]: aDict().fromkeys(data, 2)
-Out[3]: aDict({'January': 2, 'February': 2, 'March': 2, 'April': 2})
+In [3]: BaseDict().fromkeys(data,2)
+Out[3]: BaseDict({'January': 2, 'February': 2, 'March': 2, 'April': 2})
 
-In [4]: uDict().fromkeys(data, 2)
-Out[4]: uDict({'January': 2, 'February': 2, 'March': 2, 'April': 2})
+In [4]: d = BaseDict()
 
-In [5]:
+In [5]: d.fromkeys(data, 2, inplace=True)
 
+In [6]: d
+Out[6]: BaseDict({'January': 2, 'February': 2, 'March': 2, 'April': 2})
+
+In [7]:
 ```
 
 ### fromvalues()
@@ -268,35 +268,32 @@ Create a new dictionary from list of values.
 keys automaticaly generate as interger or str.
 `base` is the starting number.
 if set 'name' to `prefix`, keys will be use 'name01'...
+and if set "{:03}" to `format`, keys will "name_001".
 So, set '' to `prefix`, key as str from interger.
 If set `True` to `inplace`, perform operation in-place.
 
 ```python
-In [1]: from datajuggler import aDict,uDict
+In [7]: BaseDict().fromvalues(data)
+Out[7]: BaseDict({1: 'January', 2: 'February', 3: 'March', 4: 'April'})
 
-In [2]: data = [ 'January', 'February', 'March', 'April' ]
+In [8]: BaseDict().fromvalues(data, base=0)
+Out[8]: BaseDict({0: 'January', 1: 'February', 2: 'March', 3: 'April'})
 
-In [3]: aDict().fromvalues(data)
-Out[3]: aDict({1: 'January', 2: 'February', 3: 'March', 4: 'April'})
+In [9]: BaseDict().fromvalues(data, base=100)
+Out[9]: BaseDict({100: 'January', 101: 'February', 102: 'March', 103: 'April'})
 
-In [4]: uDict().fromvalues(data)
-Out[4]: uDict({1: 'January', 2: 'February', 3: 'March', 4: 'April'})
+In [10]: BaseDict().fromvalues(data, prefix='key_')
+Out[10]: BaseDict({'key_1': 'January', 'key_2': 'February', 'key_3': 'March', 'key_4': 'April'})
 
-In [6]: aDict().fromvalues(data, base=0)
-Out[6]: aDict({0: 'January', 1: 'February', 2: 'March', 3: 'April'})
+In [11]: d = BaseDict()
 
-In [7]: aDict().fromvalues(data, base=100)
-Out[7]: aDict({100: 'January', 101: 'February', 102: 'March', 103: 'April'})
+In [12]: d.fromvalues(data, inplace=True)
 
-In [8]: aDict().fromvalues(data, prefix='key_')
-Out[8]: aDict({'key_1': 'January', 'key_2': 'February', 'key_3': 'March', 'key_4': 'April'})
+In [13]: d
+Out[13]: BaseDict({1: 'January', 2: 'February', 3: 'March', 4: 'April'})
 
-In [9]: aDict().fromvalues(data, prefix='')
-Out[9]: aDict({'1': 'January', '2': 'February', '3': 'March', '4': 'April'})
-
-In [10]:
+In [14]:
 ```
-
 
 ### fromlists()
 
@@ -306,30 +303,34 @@ If set `True` to `inplace`, perform operation in-place.
 
 
 ```python
-In [1]: from datajuggler import aDict,uDict
+In [14]: keys = [ 'January', 'February', 'March', 'April' ]
 
-In [2]: keys = [ 'January', 'February', 'March', 'April' ]
+In [15]: values = [ 1, 2, 3, 4 ]
 
-In [3]: values = [ 1, 2, 3, 4 ]
+In [16]: BaseDict().fromlists(keys, values)
+Out[16]: BaseDict({'January': 1, 'February': 2, 'March': 3, 'April': 4})
 
-In [4]: aDict().fromlists(keys, values)
-Out[4]: aDict({'January': 1, 'February': 2, 'March': 3, 'April': 4})
+In [17]: d = BaseDict()
 
-In [5]: uDict().fromlists(keys, values)
-Out[5]: uDict({'January': 1, 'February': 2, 'March': 3, 'April': 4})
+In [18]: d.fromlists(keys, values, inplace=True)
 
-In [6]:
+In [19]: d
+Out[19]: BaseDict({'January': 1, 'February': 2, 'March': 3, 'April': 4})
+
+In [20]:
 ```
 
 
 ## class IODict
 
-this class support serialize method. Base64, INI, JSON, YAML, TOML, XML.
+this class support serialize method.
+
+  - Base64, CSV, INI, JSON, YAML, TOML, XML, query_strings, plist
 
 if not installed PyYAML and/or toml and call from_yaml(), from_tomo(),
 will raise NotImpelementedError.
 
-aDict and uDict are subclass of IODict.
+IODict is subclass of BaseDict.
 
  - `from_base64(cls, s, subformat="json", encoding="utf-8", **kwargs)`
  - `from_csv(cls, s, columns=None, columns_row=True, **kwargs)`
@@ -358,13 +359,17 @@ Provides serializer are follows.
  - `YAMLSerializer`
 
 ```python
-from datajuggler import serializer as io
+In [1]: from datajuggler import serializer as io
 
-data = {"console": "Nintendo Switch",
-        "games": ["The Legend of Zelda", "Mario Golf"]}
+In [2]: data = {"console": "Nintendo Switch",
+   ...:         "games": ["The Legend of Zelda", "Mario Golf"]}
 
-s = io.JSONSerializer()
-s.encode(data)
+In [3]: s = io.JSONSerializer()
+
+In [4]: s.encode(data)
+Out[4]: '{"console": "Nintendo Switch", "games": ["The Legend of Zelda", "Mario Golf"]}'
+
+In [5]:
 ```
 
 and provide helper functions.
@@ -410,6 +415,49 @@ Out[5]: uDict({'values': [{'id': 1, 'name': 'Jack Bauer', 'age': 55, 'belongs': 
 
 In [6]:
 ```
+
+if you want filtering data, pass to kwargs as follows.
+
+```python
+In [1]: from datajuggler import serializer as io
+
+In [2]: io.read_contents('sqlite:///users.sqlite#users')
+Out[2]:
+[{'id': 1, 'name': 'Jack Bauer', 'age': 55, 'belongs': 'CTU'},
+ {'id': 2, 'name': "Chloe O'Brian", 'age': 0, 'belongs': 'CTU'},
+ {'id': 3, 'name': 'Anthony Tony', 'age': 29, 'belongs': 'CTU'},
+ {'id': 4, 'name': 'David Gilmour', 'age': 75, 'belongs': 'Pink Floyd'},
+ {'id': 5, 'name': 'Ann Wilson', 'age': 71, 'belongs': 'Heart'},
+ {'id': 6, 'name': 'Nacy Wilson', 'age': 67, 'belongs': 'Heart'}]
+
+In [3]: io.read_contents('sqlite:///users.sqlite#users', id={'==': 2})
+Out[3]: [{'id': 2, 'name': "Chloe O'Brian", 'age': 0, 'belongs': 'CTU'}]
+
+In [4]: io.read_contents('sqlite:///users.sqlite#users', id={'>=': 3})
+Out[4]:
+[{'id': 3, 'name': 'Anthony Tony', 'age': 29, 'belongs': 'CTU'},
+ {'id': 4, 'name': 'David Gilmour', 'age': 75, 'belongs': 'Pink Floyd'},
+ {'id': 5, 'name': 'Ann Wilson', 'age': 71, 'belongs': 'Heart'},
+ {'id': 6, 'name': 'Nacy Wilson', 'age': 67, 'belongs': 'Heart'}]
+
+In [5]: io.read_contents('sqlite:///users.sqlite#users', id={'between': [2,4]})
+Out[5]:
+[{'id': 2, 'name': "Chloe O'Brian", 'age': 0, 'belongs': 'CTU'},
+ {'id': 3, 'name': 'Anthony Tony', 'age': 29, 'belongs': 'CTU'},
+ {'id': 4, 'name': 'David Gilmour', 'age': 75, 'belongs': 'Pink Floyd'}]
+
+In [6]: io.read_contents('sqlite:///users.sqlite#users', name={'like': '%WILSON'
+   ...: })
+Out[6]:
+[{'id': 5, 'name': 'Ann Wilson', 'age': 71, 'belongs': 'Heart'},
+ {'id': 6, 'name': 'Nacy Wilson', 'age': 67, 'belongs': 'Heart'}]
+
+In [7]:
+```
+
+See also: [dataset document](https://dataset.readthedocs.io/en/latest/)
+
+currently, not support write_database().
 
 ### JSON
 
@@ -832,18 +880,25 @@ In [9]:
 This is utility class for uDict and manage for keypath and Keylist
 
 ```python
-    { 'a': { 'b1': { 'c1': {'x': 1 },
-                     'c2': {'x': 2 }},
-           { 'b2': { 'c1': {'x': 3 },
-                     'c2': {'x': 4 }} }}}
+data = { "a": 1,
+         "b": { "c": { "x": 2, "y": 3, },
+                "d": { "x": 4, "y": 5, },
+                "e": [ { "x": 1, "y": -1, "z": [101, 201, 301], },
+                       { "x": 2, "y": -2, "z": [102, 202, 302], },
+                       { "x": 3, "y": -3, "z": [103, 203, 303], },
+                     ],
+              },
+      }
 ```
-Keylist(['a','b1', 'c1', 'x']) point to value `1`.
-Keypath(['a.b1.c1.x']) point to value `1`.
+Keylist(['b','e[1]', 'z[0]']) point to value `102`.
+Keypath(['b.e[1].z[0]']) point to value `102`.
 
-The following keylists is evaluated as the same value.
+indexes of list should be integer or str([index]).
 
- - Keylist(['a', 'b', 1, 'c', 1, 'x']
- - Keylist(['a', 'b[1]', 'c[1]', 'x']
+```python
+In [7]: Keylist(['b', 'e[1]', 'z[0]'])
+Out[7]: Keylist(['b', 'e', 1, 'z', 0])
+```
 
 ### methods for Keylist class
 

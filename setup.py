@@ -33,6 +33,7 @@ setup(
         'requests': ["requests>=2.27.0"],
         'emoji': ["emoji==2.1.0"],
         'pandas': ["pandas>=1.4.0"],
+        'database': ["dataset>=1.5.0"],
     },
     author="Goichi (Iisaka) Yukawa",
     author_email="iisaka51@gmail.com",

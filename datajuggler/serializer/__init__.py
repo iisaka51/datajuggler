@@ -176,14 +176,18 @@ def is_dsn(s):
     return any([ s.startswith(protocol)
                  for protocol in ["sqlite://", "mysql://", "postgresql://"] ])
 
-def read_contents(s, thrown_error: bool=False) ->Union[str, list]:
+def read_contents(s,
+        *args: Any,
+        thrown_error: bool=False,
+        **kwargs: Any,
+    ) ->Union[str, list]:
     # s -> filepath or url or data
     if is_data(s): # data
         return s
     elif is_url(s): # url
         return read_url(s)
     elif is_dsn(s): # databse
-        return list(read_database(s))
+        return list(read_database(s, **kwargs))
     elif validate_file(s, thrown_error=thrown_error):
         return read_file(s, thrown_error=thrown_error)
     # one-line data?!
@@ -204,10 +208,8 @@ def read_url(
 
 def read_database(
         dsn: str,
-        find: dict={},
-        *,
         as_str: bool=False,
-        **options: Any
+        **kwargs: Any
     ):
     """Read database and return list of dictionary.
     default table name is 'default'.
@@ -222,12 +224,12 @@ def read_database(
         dsn, table = dsn.split('#')
     else:
         table = 'default'
-    db = dataset.connect(dsn, **options)
+    db = dataset.connect(dsn)
     contents = []
     if table in db:
         tbl = db[table]
-        if find:
-            data = tbl.find(**find)
+        if len(kwargs)>0:
+            data = tbl.find(**kwargs)
         else:
             data = tbl.all()
         for x in data:
@@ -235,6 +237,10 @@ def read_database(
                 yield str(dict(x))
             else:
                 yield dict(x)
+
+    db.executable.invalidate()
+    db.executable.engine.dispose()
+    db.close()
 
 def read_file(
         filepath: Union[str, Path],
