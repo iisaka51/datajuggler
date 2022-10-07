@@ -17,7 +17,6 @@ SHORT_DESCRIPTION = "Utility for data juggling."
 
 requirements = [
     "numpy",
-    "pandas",
     "multimethod>=1.8",
 ]
 
@@ -26,6 +25,15 @@ setup(
     version=get_version('datajuggler/versions.py'),
     license="MIT",
     install_requirements=requirements,
+    extras_require={
+        'xml': ["xmltodict>=0.13.0"],
+        'yaml': ["PyYAML>=6.0"],
+        'toml': ["toml>=0.10.2"],
+        'requests': ["requests>=2.27.0"],
+        'emoji': ["emoji==2.1.0"],
+        'pandas': ["pandas>=1.4.0"],
+        'database': ["dataset>=1.5.0"],
+    },
     author="Goichi (Iisaka) Yukawa",
     author_email="iisaka51@gmail.com",
     url="https://github.com/iisaka51/datajuggler",

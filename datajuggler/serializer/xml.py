@@ -19,6 +19,8 @@ try:
             return data
 
         def encode(self, d, **kwargs):
+            if len(list(d.keys())) != 1:
+                raise ValueError('dict must have exactly one root.')
             data = xmltodict.unparse(d, **kwargs)
             return data
 
@@ -33,7 +35,7 @@ except ImportError:
             super().__init__()
 
         def decode(self, s, **kwargs):
-            raise NotImplementedError('You should install xmltodict.')
+            raise NotImplementedError("You should install 'xmltodict'.")
 
         def encode(self, d, **kwargs):
-            raise NotImplementedError('You should install xmltodict.')
+            raise NotImplementedError("You should install 'xmltodict'.")

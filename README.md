@@ -1,8 +1,18 @@
+[![](https://img.shields.io/pypi/pyversions/datajuggler.svg?color=blue&logo=python&logoColor=white)](https://www.python.org/)
+[![](https://img.shields.io/pypi/v/datajuggler.svg?color=blue&logo=pypi&logoColor=white)](https://pypi.org/project/datajuggler/)
+[![](https://pepy.tech/badge/datajuggler/month)](https://pepy.tech/project/datajuggler)
+[![](https://img.shields.io/github/stars/iisaka51/datajuggler?logo=github)](https://github.com/iisaka51/datajuggler/)
+[![](https://img.shields.io/pypi/l/datajuggler.svg?color=blue)](https://github.com/iisaka51/datajuggler/blob/master/LICENSE.txt)
+
 # DataJuggler
 
 This library provides utility classes and helper functions for data processing.
 This is spin-off project from [scrapinghelper](https://github.com/iisaka51/scrapinghelper).
-This project is inspired by [python-benedict](https://github.com/fabiocaccamo/python-benedict) and [munch](https://github.com/Infinidat/munch) and [adict](https://github.com/mewwts/addict).
+This project is inspired by follow greate projects.
+
+ - [python-benedict](https://github.com/fabiocaccamo/python-benedict)
+ - [munch](https://github.com/Infinidat/munch)
+ - [adict](https://github.com/mewwts/addict).
 
 
 ## Features
@@ -21,7 +31,7 @@ This project is inspired by [python-benedict](https://github.com/fabiocaccamo/py
  - class BaseDict
    Factory class for custom dictionary.
  - class IODict
-   Factory class for IO serializable dictionary. .
+   Factory class for IO serializable dictionary.
  - class aDict
    Allow to access using dot notation for dictionary.
  - class Keypath and Keylist
@@ -37,15 +47,29 @@ This project is inspired by [python-benedict](https://github.com/fabiocaccamo/py
 
 utilities for string manupulate helper functions.
 
- -  `is_alpha()` - Check word is alphabet.
- -  `is_alnum()` - Check word is alphabet and digits.
  -  `replace_values()` - Replace objects for object(s).
  -  `omit_values()` - Omit values for object(s).
  -  `rename_duplicates()` - Rename duplicated strings to append a number at the end.
- -  `add_df()` - Add data into DataFrame.
- -  `df_compare()` - Check DataFrame is equals.
  -  `split_chunks()` - Split iterable object into chunks.
  -  `urange()` - Return an object that produces a sequence of integes.
+
+if pandas installed, follows functions are enabled.
+otherwise raise NotImplementedError when function call it.
+
+ -  `add_df()` - Add data into DataFrame.
+ -  `df_compare()` - Check DataFrame is equals.
+
+## Installation
+
+ - Run `pip install datajuggler`
+
+ or
+
+ - `pip install "datajuggler[database]"
+ - `pip install "datajuggler[requests]"
+ - `pip install "datajuggler[yaml]"
+
+...etc.
 
 ## Getting Start
 
@@ -89,15 +113,14 @@ In [12]: try:
     ...:     hash(a)
     ...: except AttributeError as e:
     ...:     print(e)
-    ...:
-unhashable not frozen object.
+    ...: unhashable not frozen object.
 
 In [13]:
 ```
 
 ### uDict
 
-uDict is utilized dictionary support keylist and keypath accessing  to values.
+uDict is utilized class support keylist and keypath accessing to values.
 
 ```python
 In [1]: from datajuggler import uDict, Keypath, Keylist
@@ -216,13 +239,11 @@ this class has follows methods.
  - `update(*args, **kwargs)`
  - `get(key: Hashable, default=None))`
  - `setdefault(key: Hashable, default=None)`
- - `fromkeys(sequence, inplace:bool=False)`
- - `fromvalues(sequence, base: int=1,
-               prefix: Optional[str]=None,inplace:bool=False)`
- - `fromlists(keys: Sequence, values: Sequence, inplace:bool=False)`
- - `to_dict(obj: Any)`
- - `from_dict(obj: Any, factory=None, inplace: bool=False)`
-
+ - `fromkeys(sequence, values, inplace=False)`
+ - `fromvalues(sequence, base=1, prefix=None, format="{:02}",inplace=False)`
+ - `fromlists(keys: Sequence, values: Sequence, inplace=False)`
+ - `to_dict(obj)`
+ - `from_dict(obj, factory=None, inplace=False)`
 
 
 ### fromkeys()
@@ -232,18 +253,21 @@ If set `True` to `inplace`, perform operation in-place.
 
 
 ```python
-In [1]: from datajuggler import aDict,uDict
+In [1]: from datajuggler.core import BaseDict
 
 In [2]: data = [ 'January', 'February', 'March', 'April' ]
 
-In [3]: aDict().fromkeys(data, 2)
-Out[3]: aDict({'January': 2, 'February': 2, 'March': 2, 'April': 2})
+In [3]: BaseDict().fromkeys(data,2)
+Out[3]: BaseDict({'January': 2, 'February': 2, 'March': 2, 'April': 2})
 
-In [4]: uDict().fromkeys(data, 2)
-Out[4]: uDict({'January': 2, 'February': 2, 'March': 2, 'April': 2})
+In [4]: d = BaseDict()
 
-In [5]:
+In [5]: d.fromkeys(data, 2, inplace=True)
 
+In [6]: d
+Out[6]: BaseDict({'January': 2, 'February': 2, 'March': 2, 'April': 2})
+
+In [7]:
 ```
 
 ### fromvalues()
@@ -252,35 +276,32 @@ Create a new dictionary from list of values.
 keys automaticaly generate as interger or str.
 `base` is the starting number.
 if set 'name' to `prefix`, keys will be use 'name01'...
+and if set "{:03}" to `format`, keys will "name_001".
 So, set '' to `prefix`, key as str from interger.
 If set `True` to `inplace`, perform operation in-place.
 
 ```python
-In [1]: from datajuggler import aDict,uDict
+In [7]: BaseDict().fromvalues(data)
+Out[7]: BaseDict({1: 'January', 2: 'February', 3: 'March', 4: 'April'})
 
-In [2]: data = [ 'January', 'February', 'March', 'April' ]
+In [8]: BaseDict().fromvalues(data, base=0)
+Out[8]: BaseDict({0: 'January', 1: 'February', 2: 'March', 3: 'April'})
 
-In [3]: aDict().fromvalues(data)
-Out[3]: aDict({1: 'January', 2: 'February', 3: 'March', 4: 'April'})
+In [9]: BaseDict().fromvalues(data, base=100)
+Out[9]: BaseDict({100: 'January', 101: 'February', 102: 'March', 103: 'April'})
 
-In [4]: uDict().fromvalues(data)
-Out[4]: uDict({1: 'January', 2: 'February', 3: 'March', 4: 'April'})
+In [10]: BaseDict().fromvalues(data, prefix='key_')
+Out[10]: BaseDict({'key_1': 'January', 'key_2': 'February', 'key_3': 'March', 'key_4': 'April'})
 
-In [6]: aDict().fromvalues(data, base=0)
-Out[6]: aDict({0: 'January', 1: 'February', 2: 'March', 3: 'April'})
+In [11]: d = BaseDict()
 
-In [7]: aDict().fromvalues(data, base=100)
-Out[7]: aDict({100: 'January', 101: 'February', 102: 'March', 103: 'April'})
+In [12]: d.fromvalues(data, inplace=True)
 
-In [8]: aDict().fromvalues(data, prefix='key_')
-Out[8]: aDict({'key_1': 'January', 'key_2': 'February', 'key_3': 'March', 'key_4': 'April'})
+In [13]: d
+Out[13]: BaseDict({1: 'January', 2: 'February', 3: 'March', 4: 'April'})
 
-In [9]: aDict().fromvalues(data, prefix='')
-Out[9]: aDict({'1': 'January', '2': 'February', '3': 'March', '4': 'April'})
-
-In [10]:
+In [14]:
 ```
-
 
 ### fromlists()
 
@@ -290,30 +311,34 @@ If set `True` to `inplace`, perform operation in-place.
 
 
 ```python
-In [1]: from datajuggler import aDict,uDict
+In [14]: keys = [ 'January', 'February', 'March', 'April' ]
 
-In [2]: keys = [ 'January', 'February', 'March', 'April' ]
+In [15]: values = [ 1, 2, 3, 4 ]
 
-In [3]: values = [ 1, 2, 3, 4 ]
+In [16]: BaseDict().fromlists(keys, values)
+Out[16]: BaseDict({'January': 1, 'February': 2, 'March': 3, 'April': 4})
 
-In [4]: aDict().fromlists(keys, values)
-Out[4]: aDict({'January': 1, 'February': 2, 'March': 3, 'April': 4})
+In [17]: d = BaseDict()
 
-In [5]: uDict().fromlists(keys, values)
-Out[5]: uDict({'January': 1, 'February': 2, 'March': 3, 'April': 4})
+In [18]: d.fromlists(keys, values, inplace=True)
 
-In [6]:
+In [19]: d
+Out[19]: BaseDict({'January': 1, 'February': 2, 'March': 3, 'April': 4})
+
+In [20]:
 ```
 
 
 ## class IODict
 
-this class support serialize method. Base64, INI, JSON, YAML, TOML, XML.
+this class support serialize method.
+
+  - Base64, CSV, INI, JSON, YAML, TOML, XML, query_strings, plist
 
 if not installed PyYAML and/or toml and call from_yaml(), from_tomo(),
 will raise NotImpelementedError.
 
-aDict and uDict are subclass of IODict.
+IODict is subclass of BaseDict.
 
  - `from_base64(cls, s, subformat="json", encoding="utf-8", **kwargs)`
  - `from_csv(cls, s, columns=None, columns_row=True, **kwargs)`
@@ -328,7 +353,7 @@ aDict and uDict are subclass of IODict.
 
 ## Serialization
 
-Supported serializer is follows.
+Provides serializer are follows.
 
  - `Base64Serializer`
  - `CSVSerializer`
@@ -342,13 +367,17 @@ Supported serializer is follows.
  - `YAMLSerializer`
 
 ```python
-from datajuggler import serializer as io
+In [1]: from datajuggler import serializer as io
 
-data = {"console": "Nintendo Switch",
-        "games": ["The Legend of Zelda", "Mario Golf"]}
+In [2]: data = {"console": "Nintendo Switch",
+   ...:         "games": ["The Legend of Zelda", "Mario Golf"]}
 
-s = io.JSONSerializer()
-s.encode(data)
+In [3]: s = io.JSONSerializer()
+
+In [4]: s.encode(data)
+Out[4]: '{"console": "Nintendo Switch", "games": ["The Legend of Zelda", "Mario Golf"]}'
+
+In [5]:
 ```
 
 and provide helper functions.
@@ -357,14 +386,86 @@ and provide helper functions.
  - `get_serializer_by_format(format)`
  - `get_serializers_extensions()`
  - `autodetect_format(s)`
- - `is_filepath(s)`
+ - `validate_file(s)`
  - `is_url(s)`
- - `read_content(s)`
+ - `is_dsn(s)`
+ - `read_contents(s)`
+ - `read_database(s)`
  - `read_url(url, **options)`
  - `read_file(filepath, encording="utf-8", **options)`
  - `write_file(filepath, content, encording="utf-8", **options)`
 
+### read_contents()
 
+read contets from filepath.
+if requests module installed and filepath is starts with 'http://' or 'https://', read contents from URL.
+if dataset momdule installed and filepath is starts with
+'sqlite://' or 'mysql://', 'postgresql://' read contents form DATABASE.
+
+```python
+In [1]: from datajuggler import serializer as io
+
+In [2]: io.read_contents('sqlite:///users.sqlite#users')
+Out[5]:
+[{'id': 1, 'name': 'Jack Bauer', 'age': 55, 'belongs': 'CTU'},
+ {'id': 2, 'name': "Chloe O'Brian", 'age': 0, 'belongs': 'CTU'},
+ {'id': 3, 'name': 'Anthony Tony', 'age': 29, 'belongs': 'CTU'},
+ {'id': 4, 'name': 'David Gilmour', 'age': 75, 'belongs': 'Pink Floyd'},
+ {'id': 5, 'name': 'Ann Wilson', 'age': 71, 'belongs': 'Heart'},
+ {'id': 6, 'name': 'Nacy Wilson', 'age': 67, 'belongs': 'Heart'}]
+
+In [3]: from datajuggler import uDict
+
+In [4]: d = uDict('sqlite:///users.sqlite#users')
+
+In [5]: d
+Out[5]: uDict({'values': [{'id': 1, 'name': 'Jack Bauer', 'age': 55, 'belongs': 'CTU'}, {'id': 2, 'name': "Chloe O'Brian", 'age': 0, 'belongs': 'CTU'}, {'id': 3, 'name': 'Anthony Tony', 'age': 29, 'belongs': 'CTU'}, {'id': 4, 'name': 'David Gilmour', 'age': 75, 'belongs': 'Pink Floyd'}, {'id': 5, 'name': 'Ann Wilson', 'age': 71, 'belongs': 'Heart'}, {'id': 6, 'name': 'Nacy Wilson', 'age': 67, 'belongs': 'Heart'}]})
+
+In [6]:
+```
+
+if you want filtering data, pass to kwargs as follows.
+
+```python
+In [1]: from datajuggler import serializer as io
+
+In [2]: io.read_contents('sqlite:///users.sqlite#users')
+Out[2]:
+[{'id': 1, 'name': 'Jack Bauer', 'age': 55, 'belongs': 'CTU'},
+ {'id': 2, 'name': "Chloe O'Brian", 'age': 0, 'belongs': 'CTU'},
+ {'id': 3, 'name': 'Anthony Tony', 'age': 29, 'belongs': 'CTU'},
+ {'id': 4, 'name': 'David Gilmour', 'age': 75, 'belongs': 'Pink Floyd'},
+ {'id': 5, 'name': 'Ann Wilson', 'age': 71, 'belongs': 'Heart'},
+ {'id': 6, 'name': 'Nacy Wilson', 'age': 67, 'belongs': 'Heart'}]
+
+In [3]: io.read_contents('sqlite:///users.sqlite#users', id={'==': 2})
+Out[3]: [{'id': 2, 'name': "Chloe O'Brian", 'age': 0, 'belongs': 'CTU'}]
+
+In [4]: io.read_contents('sqlite:///users.sqlite#users', id={'>=': 3})
+Out[4]:
+[{'id': 3, 'name': 'Anthony Tony', 'age': 29, 'belongs': 'CTU'},
+ {'id': 4, 'name': 'David Gilmour', 'age': 75, 'belongs': 'Pink Floyd'},
+ {'id': 5, 'name': 'Ann Wilson', 'age': 71, 'belongs': 'Heart'},
+ {'id': 6, 'name': 'Nacy Wilson', 'age': 67, 'belongs': 'Heart'}]
+
+In [5]: io.read_contents('sqlite:///users.sqlite#users', id={'between': [2,4]})
+Out[5]:
+[{'id': 2, 'name': "Chloe O'Brian", 'age': 0, 'belongs': 'CTU'},
+ {'id': 3, 'name': 'Anthony Tony', 'age': 29, 'belongs': 'CTU'},
+ {'id': 4, 'name': 'David Gilmour', 'age': 75, 'belongs': 'Pink Floyd'}]
+
+In [6]: io.read_contents('sqlite:///users.sqlite#users', name={'like': '%WILSON'
+   ...: })
+Out[6]:
+[{'id': 5, 'name': 'Ann Wilson', 'age': 71, 'belongs': 'Heart'},
+ {'id': 6, 'name': 'Nacy Wilson', 'age': 67, 'belongs': 'Heart'}]
+
+In [7]:
+```
+
+See also: [dataset document](https://dataset.readthedocs.io/en/latest/)
+
+currently, not support write_database().
 
 ### JSON
 
@@ -767,53 +868,12 @@ In [4]: d.one.two.three.four = 1
 
 In [5]: d.freeze()
 
-In [6]: d.one.two.three.four = 2
----------------------------------------------------------------------------
-AttributeError                            Traceback (most recent call last)
-File ~/Projects/GitHub/datajuggler/datajuggler/core.py:679, in aDict.__setattr__(self, k, v)
-    678 try:
---> 679     object.__getattribute__(self, k)
-    680 except AttributeError:
-
-AttributeError: 'aDict' object has no attribute 'four'
-
-During handling of the above exception, another exception occurred:
-
-AttributeError                            Traceback (most recent call last)
-File ~/Projects/GitHub/datajuggler/datajuggler/core.py:685, in aDict.__setattr__(self, k, v)
-    684     else:
---> 685         self[k] = v
-    686 except:
-
-File ~/Projects/GitHub/datajuggler/datajuggler/core.py:556, in aDict.__setitem__(self, name, value)
-    555     else:
---> 556         raise AttributeError("'aDict' object attribute "
-    557                          "'{0}' is read-only".format(name))
-    559 super().__setitem__(name, value)
-
-AttributeError: 'aDict' object attribute 'four' is read-only
-
-During handling of the above exception, another exception occurred:
-
-AttributeError                            Traceback (most recent call last)
-Input In [6], in <cell line: 1>()
-----> 1 d.one.two.three.four = 2
-
-File ~/Projects/GitHub/datajuggler/datajuggler/core.py:687, in aDict.__setattr__(self, k, v)
-    685             self[k] = v
-    686     except:
---> 687         if not self._check_frozen():
-    688             raise AttributeError(k)
-    689 else:
-
-File ~/Projects/GitHub/datajuggler/datajuggler/core.py:538, in aDict._check_frozen(self, thrown_error, msg)
-    536 if object.__getattribute__(self, '__frozen'):
-    537     if thrown_error:
---> 538         raise AttributeError( f"{self.__class__.__name__} {msg}" )
-    539     else:
-    540         return True
-
-AttributeError: aDict frozen object cannot be modified.
+In [6]: try:
+   ...:     d.one.two.three.four = 2
+   ...: except AttributeError as e:
+   ...:     print(e)
+   ...:
+aDict frozen object cannot be modified.
 
 In [7]: d.unfreeze()
 
@@ -828,23 +888,25 @@ In [9]:
 This is utility class for uDict and manage for keypath and Keylist
 
 ```python
-    { 'a': { 'b1': { 'c1': {'x': 1 },
-                     'c2': {'x': 2 }},
-           { 'b2': { 'c1': {'x': 3 },
-                     'c2': {'x': 4 }} }}}
+data = { "a": 1,
+         "b": { "c": { "x": 2, "y": 3, },
+                "d": { "x": 4, "y": 5, },
+                "e": [ { "x": 1, "y": -1, "z": [101, 201, 301], },
+                       { "x": 2, "y": -2, "z": [102, 202, 302], },
+                       { "x": 3, "y": -3, "z": [103, 203, 303], },
+                     ],
+              },
+      }
 ```
-Keylist(['a','b1', 'c1', 'x']) point to value `1`.
-Keypath(['a.b1.c1.x']) point to value `1`.
+Keylist(['b','e[1]', 'z[0]']) point to value `102`.
+Keypath(['b.e[1].z[0]']) point to value `102`.
 
-The following keylists is evaluated as the same value.
+indexes of list should be integer or str([index]).
 
- - Keylist(['a', 'b', 1, 'c', 1, 'x']
- - Keylist(['a', 'b[1]', 'c[1]', 'x']
- - ('a', 'b', 1, 'c', 1, 'x')
- - ('a', 'b[1]', 'c[1], 'x')
-
-tuple() object is short notation as Keylist() object.
-however, Keylist() is accept separator of keypath.
+```python
+In [7]: Keylist(['b', 'e[1]', 'z[0]'])
+Out[7]: Keylist(['b', 'e', 1, 'z', 0])
+```
 
 ### methods for Keylist class
 
@@ -3071,7 +3133,7 @@ Create new dict with new, potentially nested, key value pair.
  - `freeze()` change status of object in frozen.
  - `unfreeze()` unfreeze for object.
 
-if called `freeze()`, following method will raise AttiributeError.
+if call `freeze()`, following method will raise AttiributeError.
 
  - `__hash__()`
  - `__radd__()`
@@ -3287,6 +3349,10 @@ using TypeValidator not necessary including typing module.
  - `is_tuple(cls, obj: Any)`
  - `is_tuple_not_empty(cls, obj: Any)`
  - `is_uuid(cls, obj: Any)`
+ - `is_str_alnum(cls, obj: Any)`
+ - `is_str_alpha(cls, obj: Any)`
+ - `is_str_financial_number(cls, obj: Any)`
+ - `is_str_emoji(cls, obj: Any)`
 
 Using TypeValidator class no need to include typing module compare with objects.
 
@@ -3726,3 +3792,10 @@ In [13]: data = { 1: 'one', 2: 'two', 3: 'three', 4: 'four' }
 In [14]:
 ```
 
+## KNOWN PROBLEMS
+
+datajuggler is not support followings issues.
+
+ - out-of-core processing.
+
+if you want to processing  huge datasets. you shoud combine [datatables](https://github.com/h2oai/datatable).

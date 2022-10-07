@@ -981,7 +981,6 @@ def get_keys(
 
     return all_keys
 
-
 def get_values(
         obj: Union[dict, Sequence],
         keys: Union[Hashable, Keylist, Keypath],
@@ -1026,7 +1025,7 @@ def get_values(
     elif _type.is_keylist(keys):
         keys = keys.value()
     elif _type.is_tuple(keys):
-        keys = list(keys)
+        keys = [keys]
     elif _type.is_str(keys):
         keys = [keys]
     elif not _type.is_list_not_empty(keys):
@@ -1035,6 +1034,7 @@ def get_values(
 
     values = defaultdict(list)
     v = obj
+    k = None
     for key in keys:
         for k, v in deep_lookup(key, v):
             values[k].append(v)
@@ -1042,7 +1042,7 @@ def get_values(
     if as_dict:
         return values
     else:
-        return values[k][-1]
+        return values[k][-1] if k is not None else None
 
 def get_items(
         obj: dict,
@@ -1064,8 +1064,8 @@ def get_items(
                                'c2': {'x': 2 }},
                      { 'b2': { 'c1': {'x': 3 },
                                'c2': {'x': 4 }} }}}
-        keylist: if set ['a', 'b1', 'c1',  'x'] to `loc`, val is 1.
-        keypath: if 'a.b1.c1.x'  to `loc`, val is 1.
+        if set Keylist('a', 'b1', 'c1',  'x') to `loc`, val is 1.
+        if set Keypath('a.b1.c1.x')  to `loc`, val is 1.
         giving the location of the value to be changed in `obj`.
     value: the value to aplly
     """
@@ -1096,8 +1096,8 @@ def pop_items(
                                'c2': {'x': 2 }},
                      { 'b2': { 'c1': {'x': 3 },
                                'c2': {'x': 4 }} }}}
-        keylist: if set ['a', 'b1', 'c1',  'x'] to `loc`, val is 1.
-        keypath: if 'a.b1.c1.x'  to `loc`, val is 1.
+        if set Keylist('a', 'b1', 'c1',  'x') to `loc`, val is 1.
+        if set Keypath('a.b1.c1.x')  to `loc`, val is 1.
         giving the location of the value to be changed in `obj`.
         if set loc as str and has `.keypath_separator`,
         convert keypath to str using
@@ -1128,8 +1128,8 @@ def del_items(
                                'c2': {'x': 2 }},
                      { 'b2': { 'c1': {'x': 3 },
                                'c2': {'x': 4 }} }}}
-        keylist: if set ['a', 'b1', 'c1',  'x'] to `loc`, val is 1.
-        keypath: if 'a.b1.c1.x'  to `loc`, val is 1.
+        if set Keylist('a', 'b1', 'c1',  'x') to `loc`, val is 1.
+        if set Keypath('a.b1.c1.x')  to `loc`, val is 1.
         giving the location of the value to be changed in `obj`.
     value: the value to aplly
     func:
@@ -1163,8 +1163,8 @@ def set_items(
                                'c2': {'x': 2 }},
                      { 'b2': { 'c1': {'x': 3 },
                                'c2': {'x': 4 }} }}}
-        keylist: if set ['a', 'b1', 'c1',  'x'] to `loc`, val is 1.
-        keypath: if 'a.b1.c1.x'  to `loc`, val is 1.
+        if set Keylist('a', 'b1', 'c1',  'x') to `loc`, val is 1.
+        if set Keypath('a.b1.c1.x')  to `loc`, val is 1.
         giving the location of the value to be changed in `obj`.
         if set loc as str and has `.keypath_separator`,
     value: the value to aplly

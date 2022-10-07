@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
 
-import codecs, sys
+# import codecs, sys
+#
+# sys.stdout = codecs.getwriter('utf_8')(sys.stdout)
+# sys.stdin = codecs.getreader('utf_8')(sys.stdin)
 
-sys.stdout = codecs.getwriter('utf_8')(sys.stdout)
-sys.stdin = codecs.getreader('utf_8')(sys.stdin)
+import re
 
 from datetime import datetime
+from collections import OrderedDict
 import pytest
 
 
@@ -127,6 +130,10 @@ class TestClass:
     def test_is_keypath(self):
         data = Keypath('a')
         assert _type.is_keypath(data) == True
+        data = Keypath('a.b.c')
+        assert _type.is_keypath(data) == True
+        data = 'a.b.c'
+        assert _type.is_keypath(data) == False
         data = list()
         assert _type.is_keypath(data) == False
         data = str()
@@ -162,11 +169,21 @@ class TestClass:
         data = []
         assert _type.is_list_of_keypaths(data) == False
 
+    def test_is_list_of_ordereddict(self):
+        data = [OrderedDict()]
+        assert _type.is_list_of_ordereddict(data) == True
+        data = OrderedDict()
+        assert _type.is_list_of_ordereddict(data) == False
+        data = []
+        assert _type.is_list_of_ordereddict(data) == False
+
     def test_is_mapping(self):
         pass
 
     def test_is_match(self):
-        pass
+        pattern =  re.compile(r'([^01-9]+)?')
+        result = re.search(pattern, '1234')
+        assert _type.is_match(result) == True
 
     def test_is_none(self):
         data = None
@@ -177,10 +194,12 @@ class TestClass:
         assert _type.is_not_none(data) == True
 
     def test_is_pattern(self):
-        pass
+        pattern =  re.compile(r'([^01-9]+)?')
+        assert _type.is_pattern(pattern) == True
 
     def test_is_regex(self):
-        pass
+        pattern =  re.compile(r'([^01-9]+)?')
+        assert _type.is_regex(pattern) == True
 
     def test_is_same_as(self):
         d1 = dict(a=1,b=2, c=3)
@@ -190,23 +209,25 @@ class TestClass:
     def test_is_sequence(self):
         pass
 
-    def test_is_set(self):
-        data = set()
-        assert _type.is_set(data) == True
-        data = dict()
-        assert _type.is_set(data) == False
-
     def test_is_str(self):
         data = str()
         assert _type.is_str(data) == True
         data = 2
         assert _type.is_str(data) == False
+        data = str()
+        assert _type.is_str_not_empty(data) == False
+        data = 'python'
+        assert _type.is_str_not_empty(data) == True
 
     def test_is_tuple(self):
         data = tuple()
         assert _type.is_tuple(data) == True
         data = list()
         assert _type.is_tuple(data) == False
+        data = tuple()
+        assert _type.is_tuple_not_empty(data) == False
+        data = (1,2,3)
+        assert _type.is_tuple_not_empty(data) == True
 
     def test_is_uuid(self):
         pass

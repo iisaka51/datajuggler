@@ -11,6 +11,13 @@ try:
 except ImportError:
     requests_installed = False
 
+try:
+    import dataset
+    dataset_installed = True
+except ImportError:
+    dataset_installed = False
+
+
 from datajuggler.serializer.abstract import AbstractSerializer
 from datajuggler.serializer.base64 import Base64Serializer
 from datajuggler.serializer.csv import CSVSerializer
@@ -22,6 +29,7 @@ from datajuggler.serializer.query_string import QueryStringSerializer
 from datajuggler.serializer.toml import TOMLSerializer
 from datajuggler.serializer.xml import XMLSerializer
 from datajuggler.serializer.yaml import YAMLSerializer, yaml_initializer
+
 
 __all__ = [
     "AbstractSerializer",
@@ -36,6 +44,17 @@ __all__ = [
     "XMLSerializer",
     "YAMLSerializer",
     "yaml_initializer",
+    "get_format_by_path",
+    "autodetect_format",
+    "validate_file",
+    "is_url",
+    "is_dsn",
+    "is_database",
+    "read_contents",
+    "read_database",
+    "read_url",
+    "read_file",
+    "write_file",
 ]
 
 _BASE64_SERIALIZER = Base64Serializer()
@@ -66,10 +85,14 @@ _SERIALIZERS = {
 }
 
 _SERIALIZERS_EXTENSIONS = [f".{extension}" for extension in _SERIALIZERS.keys()]
+_SERIALIZERS_SCHEMES = [ "sqlite", "mysql", "postgresql" ]
 
 
 def get_format_by_path(path):
     path = path.lower()
+    for scheme in _SERIALIZERS_SCHEMES:
+        if path.startswith(f'{scheme}://'):
+            return scheme
     for extension in _SERIALIZERS_EXTENSIONS:
         if path.endswith(extension):
             return extension[1:]
@@ -87,10 +110,12 @@ def get_serializers_extensions():
 
 
 def autodetect_format(s):
-    if is_url(s) or is_filepath(s):
+    if isinstance(s, str) and (is_url(s) or is_dsn(s) or validate_file(s)):
         return get_format_by_path(s)
     return None
 
+def is_database(f):
+    return f in _SERIALIZERS_SCHEMES
 
 def decode(
         s: str,
@@ -101,7 +126,8 @@ def decode(
     if not serializer:
         raise ValueError(f"Invalid format: {format}.")
     decode_opts = kwargs.copy()
-    data = serializer.decode(s.strip(), **decode_opts)
+    data = s.strip() if isinstance(s, str) else s
+    data = serializer.decode(s, **decode_opts)
     return data
 
 
@@ -118,31 +144,52 @@ def encode(
 
 
 def is_data(s):
-    return len(s.splitlines()) > 1
+    if isinstance(s, dict):
+        return True
+    else:
+        return len(s.splitlines()) > 1
 
 
-def is_filepath(s):
-    if Path(s).is_file():
-        if any([s.endswith(ext) for ext in get_serializers_extensions()]):
-            return True
+def validate_file(s, thrown_error: bool=False):
+    filepath = Path(s)
+    if filepath.exists():
+        if filepath.is_file():
+            file = str(s)
+            if any([file.endswith(ext)
+                    for ext in get_serializers_extensions()]):
+                return True
+            elif thrown_error:
+                raise RuntimeError(f'Unsupported file extension: {filepath}')
+        else:
+            raise RuntimeError(f'filepath is not file: {filepath}')
+    elif thrown_error:
+        raise FileNotFoundError(f'No such file or directory: {filepath}')
+
     return False
 
 
 def is_url(s):
-    return any([s.startswith(protocol) for protocol in ["http://", "https://"]])
+    return any([ s.startswith(protocol)
+                 for protocol in ["http://", "https://"] ])
 
+def is_dsn(s):
+    return any([ s.startswith(protocol)
+                 for protocol in ["sqlite://", "mysql://", "postgresql://"] ])
 
-def read_content(s):
+def read_contents(s,
+        *args: Any,
+        thrown_error: bool=False,
+        **kwargs: Any,
+    ) ->Union[str, list]:
     # s -> filepath or url or data
-    if is_data(s):
-        # data
+    if is_data(s): # data
         return s
-    elif is_url(s):
-        # url
+    elif is_url(s): # url
         return read_url(s)
-    elif is_filepath(s):
-        # filepath
-        return read_file(s)
+    elif is_dsn(s): # databse
+        return list(read_database(s, **kwargs))
+    elif validate_file(s, thrown_error=thrown_error):
+        return read_file(s, thrown_error=thrown_error)
     # one-line data?!
     return s
 
@@ -151,27 +198,63 @@ def read_url(
         url: str,
         **options: Any
     ):
-    if not request_installed:
-        raise ModuleNotInstalledError("'requests' module is not installed.")
+    if not requests_installed:
+        raise NotImplementedError("'requests' module is not installed.")
 
-    response = requests.get(url, **kwargs)
+    response = requests.get(url, **options)
     response.raise_for_status()
-    content = response.text
-    return content
+    contents = response.text
+    return contents
 
+def read_database(
+        dsn: str,
+        as_str: bool=False,
+        **kwargs: Any
+    ):
+    """Read database and return list of dictionary.
+    default table name is 'default'.
+    table name pass to after '#' in dsn.
+    i.e.:  'sqlite:///users.sqlite#users'
+    supported database are 'sqlite', 'mysql', 'postgresql'.
+    """
+    if not dataset_installed:
+        raise NotImplementedError("'dataset' module is not installed.")
+
+    if dsn.find('#')>0:
+        dsn, table = dsn.split('#')
+    else:
+        table = 'default'
+    db = dataset.connect(dsn)
+    contents = []
+    if table in db:
+        tbl = db[table]
+        if len(kwargs)>0:
+            data = tbl.find(**kwargs)
+        else:
+            data = tbl.all()
+        for x in data:
+            if as_str:
+                yield str(dict(x))
+            else:
+                yield dict(x)
+
+    db.executable.invalidate()
+    db.executable.engine.dispose()
+    db.close()
 
 def read_file(
         filepath: Union[str, Path],
         encording: str="utf-8",
+        thrown_error: bool=False,
         **options: Any
     ):
-    content = ""
-    if Path(filepath).is_file():
+    contents = ""
+    if validate_file(filepath, thrown_error=thrown_error):
         ops = dict(encording=encording)
         ops.update(options)
         with open(filepath, 'r', **options) as file:
-            content = file.read()
-    return content
+            contents = file.read()
+    return contents
 
 
 def write_file(

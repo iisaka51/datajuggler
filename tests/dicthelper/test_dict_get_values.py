@@ -21,7 +21,7 @@ class TestClass:
 
     def test_dict_access_get_values_case02(self):
         expect = { "x": 2, "y": 3, }
-        assert get_values(self.data, ('b', 'c')) == expect
+        assert get_values(self.data, ('b', 'c')) == None
 
     def test_dict_access_get_values_case03(self):
         expect = { "x": 2, "y": 3, }

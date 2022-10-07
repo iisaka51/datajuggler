@@ -90,8 +90,8 @@ except ImportError:
             super().__init__()
 
         def decode(self, s, **kwargs):
-            raise NotImplementedError('You should install PyYAML.')
+            raise NotImplementedError("You should install 'PyYAML'.")
 
         def encode(self, d, **kwargs):
-            raise NotImplementedError('You should install PyYAML.')
+            raise NotImplementedError("You should install 'PyYAML'.")
 

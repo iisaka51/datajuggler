@@ -6,31 +6,38 @@ sys.path.insert(0,"../datajuggler")
 
 from datajuggler import (
     omit_values, replace_values,
-    add_df, df_compare,
     split_chunks, urange, rename_duplicates,
 )
-import pandas as pd
+
+try:
+    import pandas as pd
+    from datajuggler import (
+        add_df, df_compare,
+    )
+
+    class TestClass:
+
+        def test_df_compare(self):
+            d1 = pd.DataFrame([ ['Kyoto', 35.0117,135.452],
+                                ['Osaka', 34.4138,135.3808]],
+                              columns=['cityName', 'latitude', 'longitude'])
+            d2 = pd.DataFrame([ ['Kyoto', 35.0117,135.452],
+                                ['Osaka', 34.4138,135.3808]],
+                              columns=['cityName', 'latitude', 'longitude'])
+            assert ( df_compare(d1, d2) == 0 )
+
+        def test_df_compare_diff_count_non_zero(self):
+            d1 = pd.DataFrame([ ['26100', 35.0117,135.452],
+                                ['27100', 34.4138,135.3808]],
+                              columns=['cityCode', 'latitude', 'longitude'])
+            d2 = pd.DataFrame([ ['Kyoto', 35.0117,135.452],
+                                ['Osaka', 34.4138,135.3808]],
+                              columns=['cityName', 'latitude', 'longitude'])
+            assert ( df_compare(d1, d2) != 0 )
+except ImportError:
+    pass
 
 class TestClass:
-
-    def test_df_compare(self):
-        d1 = pd.DataFrame([ ['Kyoto', 35.0117,135.452],
-                            ['Osaka', 34.4138,135.3808]],
-                          columns=['cityName', 'latitude', 'longitude'])
-        d2 = pd.DataFrame([ ['Kyoto', 35.0117,135.452],
-                            ['Osaka', 34.4138,135.3808]],
-                          columns=['cityName', 'latitude', 'longitude'])
-        assert ( df_compare(d1, d2) == 0 )
-
-    def test_df_compare_diff_count_non_zero(self):
-        d1 = pd.DataFrame([ ['26100', 35.0117,135.452],
-                            ['27100', 34.4138,135.3808]],
-                          columns=['cityCode', 'latitude', 'longitude'])
-        d2 = pd.DataFrame([ ['Kyoto', 35.0117,135.452],
-                            ['Osaka', 34.4138,135.3808]],
-                          columns=['cityName', 'latitude', 'longitude'])
-        assert ( df_compare(d1, d2) != 0 )
-
     def test_omit_values(self):
         data = ['January', 'February', 'March', 'April' ]
         omits = ['February', 'April']

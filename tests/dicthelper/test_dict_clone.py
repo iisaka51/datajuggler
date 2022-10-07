@@ -19,7 +19,7 @@ class TestCase:
         assert data["a"]["b"]["c"] == 1
 
     def test_clone_case02(self):
-        result = d_clone(self.data, empty=True)
+        result = d_clone(data, empty=True)
         assert isinstance(result, dict) == True
         assert result == {}
 

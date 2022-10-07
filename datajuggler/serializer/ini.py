@@ -14,7 +14,7 @@ class INISerializer(AbstractSerializer):
     """
 
     def __init__(self):
-        super(INISerializer, self).__init__()
+        super().__init__()
 
     @staticmethod
     def _get_section_option_value(parser, section, option):

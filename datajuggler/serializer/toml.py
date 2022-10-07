@@ -15,7 +15,7 @@ try:
         """
 
         def __init__(self):
-            super(TOMLSerializer, self).__init__()
+            super().__init__()
 
         def decode(self, s, **kwargs):
             return toml.loads(s, **kwargs)
@@ -35,7 +35,7 @@ except ImportError:
             super().__init__()
 
         def decode(self, s, **kwargs):
-            raise NotImplementedError('You should install toml.')
+            raise NotImplementedError("You should install 'toml'.")
 
         def encode(self, d, **kwargs):
-            raise NotImplementedError('You should install toml.')
+            raise NotImplementedError("You should install 'toml'.")

@@ -3,6 +3,7 @@ from typing import (
     Any, Dict, Union, Optional, Hashable, Iterable,
     Callable, Pattern, Match, Literal, get_args
 )
+from collections import OrderedDict
 from collections.abc import (
     Mapping, KeysView, ValuesView, ItemsView, Sequence
 )
@@ -13,10 +14,10 @@ from decimal import Decimal
 from datajuggler.keys import Keylist, Keypath
 
 try:
-    import emoji
+    from emoji import is_emoji
 except ImportError:
     def is_emoji(s: str):
-        raise NotImplementedError('You should install emoji.')
+        raise NotImplementedError("You should install 'emoji'.")
 
 class DictKey(str, Enum):
     KEYLIST = "keylist"
@@ -211,6 +212,11 @@ class TypeValidator(object):
         return ( isinstance(obj, list)
                  and len(obj) >= 1
                  and all(map(lambda x: isinstance(x, Keypath), obj)) )
+    @classmethod
+    def is_list_of_ordereddict(cls, obj: Any):
+        return ( isinstance(obj, list)
+                 and len(obj) >= 1
+                 and all(map(lambda x: isinstance(x, OrderedDict), obj)) )
 
     @classmethod
     def is_mapping(cls, obj: Any):
@@ -262,7 +268,7 @@ class TypeValidator(object):
 
     @classmethod
     def is_str_not_empty(cls, obj: Any):
-        return obj and isinstance(obj, str)
+        return obj != '' and isinstance(obj, str)
 
     @classmethod
     def is_tuple(cls, obj: Any):
@@ -270,7 +276,7 @@ class TypeValidator(object):
 
     @classmethod
     def is_tuple_not_empty(cls, obj: Any):
-        return obj and isinstance(obj, tuple)
+        return obj != () and isinstance(obj, tuple)
 
     @classmethod
     def is_uuid(cls, obj: Any):
@@ -295,10 +301,10 @@ class TypeValidator(object):
         return True if is_alpha(obj) else False
 
     @classmethod
-    def is_str_finance(cls, obj: Any):
+    def is_str_financial_number(cls, obj: Any):
         return obj and isinstance(obj, str) and cls.re_financial_number.match(obj)
 
     @classmethod
     def is_str_emoji(cls, obj: Any):
-        return obj and isinstance(obj, str) and is_empji(obj)
+        return obj and isinstance(obj, str) and is_emoji(obj)
 
