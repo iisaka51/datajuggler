@@ -23,6 +23,7 @@ from datajuggler.keys import (
 from datajuggler import dicthelper as d
 from datajuggler import serializer as io
 from datajuggler.validator import TypeValidator as _type
+import snoop
 
 class BaseDict(dict):
 
@@ -167,7 +168,7 @@ class BaseDict(dict):
             if _type.is_dict(obj):
                 return dict()
             elif _type.is_list(obj):
-                return type(obj)()
+                return list()
             elif _type.is_tuple(obj):
                 type_factory = getattr(obj, "_make", type(obj))
                 return type_factory(convert_loop(item) for item in obj)
@@ -187,45 +188,49 @@ class BaseDict(dict):
 
         return convert_loop(obj)
 
+    @snoop
     def from_dict(self,
-            obj: Any,
+            obj: dict,
             inplace: bool=False,
             factory: Optional[Type[dict]]=None,
         ):
         """ Recursively converts from dict to BaseDict. """
 
-        def convert_loop(obj):
+        @snoop
+        def convert_loop(obj, factory):
             try:
                 return holding_obj[id(obj)]
             except KeyError:
                 pass
 
-            holding_obj[id(obj)] = partial = pre_convert(obj)
-            return post_convert(partial, obj)
+            holding_obj[id(obj)] = partial = pre_convert(obj, factory)
+            return post_convert(partial, obj, factory)
 
-        def pre_convert(obj):
+        @snoop
+        def pre_convert(obj,factory):
             if _type.is_dict(obj):
-                return factory({})
+                return factory()
             elif _type.is_list(obj):
-                return type(obj)()
+                return list()
             elif _type.is_tuple(obj):
                 type_factory = getattr(obj, "_make", type(obj))
-                return type_factory(convert_loop(item) for item in obj)
+                return type_factory(convert_loop(item, factory) for item in obj)
             else:
                 return obj
 
-        def post_convert(partial, obj):
-            if _type.is_dict(obj) and factory == type(self):
-                partial = factory((key, convert_loop(obj[key]))
-                                for key in obj.keys() )
+        @snoop
+        def post_convert(partial, obj, factory):
+            if _type.is_same_as(obj, factory):
+                partial = factory((key, convert_loop(obj[key], factory))
+                                  for key in obj.keys() )
             elif _type.is_dict(obj):
-                partial.update((key, convert_loop(obj[key]))
+                partial.update((key, convert_loop(obj[key], factory))
                                 for key in obj.keys() )
             elif _type.is_list(obj):
-                partial.extend(convert_loop(item) for item in obj)
+                partial.extend(convert_loop(item, factory) for item in obj)
             elif _type.is_tuple(obj):
                 for (item_partial, item) in zip(partial, obj):
-                    post_convert(item_partial, item)
+                    post_convert(item_partial, item, factory)
 
             return partial
 
@@ -233,7 +238,7 @@ class BaseDict(dict):
         holding_obj = dict()
         workdict = dict()
 
-        obj = convert_loop(obj)
+        obj = convert_loop(obj, factory)
         try:
             if inplace:
                 self.update(obj)
@@ -564,6 +569,14 @@ class aDict(IODict):
         for key, val in kwargs.items():
             __self[key] = __self._hook(val)
 
+    @classmethod
+    def _hook(cls, item):
+        if _type.is_dict(item):
+            return cls(item)
+        elif _type.is_list_or_tuple(item):
+            return type(item)(cls._hook(elem) for elem in item)
+        return item
+
     def _check_frozen(self,
             thrown_error: bool=False,
             msg: str='frozen object cannot be modified.',
@@ -612,14 +625,6 @@ class aDict(IODict):
             other_type = type(other).__name__
             msg = "unsupported operand type(s) for +: '{}' and '{}'"
             raise TypeError(msg.format(self_type, other_type))
-
-    @classmethod
-    def _hook(cls, item):
-        if _type.is_dict(item):
-            return cls(item)
-        elif _type.is_list_or_tuple(item):
-            return type(item)(cls._hook(elem) for elem in item)
-        return item
 
     def __getattr__(self, item):
         return self.__getitem__(item)
@@ -789,7 +794,10 @@ class uDict(IODict):
             if args and isinstance(args[0], str):
                 format = io.autodetect_format(args[0])
                 args = (super()._decode_init(*args, format=format, **kwargs),)
-        self.update(dict(*args, **kwargs))
+        if io.is_database(format):
+            self.update(*args)
+        else:
+            self.update(dict(*args, **kwargs))
 
     def __is_keypath_or_keylist(self, x):
         return ( self._keypath_separator is not None
@@ -1365,6 +1373,7 @@ class uDict(IODict):
 
     unique.__doc__ = _get_docstring(d.d_unique, 'obj')
 
+    @snoop
     def update(self, *args, **kwargs):
         for key, val in dict(*args, **kwargs).items():
             if _type.is_dict_and_not_other(val, self):
