@@ -91,10 +91,10 @@ _SERIALIZERS_SCHEMES = [ "sqlite", "mysql", "postgresql" ]
 def get_format_by_path(path):
     path = path.lower()
     for scheme in _SERIALIZERS_SCHEMES:
-        if path.startswith(f'{scheme}://'):
+        if isinstance(path, str) and path.startswith(f'{scheme}://'):
             return scheme
     for extension in _SERIALIZERS_EXTENSIONS:
-        if path.endswith(extension):
+        if isinstance(path, str) and path.endswith(extension):
             return extension[1:]
     return None
 
@@ -169,12 +169,18 @@ def validate_file(s, thrown_error: bool=False):
 
 
 def is_url(s):
-    return any([ s.startswith(protocol)
+    if isinstance(s, str):
+        return any([ s.startswith(protocol)
                  for protocol in ["http://", "https://"] ])
+    else:
+        return False
 
 def is_dsn(s):
-    return any([ s.startswith(protocol)
+    if isinstance(s, str):
+        return any([ s.startswith(protocol)
                  for protocol in ["sqlite://", "mysql://", "postgresql://"] ])
+    else:
+        return False
 
 def read_contents(s,
         *args: Any,

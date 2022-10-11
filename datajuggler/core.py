@@ -258,15 +258,38 @@ class IODict(BaseDict):
         # if first argument is data-string, url or filepath try to decode it.
         # use 'format' kwarg to specify the decoder to use, default 'json'.
         if format:
-            format = str(format).lower()
-            if format.lower() in ["yml", "yaml"]:
-                io.yaml_initializer(cls=tyle(self))
+            if args and isinstance(args[0], str):
+                format = str(format).lower()
+                if format.lower() in ["yml", "yaml"]:
+                    io.yaml_initializer(cls=type(self))
             args = (IODict._decode_init(*args, format=format, **kwargs),)
         else:
             if args and isinstance(args[0], str):
                 format = io.autodetect_format(args[0])
-            args = (IODict._decode_init(*args, format=format, **kwargs),)
-        super().__init__(*args, **kwargs)
+                args = (IODict._decode_init(*args, format=format, **kwargs),)
+
+        for arg in args:
+            if not arg:
+                continue
+            elif _type.is_dict(arg):
+                for key, val in arg.items():
+                    self[key] = self._hook(val)
+            elif _type.is_tuple(arg)  and (not _type.is_tuple(arg[0])):
+                self[arg[0]] = self._hook(arg[1])
+            else:
+                for key, val in iter(arg):
+                    self[key] = self._hook(val)
+
+        for key, val in kwargs.items():
+            self[key] = self._hook(val)
+
+    @classmethod
+    def _hook(cls, item):
+        if _type.is_dict(item):
+            return cls(item)
+        elif _type.is_list_or_tuple(item):
+            return type(item)(cls._hook(elem) for elem in item)
+        return item
 
     @staticmethod
     def _serializer_init(s, **kwargs):
@@ -532,45 +555,15 @@ class IODict(BaseDict):
 
 class aDict(IODict):
 
-    def __init__(__self,
+    def __init__(self,
             *args: Any,
             format: Optional[str]=None,
             **kwargs: Any
         ):
-        object.__setattr__(__self, '__parent', kwargs.pop('__parent', None))
-        object.__setattr__(__self, '__key', kwargs.pop('__key', None))
-        object.__setattr__(__self, '__frozen', False)
-        if format:
-            if format.lower() in ["yml", "yaml"]:
-                io.yaml_initializer(cls=aDict)
-            args = (super()._decode_init(*args, format=format, **kwargs),)
-        else:
-            if args and isinstance(args[0], str):
-                format = io.autodetect_format(args[0])
-                args = (super()._decode_init(*args, format=format, **kwargs),)
-
-        for arg in args:
-            if not arg:
-                continue
-            elif _type.is_dict(arg):
-                for key, val in arg.items():
-                    __self[key] = __self._hook(val)
-            elif _type.is_tuple(arg)  and (not _type.is_tuple(arg[0])):
-                __self[arg[0]] = __self._hook(arg[1])
-            else:
-                for key, val in iter(arg):
-                    __self[key] = __self._hook(val)
-
-        for key, val in kwargs.items():
-            __self[key] = __self._hook(val)
-
-    @classmethod
-    def _hook(cls, item):
-        if _type.is_dict(item):
-            return cls(item)
-        elif _type.is_list_or_tuple(item):
-            return type(item)(cls._hook(elem) for elem in item)
-        return item
+        object.__setattr__(self, '__parent', kwargs.pop('__parent', None))
+        object.__setattr__(self, '__key', kwargs.pop('__key', None))
+        object.__setattr__(self, '__frozen', False)
+        super().__init__(*args, format=format, **kwargs)
 
     def _check_frozen(self,
             thrown_error: bool=False,
@@ -780,19 +773,7 @@ class uDict(IODict):
         ):
         if separator:
             self._keypath_separator = separator
-        if format:
-            format = str(format).lower()
-            if format in ["yml", "yaml"]:
-                io.yaml_initializer(cls=uDict)
-            args = (super()._decode_init(*args, format=format, **kwargs),)
-        else:
-            if args and isinstance(args[0], str):
-                format = io.autodetect_format(args[0])
-                args = (super()._decode_init(*args, format=format, **kwargs),)
-        if io.is_database(format):
-            self.update(*args)
-        else:
-            self.update(dict(*args, **kwargs))
+        super().__init__(*args, format=format, **kwargs)
 
     def __is_keypath_or_keylist(self, x):
         return ( self._keypath_separator is not None
