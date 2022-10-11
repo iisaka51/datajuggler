@@ -262,19 +262,24 @@ class IODict(BaseDict):
                 format = str(format).lower()
                 if format.lower() in ["yml", "yaml"]:
                     io.yaml_initializer(cls=type(self))
-            args = (IODict._decode_init(*args, format=format, **kwargs),)
+                args = (IODict._decode_init(*args, format=format, **kwargs),)
         else:
             if args and isinstance(args[0], str):
                 format = io.autodetect_format(args[0])
                 args = (IODict._decode_init(*args, format=format, **kwargs),)
 
+        self.update(*args, **kwargs)
+
+
+    def update(self, *args, **kwargs):
         for arg in args:
             if not arg:
                 continue
             elif _type.is_dict(arg):
                 for key, val in arg.items():
                     self[key] = self._hook(val)
-            elif _type.is_tuple(arg)  and (not _type.is_tuple(arg[0])):
+            elif ( _type.is_tuple_not_empty(arg)
+                   and (not _type.is_tuple(arg[0])) ):
                 self[arg[0]] = self._hook(arg[1])
             else:
                 for key, val in iter(arg):
@@ -751,14 +756,6 @@ class aDict(IODict):
     def unfreeze(self):
         """ Unfreeze this object.  """
         self.freeze(False)
-
-    def update(self, *args, **kwargs):
-        self._check_frozen(thrown_error=True)
-        for key, val in dict(*args, **kwargs).items():
-            if _type.is_dict_and_not_other(val, self):
-                self[key] = self.from_dict(val)
-            else:
-                self[key] = val
 
 
 class uDict(IODict):
@@ -1348,14 +1345,6 @@ class uDict(IODict):
         return d.d_unique(obj)
 
     unique.__doc__ = _get_docstring(d.d_unique, 'obj')
-
-    def update(self, *args, **kwargs):
-        for key, val in dict(*args, **kwargs).items():
-            if _type.is_dict_and_not_other(val, self):
-                self[key] = self.from_dict(val)
-            else:
-                self[key] = val
-
 
 
 class iList(list):

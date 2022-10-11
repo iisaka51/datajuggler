@@ -123,33 +123,30 @@ In [13]:
 uDict is utilized class support keylist and keypath accessing to values.
 
 ```python
-In [1]: from datajuggler import uDict, Keypath, Keylist
+In [1]: from datajuggler import uDict, Keylist, Keypath
 
 In [2]: data = { "a": 1,
-   ...:              "b": { "c": { "x": 2, "y": 3, },
-   ...:                     "d": { "x": 4, "y": 5, },
-   ...:                     "e": [ { "x": 1, "y": -1, "z": [1, 2, 3], },
-   ...:                            { "x": 2, "y": -2, "z": [2, 3, 4], },
-   ...:                            { "x": 3, "y": -3, "z": [3, 4, 5], },
-   ...:                          ],
-   ...:                   },
-   ...:           }
+   ...:          "b": { "c": { "x": 2, "y": 3, },
+   ...:                 "d": { "x": 4, "y": 5, },
+   ...:                 "e": [ { "x": 1, "y": -1, "z": [101, 102, 103], },
+   ...:                        { "x": 2, "y": -2, "z": [201, 202, 203], },
+   ...:                        { "x": 3, "y": -3, "z": [301, 302, 303], },
+   ...:                      ],
+   ...:               },
+   ...:       }
 
 In [3]: d = uDict(data)
 
 In [4]: d['a']
 Out[4]: 1
 
-In [5]: d['b', 'c']
-Out[5]: uDict({'x': 2, 'y': 3})
+In [5]: d[Keylist(['b', 'e[1]', 'z[2]'])]
+Out[5]: 203
 
-In [6]: d[Keylist(['b', 'e[1]', 'z[2]'])]
-Out[6]: 4
+In [6]: d[Keypath('b.e[1].z[2]')]
+Out[6]: 203
 
-In [7]: d[Keypath('b.e[1].z[2]')]
-Out[7]: 4
-
-In [8]:
+In [7]:
 ```
 
 ### iList
