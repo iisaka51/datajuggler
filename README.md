@@ -3813,5 +3813,6 @@ In [14]:
 datajuggler is not support followings issues.
 
  - out-of-core processing.
+ - multi-threaded data processing.
 
-if you want to processing  huge datasets. you shoud combine [datatables](https://github.com/h2oai/datatable).
+If you are working with huge datasets, try using [datatable](https://github.com/h2oai/datatable).
