@@ -16,9 +16,6 @@ expect_csv = (
   '4,François,32,75,110.05'
 )
 
-<<<<<<< HEAD
-expect_txt = 'multimethod>=1.8\n'
-=======
 preamble_txt = (
  'We the People of the United States, in Order to form a more perfect Union, '
  'establish Justice, insure domestic Tranquility, provide for the common '
@@ -26,7 +23,6 @@ preamble_txt = (
  'ourselves and our Posterity, do ordain and establish this Constitution for '
  'the United States of America.\n'
 )
->>>>>>> develop
 
 class TestClass:
     def test_read_file_case01(self):
