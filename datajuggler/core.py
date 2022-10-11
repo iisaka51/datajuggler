@@ -23,7 +23,6 @@ from datajuggler.keys import (
 from datajuggler import dicthelper as d
 from datajuggler import serializer as io
 from datajuggler.validator import TypeValidator as _type
-import snoop
 
 class BaseDict(dict):
 
@@ -188,7 +187,6 @@ class BaseDict(dict):
 
         return convert_loop(obj)
 
-    @snoop
     def from_dict(self,
             obj: dict,
             inplace: bool=False,
@@ -196,7 +194,6 @@ class BaseDict(dict):
         ):
         """ Recursively converts from dict to BaseDict. """
 
-        @snoop
         def convert_loop(obj, factory):
             try:
                 return holding_obj[id(obj)]
@@ -206,7 +203,6 @@ class BaseDict(dict):
             holding_obj[id(obj)] = partial = pre_convert(obj, factory)
             return post_convert(partial, obj, factory)
 
-        @snoop
         def pre_convert(obj,factory):
             if _type.is_dict(obj):
                 return factory()
@@ -218,7 +214,6 @@ class BaseDict(dict):
             else:
                 return obj
 
-        @snoop
         def post_convert(partial, obj, factory):
             if _type.is_same_as(obj, factory):
                 partial = factory((key, convert_loop(obj[key], factory))
@@ -1373,7 +1368,6 @@ class uDict(IODict):
 
     unique.__doc__ = _get_docstring(d.d_unique, 'obj')
 
-    @snoop
     def update(self, *args, **kwargs):
         for key, val in dict(*args, **kwargs).items():
             if _type.is_dict_and_not_other(val, self):
