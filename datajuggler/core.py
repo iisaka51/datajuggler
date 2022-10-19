@@ -326,6 +326,10 @@ class IODict(BaseDict):
                 data = saved
 
         try:
+            data = json.loads(data)
+        except:
+            pass
+        try:
             # decode content using the given format
             if _type.is_dict(data):
                 return data
@@ -604,13 +608,17 @@ class aDict(IODict):
             thrown_error: bool=False,
             msg: str='frozen object cannot be modified.',
             ):
-       if object.__getattribute__(self, '__frozen'):
-           if thrown_error:
-               raise AttributeError( f"{self.__class__.__name__} {msg}" )
-           else:
-               return True
-       else:
-           return False
+        if hasattr(self, '__frozen'):
+            if object.__getattribute__(self, '__frozen'):
+                if thrown_error:
+                    raise AttributeError( f"{self.__class__.__name__} {msg}" )
+                else:
+                    return True
+            else:
+                return False
+        else:
+            self.__init__()
+            return object.__getattribute__(self, '__frozen')
 
     def __setattr__(self, name, value):
         if hasattr(self.__class__, name):
@@ -651,6 +659,13 @@ class aDict(IODict):
 
     def __getattr__(self, item):
         return self.__getitem__(item)
+
+    def __setstate__(self, state):
+        try:
+            _ = object.__getattribute__(self, '__frozen')
+        except AttributeError:
+            self.__init__()
+        self.update(state)
 
     def __missing__(self, name):
         if object.__getattribute__(self, '__frozen'):
