@@ -641,13 +641,6 @@ class aDict(IODict):
     def __getnewargs__(self):
         return tuple(self.items())
 
-    def __getstate__(self):
-        return self
-
-    def __setstate__(self, state):
-        self._check_frozen(thrown_error=True)
-        self.update(state)
-
     def __or__(self, other):
         return d.d_merge(self, other,
                          overwrite=True, concat=True,

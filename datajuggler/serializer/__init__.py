@@ -274,7 +274,7 @@ def write_file(
     ):
     filepath = Path(filepath).absolute()
     this_dir = filepath.parent
-    filepath.mdir(parents=True, exists_ok=True)
+    filepath.mkdir(parents=True, exists_ok=True)
     mode = 'a' if append else 'w'
     ops = dict(encording=encording)
     ops.update(options)
