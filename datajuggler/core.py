@@ -310,9 +310,6 @@ class IODict(BaseDict):
             **kwargs: Any
         ) ->dict:
         if  io.is_dsn(s):
-            row_type = kwargs.pop('row_type', None)
-            if row_type:
-                kwargs.setdefault('row_type', row_type)
             data = list(io.read_database(s, **kwargs))
             return {"values": data}
         elif io.validate_file(s):
