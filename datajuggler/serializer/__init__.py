@@ -28,10 +28,7 @@ __modules__ = [
 ]
 
 for mod in __modules__:
-    try:
-        import_module("." + mod, "datajuggler.serializer")
-    except Exception:
-        pass
+    import_module("." + mod, "datajuggler.serializer")
 
 
 __all__ = [

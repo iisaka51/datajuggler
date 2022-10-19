@@ -26,8 +26,9 @@ This project is inspired by follow greate projects.
  - uDict and many helper functions parse methods to retrieve data as needed.
  - iList support immutable and hashable of list.
  - iList support hold attributes using aDict.
- - serializer support 14 different formats:
-   - bson, dill, json, msgpack, phpserialize, pickle, serpent, toml, xml, yaml
+ - serializer support 16 different formats:
+   - bson, dill, json, msgpack, phpserialize, pickle, serpent, yaml
+   - json:cusom, yaml:cusom, toml, xml
    - querystring, ini, csv, base64
 
 ## classes
@@ -508,9 +509,11 @@ register_serializer(YAMLSerializer)
 in case of datetime.dateitime, see follows code.
 
 ```python
+import datetime
 from datajuggler.serializer.abstract import (
     AbstractClassSerializer, register_serializer
 )
+from datajuggler.validator import TypeValidator as _type
 
 class DatetimeClassSerializer(io.AbstractClassSerializer):
     def __init__(self, cls=datetime.datetime):
@@ -646,6 +649,7 @@ See also: [dataset document](https://dataset.readthedocs.io/en/latest/)
 
 currently, not support write_database().
 
+
 ### base64 and subformat.
 
 base64 serialzier accept subformat.
@@ -654,7 +658,40 @@ if pass 'base64,json' to `format`,  recognaized as 'format, subformat'.
 dumps: if set 'subformat', first encoding subformat then encoding base64
 loads: if set 'subformat', first decoding base64 then decoding subformat
 
-io.dumps(data, format='base64,json')
+
+```pytho
+In [2]: from datajuggler import serializer as io
+
+In [3]: import datetime
+
+In [4]: import decimal
+
+In [5]: data = {'a': 1,
+   ...:   'b': decimal.Decimal('2'),
+   ...:   'c': datetime.datetime(2020, 5, 24, 8, 20),
+   ...:   'd': datetime.date(1962, 1, 13),
+   ...:   'e': datetime.time(11, 12, 13),
+   ...:   'f': [1, 2, 3, decimal.Decimal('4')]}
+
+In [6]: io.dumps(data, format='base64,yaml:custom')
+Out[6]: b'YTogMQpiOiAhPHRhZzpnaXRodWIuY29tL2lpc2FrYTUxL2RhdGFqdWdnbGVyLDIwMjI6cHl0aG9uL2RhdGFqdWdnbGVyPgogIF9fY2xhc3NfbmFtZV9fOiA8Y2xhc3MgJ2RlY2ltYWwuRGVjaW1hbCc+CiAgX19kdW1wZWRfb2JqX186CiAgICBfX3R5cGVfXzogRGVjaW1hbAogICAgdmFsdWU6ICcyJwpjOiAhPHRhZzpnaXRodWIuY29tL2lpc2FrYTUxL2RhdGFqdWdnbGVyLDIwMjI6cHl0aG9uL2RhdGFqdWdnbGVyPgogIF9fY2xhc3NfbmFtZV9fOiA8Y2xhc3MgJ2RhdGV0aW1lLmRhdGV0aW1lJz4KICBfX2R1bXBlZF9vYmpfXzoKICAgIF9fdHlwZV9fOiBkYXRldGltZQogICAgdmFsdWU6CiAgICAtIDIwMjAKICAgIC0gNQogICAgLSAyNAogICAgLSA4CiAgICAtIDIwCiAgICAtIDAKZDogITx0YWc6Z2l0aHViLmNvbS9paXNha2E1MS9kYXRhanVnZ2xlciwyMDIyOnB5dGhvbi9kYXRhanVnZ2xlcj4KICBfX2NsYXNzX25hbWVfXzogPGNsYXNzICdkYXRldGltZS5kYXRlJz4KICBfX2R1bXBlZF9vYmpfXzoKICAgIF9fdHlwZV9fOiBkYXRlCiAgICB2YWx1ZToKICAgIC0gMTk2MgogICAgLSAxCiAgICAtIDEzCmU6ICE8dGFnOmdpdGh1Yi5jb20vaWlzYWthNTEvZGF0YWp1Z2dsZXIsMjAyMjpweXRob24vZGF0YWp1Z2dsZXI+CiAgX19jbGFzc19uYW1lX186IDxjbGFzcyAnZGF0ZXRpbWUudGltZSc+CiAgX19kdW1wZWRfb2JqX186CiAgICBfX3R5cGVfXzogdGltZQogICAgdmFsdWU6CiAgICAtIDExCiAgICAtIDEyCiAgICAtIDEzCmY6Ci0gMQotIDIKLSAzCi0gITx0YWc6Z2l0aHViLmNvbS9paXNha2E1MS9kYXRhanVnZ2xlciwyMDIyOnB5dGhvbi9kYXRhanVnZ2xlcj4KICBfX2NsYXNzX25hbWVfXzogPGNsYXNzICdkZWNpbWFsLkRlY2ltYWwnPgogIF9fZHVtcGVkX29ial9fOgogICAgX190eXBlX186IERlY2ltYWwKICAgIHZhbHVlOiAnNCcK'
+
+In [7]: s = io.dumps(data, format='base64,yaml:custom')
+
+In [8]: io.loads(s, format='base64,yaml:custom')
+Out[8]:
+{'a': 1,
+ 'b': Decimal('2'),
+ 'c': datetime.datetime(2020, 5, 24, 8, 20),
+ 'd': datetime.date(1962, 1, 13),
+ 'e': datetime.time(11, 12, 13),
+ 'f': [1, 2, 3, Decimal('4')]}
+
+In [9]: io.loads(s, format='base64')
+Out[9]: b"a: 1\nb: !<tag:github.com/iisaka51/datajuggler,2022:python/datajuggler>\n  __class_name__: <class 'decimal.Decimal'>\n  __dumped_obj__:\n    __type__: Decimal\n    value: '2'\nc: !<tag:github.com/iisaka51/datajuggler,2022:python/datajuggler>\n  __class_name__: <class 'datetime.datetime'>\n  __dumped_obj__:\n    __type__: datetime\n    value:\n    - 2020\n    - 5\n    - 24\n    - 8\n    - 20\n    - 0\nd: !<tag:github.com/iisaka51/datajuggler,2022:python/datajuggler>\n  __class_name__: <class 'datetime.date'>\n  __dumped_obj__:\n    __type__: date\n    value:\n    - 1962\n    - 1\n    - 13\ne: !<tag:github.com/iisaka51/datajuggler,2022:python/datajuggler>\n  __class_name__: <class 'datetime.time'>\n  __dumped_obj__:\n    __type__: time\n    value:\n    - 11\n    - 12\n    - 13\nf:\n- 1\n- 2\n- 3\n- !<tag:github.com/iisaka51/datajuggler,2022:python/datajuggler>\n  __class_name__: <class 'decimal.Decimal'>\n  __dumped_obj__:\n    __type__: Decimal\n    value: '4'\n"
+
+In [10]:
+```
 
 
 

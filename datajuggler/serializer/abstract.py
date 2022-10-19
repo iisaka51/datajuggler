@@ -14,10 +14,6 @@ class AbstractClassSerializer(object):
         register_class(cls, self.encode, self.decode)
         super().__init__()
 
-    def __getattr__(self, k):
-        if k not in dir(self):
-            raise NotImplementedError
-
     def encode(self, obj):
         pass
 
@@ -87,9 +83,9 @@ class AbstractSerializer(object):
 
         super().__init__()
 
-    def parse_kwargs(self, **kwargs):
+    def parse_kwargs(self, subformat='', **kwargs):
         encoding = kwargs.pop("encoding", "utf-8")
-        subformat = kwargs.pop("subformat", 'json')
+        subformat = kwargs.pop("subformat", subformat)
 
         serializer = get_serializer_by_format(subformat)
         return (serializer, subformat, encoding)

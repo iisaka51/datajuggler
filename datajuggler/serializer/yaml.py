@@ -3,7 +3,7 @@
 from datajuggler.serializer.abstract import (
     AbstractSerializer, register_serializer
 )
-from datajgugler.serializer.core import encode, decode
+from datajuggler.serializer.core import encode, decode
 
 try:
     import yaml
