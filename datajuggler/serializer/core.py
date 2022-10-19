@@ -30,10 +30,13 @@ _SERIALIZERS_SCHEMES = [ "sqlite", "mysql", "postgresql" ]
 MISSING = object()
 
 def encode_by_format(s, format, encoding='utf-8'):
+    # for compatibility of Serialize module
     required_encoding_format = [
         'bson', 'pickle', 'dill', 'json', 'msgpack',
-        'phpserialize', 'serpent', 'yaml', 'base64',
-         'b64', 'plist', 'querystring', 'qs', 'ini', 'toml', 'xml', 'yml' ]
+        'phpserialize', 'serpent', 'yaml',
+        'base64', 'b64', 'plist', 'querystring', 'qs',
+        'ini', 'toml', 'xml', 'yml',
+     ]
 
     fmtargs = parse_format(format)
     if fmtargs.extension in required_encoding_format:
@@ -318,7 +321,6 @@ def decode(dct, classes_by_name=None, **kwargs):
 
     return from_builtin(c, **kwargs)
 
-
 def dumps(obj, format, **kwargs):
     """Serialize `obj` to bytes using the format specified by `format`"""
 
@@ -326,12 +328,18 @@ def dumps(obj, format, **kwargs):
     if subformat:
         kwargs.setdefault('subformat', subformat)
     encoding = kwargs.pop("encoding", None)
-    if encoding:
-        kwargs.setdefault('encoding', encoding)
-        if isinstance(obj, str):
-            obj = obj.encode(encoding)
+    if encoding and isinstance(obj, str):
+        obj = obj.encode(encoding)
+    options = kwargs.pop("options", dict())
+    if options:
+        kwargs.update(options)
 
-    return _get_format(format).dumps(obj, **kwargs)
+    data = _get_format(format).dumps(obj, **kwargs)
+
+    if encoding and isinstance(data, bytes):
+        data = data.decode(encoding)
+
+    return data
 
 
 def dump(obj, file, format=None, **kwargs):
@@ -343,6 +351,9 @@ def dump(obj, file, format=None, **kwargs):
     if str and isinstance(file, str):
         file = pathlib.Path(file)
 
+    options = kwargs.pop("options", dict())
+    if options:
+        kwargs.update(options)
     if isinstance(file, pathlib.Path):
         if format is None:
             format = _get_format_from_ext(file.suffix.lstrip("."))
@@ -365,8 +376,16 @@ def loads(serialized, format, **kwargs):
     encoding = kwargs.pop("encoding", None)
     if encoding:
         serialized = encode_by_format(serialized, format, encoding=encoding)
+    options = kwargs.pop("options", dict())
+    if options:
+        kwargs.update(options)
 
-    return _get_format(format).loads(serialized, **kwargs)
+    data = _get_format(format).loads(serialized, **kwargs)
+
+    if encoding and isinstance(data, bytes):
+        data = data.decode(encoding)
+
+    return data
 
 
 def load(file, format=None, **kwargs):
@@ -378,6 +397,10 @@ def load(file, format=None, **kwargs):
     if isinstance(file, str):
         file = pathlib.Path(file)
 
+    options = kwargs.pop("options", dict())
+    if options:
+        kwargs.update(options)
+
     if isinstance(file, pathlib.Path):
         if format is None:
             format = _get_format_from_ext(file.suffix.lstrip("."))
@@ -385,7 +408,6 @@ def load(file, format=None, **kwargs):
             return load(fp, format, **kwargs)
 
     return _get_format(format).load(file)
-
 
 
 def validate_file(s, thrown_error: bool=False):

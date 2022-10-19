@@ -1,4 +1,4 @@
-from .core import (
+from datajuggler.serializer.core import (
     register_format, register_unavailable, register_class,
     get_serializer_by_format,
 )
@@ -85,7 +85,7 @@ class AbstractSerializer(object):
 
     def parse_kwargs(self, subformat='', **kwargs):
         encoding = kwargs.pop("encoding", "utf-8")
-        subformat = kwargs.pop("subformat", subformat)
+        subformat = kwargs.pop("subformat", "utf-8")
 
         serializer = get_serializer_by_format(subformat)
         return (serializer, subformat, encoding)

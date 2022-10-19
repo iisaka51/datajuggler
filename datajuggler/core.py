@@ -316,9 +316,12 @@ class IODict(BaseDict):
             data = io.read_file(s, serialize=True, encoding='utf-8')
         else:
             try:
+                options = kwargs.pop("options", {})
+                if options:
+                    kwargs.update(options)
                 saved = s
                 s = io.encode_by_format(s, format)
-                data = io.loads(s, format)
+                data = io.loads(s, format, **kwargs)
             except:
                 data = saved
 
@@ -345,6 +348,9 @@ class IODict(BaseDict):
     def _encode(d, format, **kwargs):
         filepath = kwargs.pop("filepath", None)
         encoding = kwargs.pop("encoding", None)
+        options = kwargs.pop("options", {})
+        if options:
+            kwargs.update(options)
         s = io.dumps(d, format, **kwargs)
         if encoding and isinstance(s, bytes):
             s = s.decode(encoding)

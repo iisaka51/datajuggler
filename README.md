@@ -28,7 +28,7 @@ This project is inspired by follow greate projects.
  - iList support hold attributes using aDict.
  - serializer support 16 different formats:
    - bson, dill, json, msgpack, phpserialize, pickle, serpent, yaml
-   - json:cusom, yaml:cusom, toml, xml
+   - json:cusom, yaml:cusom, msgpack:custom, toml, xml
    - querystring, ini, csv, base64
 
 ## classes

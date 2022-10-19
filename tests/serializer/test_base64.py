@@ -7,6 +7,15 @@ import pytest
 from datajuggler import serializer as io
 from datajuggler import aDict, uDict
 
+simple_data = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
+base64_simple = (
+    'eydKYW51YXJ5JzogMSwgJ0ZlYnJ1YXJ5JzogMiw'
+    'gJ01hcmNoJzogMywgJ0FwcmlsJzogNH0='
+)
+base64_simple_encode = (
+    b'eydKYW51YXJ5JzogMSwgJ0ZlYnJ1YXJ5JzogMiw'
+    b'gJ01hcmNoJzogMywgJ0FwcmlsJzogNH0='
+)
 
 nest_data = [None,
  {},
@@ -153,6 +162,16 @@ nest_base64_bson = (
 
 
 class TestClass:
+    def test_base64_dumps_01_1(self):
+        data = str(simple_data)
+        result = io.dumps(data, format='base64')
+        assert result == base64_simple_encode
+
+    def test_base64_dumps_01_2(self):
+        data = str(simple_data)
+        result = io.dumps(data, format='base64', encoding='utf-8')
+        assert result == base64_simple
+
     def test_base64_dumps_01(self):
         result = io.dumps(nest_data, format='base64,json')
         assert result == nest_base64_json

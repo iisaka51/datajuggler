@@ -142,6 +142,58 @@ nest_yaml_custom_encode = (
 )
 
 
+nest_yaml_custom = (
+    '- null\n'
+    '- {}\n'
+    '- - 1\n'
+    '  - 2\n'
+    '  - 3\n'
+    '  - 4\n'
+    '- a: 1\n'
+    '  b: !<tag:github.com/iisaka51/datajuggler,2022:python/datajuggler>\n'
+    "    __class_name__: <class 'decimal.Decimal'>\n"
+    '    __dumped_obj__:\n'
+    '      __type__: Decimal\n'
+    "      value: '2'\n"
+    '  c: !<tag:github.com/iisaka51/datajuggler,2022:python/datajuggler>\n'
+    "    __class_name__: <class 'datetime.datetime'>\n"
+    '    __dumped_obj__:\n'
+    '      __type__: datetime\n'
+    '      value:\n'
+    '      - 2020\n'
+    '      - 5\n'
+    '      - 24\n'
+    '      - 8\n'
+    '      - 20\n'
+    '      - 0\n'
+    '  d: !<tag:github.com/iisaka51/datajuggler,2022:python/datajuggler>\n'
+    "    __class_name__: <class 'datetime.date'>\n"
+    '    __dumped_obj__:\n'
+    '      __type__: date\n'
+    '      value:\n'
+    '      - 1962\n'
+    '      - 1\n'
+    '      - 13\n'
+    '  e: !<tag:github.com/iisaka51/datajuggler,2022:python/datajuggler>\n'
+    "    __class_name__: <class 'datetime.time'>\n"
+    '    __dumped_obj__:\n'
+    '      __type__: time\n'
+    '      value:\n'
+    '      - 11\n'
+    '      - 12\n'
+    '      - 13\n'
+    '  f:\n'
+    '  - 1\n'
+    '  - 2\n'
+    '  - 3\n'
+    '  - !<tag:github.com/iisaka51/datajuggler,2022:python/datajuggler>\n'
+    "    __class_name__: <class 'decimal.Decimal'>\n"
+    '    __dumped_obj__:\n'
+    '      __type__: Decimal\n'
+    "      value: '4'\n"
+)
+
+
 simple_data = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
 yaml_data_sorted = "April: 4\nFebruary: 2\nJanuary: 1\nMarch: 3\n"
 yaml_data_encode = b"January: 1\nFebruary: 2\nMarch: 3\nApril: 4\n"
@@ -257,7 +309,7 @@ class TestClass:
 
     def test_yaml_custom_dumps_case02(self):
         result = io.dumps(nest_data, format='yaml:custom', encoding='utf-8')
-        assert result == nest_yaml_custom_encode
+        assert result == nest_yaml_custom
 
     def test_yaml_custom_dumps_case03(self):
         result = io.dumps(simple_data, format='yaml:custom')

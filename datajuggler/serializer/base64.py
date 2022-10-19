@@ -34,7 +34,7 @@ class Base64Serializer(AbstractSerializer):
 
 
         serializer, subformat, encoding = self.parse_kwargs(**kwargs)
-        _ = kwargs.pop('subformat', None)
+        del kwargs['subformat']
         value = _decode(s)
         if serializer:
             if subformat in _Encodable_SUBFORMAT:
@@ -58,7 +58,7 @@ class Base64Serializer(AbstractSerializer):
             return value
 
         serializer, subformat, encoding = self.parse_kwargs(**kwargs)
-        _ = kwargs.pop('subformat', None)
+        del kwargs['subformat']
         if serializer:
             if subformat in _NotAllowBytesObject_SUBFORMAT:
                 if encoding and _type.is_bytes(d):

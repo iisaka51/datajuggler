@@ -50,4 +50,3 @@ class TestClass:
         result = io.loads(msgpack_str, format='msgpack')
         assert result == data
 
-

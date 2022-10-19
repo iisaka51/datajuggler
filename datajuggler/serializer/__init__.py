@@ -25,6 +25,7 @@ __modules__ = [
     "xml",
     "yaml",
     "json",
+    "msgpack",
 ]
 
 for mod in __modules__:
