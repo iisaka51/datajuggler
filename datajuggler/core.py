@@ -296,14 +296,11 @@ class IODict(BaseDict):
     @staticmethod
     def _decode_init(s,
             format: Optional[str]=None,
-            encoding: str='utf-8',
             **kwargs: Any
         ) ->dict:
         autodetected_format = io.autodetect_format(s)
         default_format = autodetected_format or "json"
         format = format or default_format
-        if format in ["b64", "base64"]:
-            kwargs.setdefault("subformat", "json")
         # decode data-string and initialize with dict data.
         return IODict._decode(s, format=format, **kwargs)
 
@@ -313,7 +310,10 @@ class IODict(BaseDict):
             **kwargs: Any
         ) ->dict:
         if  io.is_dsn(s):
-            data = io.read_database(s)
+            row_type = kwargs.pop('row_type', None)
+            if row_type:
+                kwargs.setdefault('row_type', row_type)
+            data = list(io.read_database(s, **kwargs))
             return {"values": data}
         elif io.validate_file(s):
             data = io.read_file(s, serialize=True, encoding='utf-8')
@@ -347,7 +347,10 @@ class IODict(BaseDict):
     @staticmethod
     def _encode(d, format, **kwargs):
         filepath = kwargs.pop("filepath", None)
+        encoding = kwargs.pop("encoding", None)
         s = io.dumps(d, format, **kwargs)
+        if encoding and isinstance(s, bytes):
+            s = s.decode(encoding)
         if filepath:
             io.write_file(filepath, s)
         return s
@@ -474,7 +477,7 @@ class IODict(BaseDict):
         """
         return cls(s, format="yaml", **kwargs)
 
-    def to_serializer(cls, s, format, **kwargs):
+    def to_serializer(self, format, **kwargs):
         return self._encode(self.to_dict(), format, **kwargs)
 
     def to_base64(self, subformat="json", encoding="utf-8", **kwargs):

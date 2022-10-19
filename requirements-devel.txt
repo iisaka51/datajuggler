@@ -5,3 +5,4 @@ wheel
 PyYAML
 toml
 xmltodict
+Serialize>=0.2.1

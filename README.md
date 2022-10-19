@@ -72,11 +72,15 @@ otherwise raise NotImplementedError when function call it.
 
  - Run `pip install datajuggler`
 
- or
+ or set required modules.
 
  - `pip install "datajuggler[database]"
  - `pip install "datajuggler[requests]"
  - `pip install "datajuggler[yaml]"
+
+ and/or if you want to enable all serialzier.
+
+ - `pip install "datajuggler[serializer]"
 
 ...etc.
 
@@ -374,7 +378,7 @@ IODict is subclass of BaseDict.
 ## Serialization
 
 datajuggler keep compatibitily for [serialize](https://github.com/hgrecco/serialize).
-and more easy add customaize serializer and class serialzier.
+and more easy add customaize serializer and class serializer.
 
 ```python
 In [1]: from datajuggler import serializer as io
@@ -418,7 +422,7 @@ Out[10]:
 In [11]:
 ```
 
-### Custom Serialzier
+### Custom Serializer
 
 in case of yaml of datajuggler.
 
@@ -504,7 +508,7 @@ register_serializer(YAMLSerializer)
 ```
 
 
-### class Seriailzier
+### class Seriailizer
 
 in case of datetime.dateitime, see follows code.
 
@@ -652,11 +656,11 @@ currently, not support write_database().
 
 ### base64 and subformat.
 
-base64 serialzier accept subformat.
+base64 serializer accept subformat.
 if pass 'base64,json' to `format`,  recognaized as 'format, subformat'.
 
-dumps: if set 'subformat', first encoding subformat then encoding base64
-loads: if set 'subformat', first decoding base64 then decoding subformat
+ - dumps: if set 'subformat', first encoding subformat then encoding base64
+ - loads: if set 'subformat', first decoding base64 then decoding subformat
 
 
 ```pytho

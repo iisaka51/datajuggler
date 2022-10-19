@@ -1,1 +1,2 @@
 multimethod>=1.8
+Serialize==0.2.1
