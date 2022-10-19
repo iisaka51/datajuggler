@@ -1,41 +1,29 @@
 # -*- coding: utf-8 -*-
 
-from datajuggler.serializer.abstract import AbstractSerializer
+from datajuggler.serializer.abstract import (
+    AbstractSerializer, register_serializer
+)
 
 try:
     import xmltodict
+    xml_enable = True
+except ImportError:  # pragma: no cover
+    xml_enable = False
+    xmltodict = AbstractSerializer()
 
-    class XMLSerializer(AbstractSerializer):
-        """
-        This class describes a xml serializer.
-        """
+class XMLSerializer(AbstractSerializer):
+    def __init__(self):
+        super().__init__(format='xml', package='xmltodict', enable=xml_enable)
 
-        def __init__(self):
-            super().__init__()
+    def loads(self, s, **kwargs):
+        kwargs.setdefault("dict_constructor", dict)
+        data = xmltodict.parse(s, **kwargs)
+        return data
 
-        def decode(self, s, **kwargs):
-            kwargs.setdefault("dict_constructor", dict)
-            data = xmltodict.parse(s, **kwargs)
-            return data
+    def dumps(self, d, **kwargs):
+        if len(list(d.keys())) != 1:
+            raise ValueError('dict must have exactly one root.')
+        data = xmltodict.unparse(d, **kwargs)
+        return data
 
-        def encode(self, d, **kwargs):
-            if len(list(d.keys())) != 1:
-                raise ValueError('dict must have exactly one root.')
-            data = xmltodict.unparse(d, **kwargs)
-            return data
-
-except ImportError:
-
-    class XMLSerializer(AbstractSerializer):
-        """
-        This class describes a xml serializer.
-        """
-
-        def __init__(self):
-            super().__init__()
-
-        def decode(self, s, **kwargs):
-            raise NotImplementedError("You should install 'xmltodict'.")
-
-        def encode(self, d, **kwargs):
-            raise NotImplementedError("You should install 'xmltodict'.")
+register_serializer(XMLSerializer)

@@ -1,33 +1,35 @@
 # -*- coding: utf-8 -*-
 
-from datajuggler.serializer.abstract import AbstractSerializer
+import json
+from datajuggler.serializer.abstract import (
+    AbstractSerializer, register_serializer
+)
+from datajuggler.serializer.core import encode, decode
 from datajuggler.validator import TypeValidator as _type
 
-import json
-
+class Encoder(json.JSONEncoder):
+    def default(self, obj):
+        return encode(obj, super().default)
 
 class JSONSerializer(AbstractSerializer):
-    """
-    This class describes a json serializer.
-    """
-
     def __init__(self):
-        super().__init__()
+        super().__init__(format='json:custom', overwrite=True)
 
-    def decode(self, s, **kwargs):
-        data = json.loads(s, **kwargs)
+
+    def dumps(self, obj, **kwargs):
+        encoding = kwargs.pop('encoding', None)
+        options = kwargs.pop('options', None)
+        if options:
+            kwargs.update(options)
+        data  =  json.dumps(obj, cls=Encoder, **kwargs)
+        if not encoding and isinstance(data, str):
+            data = data.encode("utf-8")
+
         return data
 
-    def encode(self, d, **kwargs):
-        kwargs.setdefault("default", self._encode_default)
-        data = json.dumps(d, **kwargs)
-        return data
+    def loads(self, content, **kwargs):
+        if isinstance(content, bytes):
+            content = content.decode("utf-8")
+        return json.loads(content, object_hook=decode, **kwargs)
 
-    def _encode_default(self, obj):
-        if _type.is_set(obj):
-            return list(obj)
-        elif _type.is_datetime(obj):
-            return obj.isoformat()
-        elif _type.is_decimal(obj):
-            return str(obj)
-        return str(obj)
+register_serializer(JSONSerializer)

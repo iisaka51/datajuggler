@@ -1,34 +1,30 @@
 # -*- coding: utf-8 -*-
 
-from datajuggler.serializer.abstract import AbstractSerializer
-from datajuggler.validator import TypeValidator as _type
-
 from configparser import ConfigParser
 from configparser import DEFAULTSECT as default_section
 from io import StringIO
 
+from datajuggler.validator import TypeValidator as _type
+from datajuggler.serializer.abstract import (
+    AbstractSerializer, register_serializer
+)
 
 class INISerializer(AbstractSerializer):
-    """
-    This class describes an ini serializer.
-    """
-
     def __init__(self):
-        super().__init__()
+        super().__init__(format='ini')
 
-    @staticmethod
-    def _get_section_option_value(parser, section, option):
-        value = None
-        funcs = [parser.getint, parser.getfloat, parser.getboolean, parser.get]
-        for func in funcs:
-            try:
-                value = func(section, option)
-                break
-            except ValueError:
-                continue
-        return value
+    def loads(self, s, **kwargs):
+        def _get_section_option_value(parser, section, option):
+            value = None
+            funcs = [parser.getint, parser.getfloat, parser.getboolean, parser.get]
+            for func in funcs:
+                try:
+                    value = func(section, option)
+                    break
+                except ValueError:
+                    continue
+            return value
 
-    def decode(self, s, **kwargs):
         parser = ConfigParser(**kwargs)
         parser.read_string(s)
         data = {}
@@ -44,7 +40,7 @@ class INISerializer(AbstractSerializer):
                 )
         return data
 
-    def encode(self, d, **kwargs):
+    def dumps(self, d, **kwargs):
         parser = ConfigParser(**kwargs)
         for key, value in d.items():
             if not _type.is_dict(value):
@@ -57,3 +53,6 @@ class INISerializer(AbstractSerializer):
         str_data = StringIO()
         parser.write(str_data)
         return str_data.getvalue()
+
+
+register_serializer(INISerializer)

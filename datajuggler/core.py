@@ -41,11 +41,10 @@ class BaseDict(dict):
         return f'{dict.__repr__(self)}'
 
     def __getstate__(self):
-        return {k: v for k, v in self.items()}
+        pass
 
     def __setstate__(self, state):
-        self.clear()
-        self.update(state)
+        pass
 
     def __deepcopy__(self, memo):
         other = self.__class__()
@@ -257,16 +256,10 @@ class IODict(BaseDict):
         """
         # if first argument is data-string, url or filepath try to decode it.
         # use 'format' kwarg to specify the decoder to use, default 'json'.
-        if format:
-            if args and isinstance(args[0], str):
-                format = str(format).lower()
-                if format.lower() in ["yml", "yaml"]:
-                    io.yaml_initializer(cls=type(self))
-                args = (IODict._decode_init(*args, format=format, **kwargs),)
-        else:
-            if args and isinstance(args[0], str):
+        if args and isinstance(args[0], (str, bytes)):
+            if not format:
                 format = io.autodetect_format(args[0])
-                args = (IODict._decode_init(*args, format=format, **kwargs),)
+            args = (IODict._decode_init(*args, format=format, **kwargs),)
 
         self.update(*args, **kwargs)
 
@@ -303,6 +296,7 @@ class IODict(BaseDict):
     @staticmethod
     def _decode_init(s,
             format: Optional[str]=None,
+            encoding: str='utf-8',
             **kwargs: Any
         ) ->dict:
         autodetected_format = io.autodetect_format(s)
@@ -318,13 +312,21 @@ class IODict(BaseDict):
             format: str,
             **kwargs: Any
         ) ->dict:
-        try:
-            content = io.read_contents(s)
-            if io.is_dsn(s):
-                return {"values": content}
+        if  io.is_dsn(s):
+            data = io.read_database(s)
+            return {"values": data}
+        elif io.validate_file(s):
+            data = io.read_file(s, serialize=True, encoding='utf-8')
+        else:
+            try:
+                saved = s
+                s = io.encode_by_format(s, format)
+                data = io.loads(s, format)
+            except:
+                data = saved
 
+        try:
             # decode content using the given format
-            data = io.decode(content, format=format, **kwargs)
             if _type.is_dict(data):
                 return data
             elif _type.is_list(data):
@@ -336,15 +338,19 @@ class IODict(BaseDict):
                 )
         except Exception as e:
             raise ValueError( "Invalid data or url or filepath argument:"
-                             f" {s}\n{e}" )
+                             f" {data}\n{e}" )
 
     @staticmethod
     def _encode(d, format, **kwargs):
         filepath = kwargs.pop("filepath", None)
-        s = io.encode(d, format, **kwargs)
+        s = io.dumps(d, format, **kwargs)
         if filepath:
             io.write_file(filepath, s)
         return s
+
+    @classmethod
+    def from_serialzier(cls, s, format, **kwargs):
+        return cls(s, format="base64", **kwargs)
 
     @classmethod
     def from_base64(cls, s, subformat="json", encoding="utf-8", **kwargs):
@@ -396,14 +402,25 @@ class IODict(BaseDict):
             return type(self)(json.loads(stream, **options))
 
     @classmethod
+    def from_msgpack(cls, s, **kwargs):
+        """
+        Load and decode MSGPACK data from url, filepath or data-string.
+        Decoder specific options can be passed using kwargs:
+        https://pypi.org/project/msgpack/
+        Return a new dict instance. A ValueError is raised in case of failure.
+        """
+        return cls(s, format="msgpack", **kwargs)
+
+    @classmethod
     def from_pickle(cls, s, **kwargs):
         """
-        Load and decode a pickle encoded in Base64 format data from url, filepath or data-string.
-        Decoder specific options can be passed using kwargs:
+        Load and decode a pickle.
+        if you want encoded in Base64 format data from url,
+        use `from_base64(s, subformat='pickle')`.
         https://docs.python.org/3/library/pickle.html
         Return a new dict instance. A ValueError is raised in case of failure.
         """
-        return cls(s, format="pickle", **kwargs)
+        return cls(s, format='pickle', **kwargs)
 
     @classmethod
     def from_plist(cls, s, **kwargs):
@@ -416,7 +433,7 @@ class IODict(BaseDict):
         return cls(s, format="plist", **kwargs)
 
     @classmethod
-    def from_query_string(cls, s, **kwargs):
+    def from_querystring(cls, s, **kwargs):
         """
         Load and decode query-string from url, filepath or data-string.
         Return a new dict instance. A ValueError is raised in case of failure.
@@ -452,6 +469,9 @@ class IODict(BaseDict):
         Return a new dict instance. A ValueError is raised in case of failure.
         """
         return cls(s, format="yaml", **kwargs)
+
+    def to_serializer(cls, s, format, **kwargs):
+        return self._encode(self.to_dict(), format, **kwargs)
 
     def to_base64(self, subformat="json", encoding="utf-8", **kwargs):
         """
@@ -499,6 +519,16 @@ class IODict(BaseDict):
         """
         return self._encode(self.to_dict(), "json", **kwargs)
 
+    def to_msgpack(self, **kwargs):
+        """
+        Encode the current dict instance in Msgpack format.
+        Encoder specific options can be passed using kwargs:
+        https://pypi.org/project/msgpack/
+        Return the encoded string and optionally save it at 'filepath'.
+        A ValueError is raised in case of failure.
+        """
+        return self._encode(self.to_dict(), "msgpack", **kwargs)
+
     def to_pickle(self, **kwargs):
         """
         Encode the current dict instance as pickle (encoded in Base64).
@@ -520,7 +550,7 @@ class IODict(BaseDict):
         """
         return self._encode(self.to_dict(), "plist", **kwargs)
 
-    def to_query_string(self, **kwargs):
+    def to_querystring(self, **kwargs):
         """
         Encode the current dict instance in query-string format.
         Return the encoded string and optionally save it at 'filepath'.
@@ -574,13 +604,13 @@ class aDict(IODict):
             thrown_error: bool=False,
             msg: str='frozen object cannot be modified.',
             ):
-        if object.__getattribute__(self, '__frozen'):
-            if thrown_error:
-                raise AttributeError( f"{self.__class__.__name__} {msg}" )
-            else:
-                return True
-        else:
-            return False
+       if object.__getattribute__(self, '__frozen'):
+           if thrown_error:
+               raise AttributeError( f"{self.__class__.__name__} {msg}" )
+           else:
+               return True
+       else:
+           return False
 
     def __setattr__(self, name, value):
         if hasattr(self.__class__, name):
@@ -637,17 +667,6 @@ class aDict(IODict):
         else:
             raise AttributeError('unhashable not frozen object.')
 
-
-    def __getnewargs__(self):
-        return tuple(self.items())
-
-    def __getstate__(self):
-        return self
-
-    def __setstate__(self, state):
-        self._check_frozen(thrown_error=True)
-        self.update(state)
-
     def __or__(self, other):
         return d.d_merge(self, other,
                          overwrite=True, concat=True,
@@ -685,8 +704,8 @@ class aDict(IODict):
                 else:
                     self[k] = v
             except:
-                self._check_frozen(thrown_error=True)
-                raise AttributeError(k)
+                v = self._check_frozen(thrown_error=True)
+                #raise AttributeError(k)
         else:
             object.__setattr__(self, k, v)
 
@@ -707,7 +726,7 @@ class aDict(IODict):
         Creaate the new dictionary that is copied this dictionary..
         if pass `freeze=True`, return frozen list object.
         """
-        new =  copy.copy(self)
+        new =  copy.deepcopy(self)
         new.freeze(freeze)
         return new
 
@@ -791,10 +810,16 @@ class uDict(IODict):
     @keypath_separator.setter
     def keypath_separator(self, val):
         if _type.is_str_not_empty(val):
-            self._separator = val
+            self._keypath_separator = val
         else:
             raise ValueError('separator must be not empty str.')
 
+    def __getstate__(self):
+        d = dict(keypath_separator=self._keypath_separator)
+        return d
+
+    def __setstate__(self, state):
+        self.keypath_separator = state.pop('keypath_separator', '.')
 
     def __missing__(self, key):
         return None
@@ -1599,5 +1624,10 @@ class iList(list):
         self._attrs.unfreeze()
 
     def update(self, *args, **kwargs):
-        self._check_frozen(thrown_error=True)
-        self.__init__(*args, **kwargs)
+        try:
+            self._check_frozen(thrown_error=True)
+            self.__init__(*args, **kwargs)
+        except:
+            self.__init__(*args, **kwargs)
+
+

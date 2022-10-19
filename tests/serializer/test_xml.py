@@ -32,31 +32,28 @@ def postprocessor(path, key, value):
         return key, value
 
 class TestClass:
-    def test_xml_decode_case01(self):
+    def test_xml_loads_case01(self):
         expect = {'root': {
-                     'April:int': 4,
-                     'February:int': 2,
-                     'January:int': 1,
-                     'March:int': 3}  }
+                     'April': '4',
+                     'February': '2',
+                     'January': '1',
+                     'March': '3'} }
 
-        s = io.XMLSerializer()
-        result = s.decode(xml_str)
+        result = io.loads(xml_str, format='xml')
         assert result == expect
 
-    def test_xml_decode_case01(self):
+    def test_xml_loads_case02(self):
         expect = {'root':
                   {'April:int': 4,
                    'February:int': 2,
                    'January:int': 1,
                    'March:int': 3}}
 
-        s = io.XMLSerializer()
-        result = s.decode(xml_str, postprocessor=postprocessor)
+        result = io.loads(xml_str, postprocessor=postprocessor, format='xml')
         assert result == expect
 
-    def test_xml_encode(self):
-        s = io.XMLSerializer()
-        result = s.encode(data)
+    def test_xml_dumps(self):
+        result = io.dumps(data, format='xml')
         assert result == xml_str
 
 

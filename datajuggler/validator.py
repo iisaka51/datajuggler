@@ -9,7 +9,7 @@ from collections.abc import (
 )
 
 import re
-from datetime import datetime
+from datetime import datetime, date, time
 from decimal import Decimal
 from datajuggler.keys import Keylist, Keypath
 
@@ -113,6 +113,14 @@ class TypeValidator(object):
         return isinstance(obj, datetime)
 
     @classmethod
+    def is_date(cls, obj: Any):
+        return isinstance(obj, date)
+
+    @classmethod
+    def is_time(cls, obj: Any):
+        return isinstance(obj, time)
+
+    @classmethod
     def is_decimal(cls, obj: Any):
         return isinstance(obj, Decimal)
 
@@ -175,6 +183,13 @@ class TypeValidator(object):
     @classmethod
     def is_json_serializable(cls, obj: Any):
         json_types = (type(None), bool, dict, float, int, list, str, tuple)
+        return isinstance(obj, json_types)
+
+    @classmethod
+    def is_json_serializable_datajuggler(cls, obj: Any):
+        json_types = (type(None), bool, dict, float, int, list, str, tuple,
+                      Decimal, datetime, date, time,
+                     )
         return isinstance(obj, json_types)
 
     @classmethod
@@ -307,4 +322,12 @@ class TypeValidator(object):
     @classmethod
     def is_str_emoji(cls, obj: Any):
         return obj and isinstance(obj, str) and is_emoji(obj)
+
+    @classmethod
+    def is_bytes(cls, obj: Any):
+        return isinstance(obj, bytes)
+
+    @classmethod
+    def is_bytes_not_empty(cls, obj: Any):
+        return obj != '' and isinstance(obj, bytes)
 

@@ -9,11 +9,11 @@ URL = f'{BASE_URL}/tests/serializer/data/preamble.txt'
 filepath = 'tests/serializer/data/valid-content.csv'
 
 expect_csv = (
-  'id,name,age,height,weight\n'
-  '1,Alice,20,62,120.6\n'
-  '2,Freddie,21,74,190.6\n'
-  '3,Bob,17,68,120.0\n'
-  '4,François,32,75,110.05'
+  b'id,name,age,height,weight\n'
+  b'1,Alice,20,62,120.6\n'
+  b'2,Freddie,21,74,190.6\n'
+  b'3,Bob,17,68,120.0\n'
+  b'4,Fran\xc3\xa7ois,32,75,110.05'
 )
 
 preamble_txt = (

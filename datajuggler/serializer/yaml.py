@@ -1,97 +1,78 @@
 # -*- coding: utf-8 -*-
 
-from datajuggler.serializer.abstract import AbstractSerializer
-from datajuggler.serializer.json import JSONSerializer
-from pathlib import Path
-from typing import Optional, Type, Union
+from datajuggler.serializer.abstract import (
+    AbstractSerializer, register_serializer
+)
+from .core import encode, decode
 
 try:
     import yaml
-    from yaml.representer import Representer, SafeRepresenter
+    from yaml.constructor import MappingNode
+    yaml_enable = True
+except ImportError:  # pragma: no cover
+    yaml_enable = False
 
-    def yaml_initializer(cls, factory: Optional[Type[dict]]=None):
-        """class method to initialize for YAML"""
-
-        def _from_yaml(loader, node):
-            nonlocal factory
-            value = loader.construct_mapping(node)
-            data = factory(value)
-            yield data
-
-        def _to_yaml_safe(dumper, data):
-            return dumper.represent_dict(data)
-
-        def _to_yaml(dumper, data):
-            nonlocal module_name, factory_name
-            return dumper.represent_mapping(u'!{}.{}'.format(module_name, factory_name), data)
-
-        factory = factory or cls
-        factory_name=factory.__name__
-        module_name = Path(__file__).parent.parent.name
-
-        for loader_name in ( "BaseLoader", "FullLoader", "SafeLoader",
-                             "Loader", "UnsafeLoader", "DangerLoader" ):
-            LoaderCls = getattr(yaml, loader_name, None)
-            if LoaderCls is None:
-                # This code supports both PyYAML 4.x and 5.x versions
-                continue
-            yaml.add_constructor(u'!{}'.format( module_name ),
-                                  _from_yaml, Loader=LoaderCls)
-            yaml.add_constructor(u'!{}.{}'.format( module_name, factory_name ),
-                                  _from_yaml, Loader=LoaderCls)
-            yaml.add_constructor(u'!python/object:{}.{}'.format(
-                                           module_name, factory_name),
-                                  _from_yaml, Loader=LoaderCls)
-            yaml.add_constructor(u'!python/object/new:{}.{}'.format(
-                                           module_name, factory_name),
-                                  _from_yaml, Loader=LoaderCls)
-
-        SafeRepresenter.add_representer(cls, _to_yaml_safe)
-        SafeRepresenter.add_multi_representer(cls, _to_yaml_safe)
-
-        Representer.add_representer(cls, _to_yaml)
-        Representer.add_multi_representer(cls, _to_yaml)
-
-
-    class YAMLSerializer(AbstractSerializer):
+    class YAML_Pretender(AbstractSerializer):
         """
-        This class describes an yaml serializer.
+        This class pretender of yaml module
         """
+        class constructor(object):
+            MappingNode = object
 
-        def __init__(self, factory: Optional[Type[dict]]=None):
-            super().__init__()
-            self._json_serializer = JSONSerializer()
+        class Dumper(object):
+            def represent_mapping(self):
+                raise NotImplementedError
 
-        def decode(self, s, **kwargs):
-            factory = lambda d: dict(*(args + (d,)), **kwargs)
-            loader_class = kwargs.pop('Loader', yaml.FullLoader)
-            return yaml.load(s, Loader=loader_class)
+        class Loader(object):
+            def construct_mapping(self):
+                raise NotImplementedError
 
-        def encode(self, d, **options):
-            d = self._json_serializer.decode(self._json_serializer.encode(d))
-            opts = dict(indent=4, default_flow_style=False, allow_unicode=True)
-            opts.update(options)
-            if 'Dumper' not in opts:
-                return yaml.safe_dump(d, **opts)
-            else:
-                return yaml.dump(d, **opts)
-            return data
+    yaml = YAML_Pretender()
+    MappingNode = yaml.constructor.MappingNode
 
-except ImportError:
-    def yaml_initializer(cls, factory: Optional[Type[dict]]=None):
-        pass
 
-    class YAMLSerializer(AbstractSerializer):
+SERIALIZED_TAG = "tag:github.com/iisaka51/datajuggler,2022:python/datajuggler"
+
+class Dumper(yaml.Dumper):
+    def ignore_aliases(self, data):
+        """See Also:
+        https://github.com/yaml/pyyaml/issues/103
+        https://github.com/yaml/pyyaml/issues/104
         """
-        This class describes an yaml serializer.
-        """
+        return True
 
-        def __init__(self):
-            super().__init__()
+    def represent_serialized(self, data, **kwargs):
+        return self.represent_mapping(SERIALIZED_TAG, encode(data, **kwargs))
 
-        def decode(self, s, **kwargs):
-            raise NotImplementedError("You should install 'PyYAML'.")
+class Loader(yaml.Loader):
+    def construct_serialized(self, node, **kwargs):
+        assert node.tag == SERIALIZED_TAG
+        assert isinstance(node, MappingNode)
+        dct = self.construct_mapping(node, deep=True)
+        return decode(dct)
 
-        def encode(self, d, **kwargs):
-            raise NotImplementedError("You should install 'PyYAML'.")
+class YAMLSerializer(AbstractSerializer):
+    def __init__(self):
+        super().__init__(format='yaml:custom', extension=['yaml', 'yml'],
+                          package='PyYAML', enable=yaml_enable,
+                          overwrite=True)
+        Loader.add_constructor(SERIALIZED_TAG, Loader.construct_serialized)
+        yaml.Dumper.ignore_aliases = lambda *args : True
 
+    def loads(self, s, **kwargs):
+        encoding = kwargs.pop("encoding", None)
+        if encoding and isinstance(s, bytes):
+            s = s.decode('utf-8')
+        return yaml.load(s, Loader=Loader, **kwargs)
+
+    def dumps(self, d, **kwargs):
+        encoding = kwargs.pop("encoding", None)
+        if encoding:
+            kwargs.setdefault('encoding', encoding)
+        return yaml.dump(d, Dumper=Dumper, **kwargs)
+
+    def register_class(self, cls):
+        Dumper.add_representer(cls, Dumper.represent_serialized)
+        Loader.add_constructor(SERIALIZED_TAG, Loader.construct_serialized)
+
+register_serializer(YAMLSerializer)

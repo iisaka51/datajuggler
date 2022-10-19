@@ -1,41 +1,29 @@
 # -*- coding: utf-8 -*-
 
-from datajuggler.serializer.abstract import AbstractSerializer
+from datajuggler.serializer.abstract import (
+    AbstractSerializer, register_serializer
+)
 
 try:
     try:
         import tomllib as toml   # python 3.11 or later.
     except ImportError:
         import toml
+    toml_enable = True
+except ImportError:  # pragma: no cover
+    toml_enable = False
+    toml = AbstractSerialiezr()
 
+class TOMLSerializer(AbstractSerializer):
+    def __init__(self):
+        super().__init__(format='toml', package='toml', enable=toml_enable)
 
-    class TOMLSerializer(AbstractSerializer):
-        """
-        This class describes a toml serializer.
-        """
+    def loads(self, s, **kwargs):
+        if isinstance(s, bytes):
+            s = s.decode('utf-8')
+        return toml.loads(s, **kwargs)
 
-        def __init__(self):
-            super().__init__()
+    def dumps(self, d, **kwargs):
+        return toml.dumps(d, **kwargs)
 
-        def decode(self, s, **kwargs):
-            return toml.loads(s, **kwargs)
-
-        def encode(self, d, **kwargs):
-            return toml.dumps(dict(d), **kwargs)
-
-
-except ImportError:
-
-    class TOMLSerializer(AbstractSerializer):
-        """
-        This class describes a toml serializer.
-        """
-
-        def __init__(self):
-            super().__init__()
-
-        def decode(self, s, **kwargs):
-            raise NotImplementedError("You should install 'toml'.")
-
-        def encode(self, d, **kwargs):
-            raise NotImplementedError("You should install 'toml'.")
+register_serializer(TOMLSerializer)

@@ -1,22 +1,17 @@
 # -*- coding: utf-8 -*-
 
-from datajuggler.serializer.abstract import AbstractSerializer
+import csv
+from io import StringIO
+from datajuggler.serializer.abstract import (
+    AbstractSerializer, register_serializer
+)
 from datajuggler.validator import TypeValidator as _type
 
-from io import StringIO
-
-import csv
-
-
 class CSVSerializer(AbstractSerializer):
-    """
-    This class describes a csv serializer.
-    """
-
     def __init__(self):
-        super().__init__()
+        super().__init__(format='csv')
 
-    def decode(self, s, **kwargs):
+    def loads(self, s, **kwargs):
         # kwargs.setdefault('delimiter', ',')
         if kwargs.pop("quote", False):
             # TODO: add tests coverage
@@ -38,7 +33,7 @@ class CSVSerializer(AbstractSerializer):
             ln += 1
         return data
 
-    def encode(self, d, **kwargs):
+    def dumps(self, d, **kwargs):
         ls = d
         # kwargs.setdefault('delimiter', ',')
         if kwargs.pop("quote", False):
@@ -65,3 +60,5 @@ class CSVSerializer(AbstractSerializer):
             w.writerow(row)
         data = f.getvalue()
         return data
+
+register_serializer(CSVSerializer)

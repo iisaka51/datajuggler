@@ -13,6 +13,7 @@ This project is inspired by follow greate projects.
  - [python-benedict](https://github.com/fabiocaccamo/python-benedict)
  - [munch](https://github.com/Infinidat/munch)
  - [adict](https://github.com/mewwts/addict).
+ - [serialize](https://github.com/hgrecco/serialize)
 
 
 ## Features
@@ -25,6 +26,9 @@ This project is inspired by follow greate projects.
  - uDict and many helper functions parse methods to retrieve data as needed.
  - iList support immutable and hashable of list.
  - iList support hold attributes using aDict.
+ - serializer support 14 different formats:
+   - bson, dill, json, msgpack, phpserialize, pickle, serpent, toml, xml, yaml
+   - querystring, ini, csv, base64
 
 ## classes
 
@@ -44,6 +48,10 @@ This project is inspired by follow greate projects.
    Convert case for object(s).
  - class TypeValidator
    drop in replace for isinstance() for convinient.
+ - class AbstractSerializer
+   factory class for custom serializer
+ - class AbstractClassSerializer
+   factory class for custom class serializer
 
 utilities for string manupulate helper functions.
 
@@ -347,35 +355,193 @@ IODict is subclass of BaseDict.
  - `from_toml(cls, s, **kwargs)`
  - `from_xml(cls, s, **kwargs)`
  - `from_yaml(cls, s, **kwargs)`
+ - `from_serializer(cls, s, **kwargs)`
+
+ - `to_base64(cls, s, subformat="json", encoding="utf-8", **kwargs)`
+ - `to_csv(cls, s, columns=None, columns_row=True, **kwargs)`
+ - `to_ini(cls, s, **kwargs)`
+ - `to_json(self, s, **kwargs)`
+ - `to_pickle(cls, s, **kwargs)`
+ - `to_plist(cls, s, **kwargs)`
+ - `to_query_string(cls, s, **kwargs)`
+ - `to_toml(cls, s, **kwargs)`
+ - `to_xml(cls, s, **kwargs)`
+ - `to_yaml(cls, s, **kwargs)`
+ - `to_serializer(cls, s, **kwargs)`
+
 
 ## Serialization
 
-Provides serializer are follows.
-
- - `Base64Serializer`
- - `CSVSerializer`
- - `INISerializer`
- - `JSONSerializer`
- - `PickleSerializer`
- - `PListSerializer`
- - `QueryStringSerializer``
- - `TOMLSerializer`
- - `XMLSerializer`
- - `YAMLSerializer`
+datajuggler keep compatibitily for [serialize](https://github.com/hgrecco/serialize).
+and more easy add customaize serializer and class serialzier.
 
 ```python
 In [1]: from datajuggler import serializer as io
 
-In [2]: data = {"console": "Nintendo Switch",
-   ...:         "games": ["The Legend of Zelda", "Mario Golf"]}
+In [2]: import decimal
 
-In [3]: s = io.JSONSerializer()
+In [3]: import datetime
 
-In [4]: s.encode(data)
-Out[4]: '{"console": "Nintendo Switch", "games": ["The Legend of Zelda", "Mario Golf"]}'
+In [4]: data = {
+   ...:   'a': 1,
+   ...:   'b': decimal.Decimal('2'),
+   ...:   'c': datetime.datetime(2020, 5, 24, 8, 20),
+   ...:   'd': datetime.date(1962, 1, 13),
+   ...:   'e': datetime.time(11, 12, 13),
+   ...:   'f': [1, 2, 3, decimal.Decimal('4')]
+   ...:   }
 
-In [5]:
+In [5]: io.dumps(data, format='json')
+Out[5]: b'{"a": 1, "b": {"__class_name__": "<class \'decimal.Decimal\'>", "__dumped_obj__": {"__type__": "Decimal", "value": "2"}}, "c": {"__class_name__": "<class \'datetime.datetime\'>", "__dumped_obj__": {"__type__": "datetime", "value": [2020, 5, 24, 8, 20, 0]}}, "d": {"__class_name__": "<class \'datetime.date\'>", "__dumped_obj__": {"__type__": "date", "value": [1962, 1, 13]}}, "e": {"__class_name__": "<class \'datetime.time\'>", "__dumped_obj__": {"__type__": "time", "value": [11, 12, 13]}}, "f": [1, 2, 3, {"__class_name__": "<class \'decimal.Decimal\'>", "__dumped_obj__": {"__type__": "Decimal", "value": "4"}}]}'
+
+In [6]: io.dumps(data, format='msgpack')
+Out[6]: b"\x86\xa1a\x01\xa1b\x82\xae__class_name__\xb9<class 'decimal.Decimal'>\xae__dumped_obj__\x82\xa8__type__\xa7Decimal\xa5value\xa12\xa1c\x82\xae__class_name__\xbb<class 'datetime.datetime'>\xae__dumped_obj__\x82\xa8__type__\xa8datetime\xa5value\x96\xcd\x07\xe4\x05\x18\x08\x14\x00\xa1d\x82\xae__class_name__\xb7<class 'datetime.date'>\xae__dumped_obj__\x82\xa8__type__\xa4date\xa5value\x93\xcd\x07\xaa\x01\r\xa1e\x82\xae__class_name__\xb7<class 'datetime.time'>\xae__dumped_obj__\x82\xa8__type__\xa4time\xa5value\x93\x0b\x0c\r\xa1f\x94\x01\x02\x03\x82\xae__class_name__\xb9<class 'decimal.Decimal'>\xae__dumped_obj__\x82\xa8__type__\xa7Decimal\xa5value\xa14"
+
+In [7]: io.dumps(data, format='pickle')
+Out[7]: b"\x80\x04\x95\xa8\x01\x00\x00\x00\x00\x00\x00}\x94(\x8c\x01a\x94K\x01\x8c\x01b\x94\x8c\x08builtins\x94\x8c\x07getattr\x94\x93\x94\x8c'datajuggler.serializer.class_serializer\x94\x8c\x16DecimalClassSerializer\x94\x93\x94)\x81\x94\x8c\x06decode\x94\x86\x94R\x94}\x94(\x8c\x08__type__\x94\x8c\x07Decimal\x94\x8c\x05value\x94\x8c\x012\x94u\x85\x94R\x94\x8c\x01c\x94h\x05h\x06\x8c\x17DatetimeClassSerializer\x94\x93\x94)\x81\x94h\n\x86\x94R\x94}\x94(h\x0e\x8c\x08datetime\x94h\x10]\x94(M\xe4\x07K\x05K\x18K\x08K\x14K\x00eu\x85\x94R\x94\x8c\x01d\x94h\x05h\x06\x8c\x13DateClassSerializer\x94\x93\x94)\x81\x94h\n\x86\x94R\x94}\x94(h\x0e\x8c\x04date\x94h\x10]\x94(M\xaa\x07K\x01K\reu\x85\x94R\x94\x8c\x01e\x94h\x05h\x06\x8c\x13TimeClassSerializer\x94\x93\x94)\x81\x94h\n\x86\x94R\x94}\x94(h\x0e\x8c\x04time\x94h\x10]\x94(K\x0bK\x0cK\reu\x85\x94R\x94\x8c\x01f\x94]\x94(K\x01K\x02K\x03h\x0c}\x94(h\x0eh\x0fh\x10\x8c\x014\x94u\x85\x94R\x94eu."
+
+In [8]: io.dumps(data, format='yaml')
+Out[8]: b"a: 1\nb: !!python/object/apply:decimal.Decimal\n- '2'\nc: 2020-05-24 08:20:00\nd: 1962-01-13\ne: !!python/object/apply:datetime.time\n- !!binary |\n  CwwNAAAA\nf:\n- 1\n- 2\n- 3\n- !!python/object/apply:decimal.Decimal\n  - '4'\n"
+
+In [9]: s = io.dumps(data, format='yaml')
+
+In [10]: io.loads(s, format='yaml')
+Out[10]:
+{'a': 1,
+ 'b': Decimal('2'),
+ 'c': datetime.datetime(2020, 5, 24, 8, 20),
+ 'd': datetime.date(1962, 1, 13),
+ 'e': datetime.time(11, 12, 13),
+ 'f': [1, 2, 3, Decimal('4')]}
+
+In [11]:
 ```
+
+### Custom Serialzier
+
+in case of yaml of datajuggler.
+
+```python
+from datajuggler.serializer.abstract import (
+    AbstractSerializer, register_serializer
+)
+from datajgugler.serializer.core import encode, decode
+
+try:
+    import yaml
+    from yaml.constructor import MappingNode
+    yaml_enable = True
+except ImportError:  # pragma: no cover
+    yaml_enable = False
+
+    class YAML_Pretender(AbstractSerializer):
+        """
+        This class pretender of yaml module
+        """
+        class constructor(object):
+            MappingNode = object
+
+        class Dumper(object):
+            def represent_mapping(self):
+                raise NotImplementedError
+
+        class Loader(object):
+            def construct_mapping(self):
+                raise NotImplementedError
+
+    yaml = YAML_Pretender()
+    MappingNode = yaml.constructor.MappingNode
+
+
+SERIALIZED_TAG = "tag:github.com/iisaka51/datajuggler,2022:python/datajuggler"
+
+class Dumper(yaml.Dumper):
+    def ignore_aliases(self, data):
+        """See Also:
+        https://github.com/yaml/pyyaml/issues/103
+        https://github.com/yaml/pyyaml/issues/104
+        """
+        return True
+
+    def represent_serialized(self, data, **kwargs):
+        return self.represent_mapping(SERIALIZED_TAG, encode(data, **kwargs))
+
+class Loader(yaml.Loader):
+    def construct_serialized(self, node, **kwargs):
+        assert node.tag == SERIALIZED_TAG
+        assert isinstance(node, MappingNode)
+        dct = self.construct_mapping(node, deep=True)
+        return decode(dct)
+
+
+class YAMLSerializer(AbstractSerializer):
+    def __init__(self):
+        super().__init__(format='yaml:custom', extension=['yaml', 'yml'],
+                          package='PyYAML', enable=yaml_enable,
+                          overwrite=True)
+        Loader.add_constructor(SERIALIZED_TAG, Loader.construct_serialized)
+        yaml.Dumper.ignore_aliases = lambda *args : True
+
+    def loads(self, s, **kwargs):
+        encoding = kwargs.pop("encoding", None)
+        if encoding and isinstance(s, bytes):
+            s = s.decode('utf-8')
+        return yaml.load(s, Loader=Loader, **kwargs)
+
+    def dumps(self, d, **kwargs):
+        encoding = kwargs.pop("encoding", None)
+        if encoding:
+            kwargs.setdefault('encoding', encoding)
+        return yaml.dump(d, Dumper=Dumper, **kwargs)
+
+    def register_class(self, cls):
+        Dumper.add_representer(cls, Dumper.represent_serialized)
+        Loader.add_constructor(SERIALIZED_TAG, Loader.construct_serialized)
+
+
+register_serializer(YAMLSerializer)
+```
+
+
+### class Seriailzier
+
+in case of datetime.dateitime, see follows code.
+
+```python
+from datajuggler.serializer.abstract import (
+    AbstractClassSerializer, register_serializer
+)
+
+class DatetimeClassSerializer(io.AbstractClassSerializer):
+    def __init__(self, cls=datetime.datetime):
+        super().__init__(cls)
+
+    def encode(self, obj):
+        if _type.is_datetime(obj):
+            return {
+                "__type__": "datetime",
+                "value": [
+                     obj.year,
+                     obj.month,
+                     obj.day,
+                     obj.hour,
+                     obj.minute,
+                     obj.second,
+                    ],
+                }
+        else:
+            super().encode(obj)
+
+    def decode(self, obj):
+        v = obj.get("__type__")
+        if v == "datetime":
+            return datetime.datetime(*obj["value"])
+
+        self.raise_error(obj)
+
+register_serializer(DatetimeClassSerializer)
+```
+
 
 and provide helper functions.
 
@@ -480,352 +646,17 @@ See also: [dataset document](https://dataset.readthedocs.io/en/latest/)
 
 currently, not support write_database().
 
-### JSON
+### base64 and subformat.
 
-#### to_json() and from_json().
+base64 serialzier accept subformat.
+if pass 'base64,json' to `format`,  recognaized as 'format, subformat'.
 
-```python
-In [1]: from datajuggler import aDict,uDict
+dumps: if set 'subformat', first encoding subformat then encoding base64
+loads: if set 'subformat', first decoding base64 then decoding subformat
 
-In [2]: data = {"console": "Nintendo Switch",
-   ...:         "games": ["The Legend of Zelda", "Mario Golf"]}
-   ...:
-
-In [3]: aDict(data).to_json()
-Out[3]: '{"console": "Nintendo Switch", "games": ["The Legend of Zelda", "Mario Golf"]}'
-
-In [4]: uDict(data).to_json()
-Out[4]: '{"console": "Nintendo Switch", "games": ["The Legend of Zelda", "Mario Golf"]}'
-
-In [5]:
-```
-
-### YAML
-
-if PyYAML is installed, enable `to_yaml()` and `from_yaml()` method.
-otherwise raise NotImplementedError.
-
-```python
-In [1]: from datajuggler import aDict
-   ...: import yaml
-   ...:
-   ...: data = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
-   ...: expect = "{April: 4, February: 2, January: 1, March: 3}\n"
-   ...:
-   ...: obj = aDict(data)
-   ...: result = yaml.safe_dump(obj, default_flow_style=True)
-   ...: assert result == expect
-
-In [2]: expect = "{January: 1, February: 2, March: 3, April: 4}\n"
-   ...: obj = aDict(data)
-   ...: result = yaml.safe_dump(obj, default_flow_style=True,sort_keys=False)
-   ...: assert result == expect
-
-In [3]: expect = "{April: 4, February: 2, January: 1, March: 3}\n"
-   ...: obj = aDict(data)
-   ...: result = obj.to_yaml(default_flow_style=True)
-   ...: assert result == expect
-
-In [4]: expect = "{January: 1, February: 2, March: 3, April: 4}\n"
-   ...: obj = aDict(data)
-   ...: result = obj.to_yaml(default_flow_style=True,sort_keys=False)
-   ...: assert result == expect
-
-In [5]: expect = ( "!datajuggler.aDict "
-   ...:            "{April: 4, February: 2, January: 1, March: 3}\n" )
-   ...: obj = aDict(data)
-   ...: result = yaml.dump(obj, default_flow_style=True)
-   ...: assert result == expect
-
-In [6]: expect = ( "!datajuggler.aDict "
-   ...:            "{January: 1, February: 2, March: 3, April: 4}\n" )
-   ...: obj = aDict(data)
-   ...: result = yaml.dump(obj, default_flow_style=True,sort_keys=False)
-   ...: assert result == expect
-
-In [7]: expect = ( "!datajuggler.aDict "
-   ...:            "{April: 4, February: 2, January: 1, March: 3}\n" )
-   ...: obj = aDict(data)
-   ...: result = obj.to_yaml(Dumper=yaml.Dumper,  default_flow_style=True)
-   ...: assert result == expect
-
-In [8]: expect = ( "!datajuggler.aDict "
-   ...:            "{January: 1, February: 2, March: 3, April: 4}\n" )
-   ...: obj = aDict(data)
-   ...: result = obj.to_yaml(Dumper=yaml.Dumper,
-   ...:                      default_flow_style=True, sort_keys=False)
-   ...: assert result == expect
-
-In [9]: data = { 'one': { 'two': { 'three': { 'four': 4 }}}}
-   ...: expect = "{one: {two: {three: {four: 4}}}}\n"
-   ...: obj = aDict(data)
-   ...: result = obj.to_yaml(default_flow_style=True,sort_keys=False)
-   ...: assert result  == expect
-
-In [10]: expect = ( "!datajuggler.aDict "
-    ...:            "{one: {two: {three: {four: 4}}}}\n" )
-    ...: obj = aDict(data)
-    ...: result = obj.to_yaml(Dumper=yaml.Dumper,
-    ...:                      default_flow_style=True, sort_keys=False)
-    ...: assert result  == expect
-
-In [11]: yaml_str = ( "!datajuggler.aDict "
-    ...:              "{April: 4, February: 2, January: 1, March: 3}\n" )
-    ...: expect = ( "aDict("
-    ...:            "{'April': 4, 'February': 2, 'January': 1, 'March': 3}"
-    ...:            ")" )
-    ...: obj = aDict()
-    ...: result = obj.from_yaml(yaml_str)
-    ...: assert result.__repr__() == expect
-
-In [12]: yaml_str = ( "!python/object:datajuggler.aDict "
-    ...:              "{April: 4, February: 2, January: 1, March: 3}\n" )
-    ...: expect = ( "aDict("
-    ...:            "{'April': 4, 'February': 2, 'January': 1, 'March': 3}"
-    ...:            ")" )
-    ...: obj = aDict()
-    ...: result = obj.from_yaml(yaml_str)
-    ...: assert result.__repr__() == expect
-
-In [13]: yaml_str = ( "!datajuggler.aDict "
-    ...:              "{January: 1, February: 2, March: 3, April: 4}\n" )
-    ...: expect = ( "aDict("
-    ...:            "{'January': 1, 'February': 2, 'March': 3, 'April': 4}"
-    ...:            ")" )
-    ...: obj = aDict()
-    ...: result = obj.from_yaml(yaml_str)
-    ...: assert result.__repr__() == expect
-
-In [14]: yaml_str = ( "!python/object:datajuggler.aDict "
-    ...:              "{January: 1, February: 2, March: 3, April: 4}\n" )
-    ...: expect = ( "aDict("
-    ...:            "{'January': 1, 'February': 2, 'March': 3, 'April': 4}"
-    ...:            ")" )
-    ...: obj = aDict()
-    ...: result = obj.from_yaml(yaml_str)
-    ...: assert result.__repr__() == expect
-
-In [15]: yaml_str = ( "!datajuggler.aDict "
-    ...:              "{April: 4, February: 2, January: 1, March: 3}\n" )
-    ...: expect = "aDict({})"
-    ...: obj = aDict()
-    ...: _ = obj.from_yaml(yaml_str)
-    ...: assert obj.__repr__() == expect
-
-In [16]: yaml_str = ( "!python/object:datajuggler.aDict "
-    ...:              "{January: 1, February: 2, March: 3, April: 4}\n" )
-    ...: expect = "aDict({})"
-    ...: obj = aDict()
-    ...: _ = obj.from_yaml(yaml_str)
-    ...: assert obj.__repr__() == expect
-
-In [17]: yaml_str = ( "!datajuggler.aDict "
-    ...:              "{April: 4, February: 2, January: 1, March: 3}\n" )
-    ...: expect = ( "aDict("
-    ...:            "{'April': 4, 'February': 2, 'January': 1, 'March': 3}"
-    ...:            ")" )
-    ...: obj = aDict()
-    ...: obj.from_yaml(yaml_str, inplace=True)
-    ...: assert obj.__repr__() == expect
-
-In [18]: yaml_str = ( "!python/object:datajuggler.aDict "
-    ...:              "{January: 1, February: 2, March: 3, April: 4}\n" )
-    ...: expect = ( "aDict("
-    ...:            "{'January': 1, 'February': 2, 'March': 3, 'April': 4}"
-    ...:            ")" )
-    ...: obj = aDict()
-    ...: obj.from_yaml(yaml_str, inplace=True)
-    ...: assert obj.__repr__() == expect
-
-In [19]:
-```
+io.dumps(data, format='base64,json')
 
 
-```python
-In [1]: from datajuggler import uDict
-   ...: import yaml
-   ...:
-   ...: data = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
-   ...: expect = "{April: 4, February: 2, January: 1, March: 3}\n"
-   ...:
-   ...: obj = uDict(data)
-   ...: result = yaml.safe_dump(obj, default_flow_style=True)
-   ...: assert result == expect
-
-In [2]: expect = "{January: 1, February: 2, March: 3, April: 4}\n"
-   ...: obj = uDict(data)
-   ...: result = yaml.safe_dump(obj, default_flow_style=True,sort_keys=False)
-   ...: assert result == expect
-
-In [3]: expect = "{April: 4, February: 2, January: 1, March: 3}\n"
-   ...: obj = uDict(data)
-   ...: result = obj.to_yaml(default_flow_style=True)
-   ...: assert result == expect
-
-In [4]: expect = "{January: 1, February: 2, March: 3, April: 4}\n"
-   ...: obj = uDict(data)
-   ...: result = obj.to_yaml(default_flow_style=True,sort_keys=False)
-   ...: assert result == expect
-
-In [5]: expect = ( "!datajuggler.uDict "
-   ...:            "{April: 4, February: 2, January: 1, March: 3}\n" )
-   ...: obj = uDict(data)
-   ...: result = yaml.dump(obj, default_flow_style=True)
-   ...: assert result == expect
-
-In [6]: expect = ( "!datajuggler.uDict "
-   ...:            "{January: 1, February: 2, March: 3, April: 4}\n" )
-   ...: obj = uDict(data)
-   ...: result = yaml.dump(obj,default_flow_style=True,sort_keys=False)
-   ...: assert result == expect
-
-In [7]: expect = ( "!datajuggler.uDict "
-   ...:            "{April: 4, February: 2, January: 1, March: 3}\n" )
-   ...: obj = uDict(data)
-   ...: result = obj.to_yaml(Dumper=yaml.Dumper,  default_flow_style=True)
-   ...: assert result == expect
-
-In [8]: expect = ( "!datajuggler.uDict "
-   ...:            "{January: 1, February: 2, March: 3, April: 4}\n" )
-   ...: obj = uDict(data)
-   ...: result = obj.to_yaml(Dumper=yaml.Dumper,
-   ...:                      default_flow_style=True, sort_keys=False)
-   ...: assert result == expect
-
-In [9]: data = { 'one': { 'two': { 'three': { 'four': 4 }}}}
-   ...: expect = "{one: {two: {three: {four: 4}}}}\n"
-   ...:
-   ...: obj = uDict(data)
-   ...: result = obj.to_yaml(default_flow_style=True,sort_keys=False)
-   ...: assert result  == expect
-
-In [10]: expect = ( "!datajuggler.uDict "
-    ...:            "{one: {two: {three: {four: 4}}}}\n" )
-    ...: obj = uDict(data)
-    ...: result = obj.to_yaml(Dumper=yaml.Dumper,
-    ...:                      default_flow_style=True, sort_keys=False)
-    ...: assert result  == expect
-
-In [11]: yaml_str = ( "!datajuggler.uDict "
-    ...:              "{April: 4, February: 2, January: 1, March: 3}\n" )
-    ...: expect = ( "uDict("
-    ...:            "{'April': 4, 'February': 2, 'January': 1, 'March': 3}"
-    ...:            ")" )
-    ...: obj = uDict()
-    ...: result = obj.from_yaml(yaml_str)
-    ...: assert result.__repr__() == expect
-
-In [12]: yaml_str = ( "!python/object:datajuggler.uDict "
-    ...:              "{April: 4, February: 2, January: 1, March: 3}\n" )
-    ...: expect = ( "uDict("
-    ...:            "{'April': 4, 'February': 2, 'January': 1, 'March': 3}"
-    ...:            ")" )
-    ...: obj = uDict()
-    ...: result = obj.from_yaml(yaml_str)
-    ...: assert result.__repr__() == expect
-
-In [13]: yaml_str = ( "!datajuggler.uDict "
-    ...:              "{January: 1, February: 2, March: 3, April: 4}\n" )
-    ...: expect = ( "uDict("
-    ...:            "{'January': 1, 'February': 2, 'March': 3, 'April': 4}"
-    ...:            ")" )
-    ...: obj = uDict()
-    ...: result = obj.from_yaml(yaml_str)
-    ...: assert result.__repr__() == expect
-
-In [14]: yaml_str = ( "!python/object:datajuggler.uDict "
-    ...:              "{January: 1, February: 2, March: 3, April: 4}\n" )
-    ...: expect = ( "uDict("
-    ...:            "{'January': 1, 'February': 2, 'March': 3, 'April': 4}"
-    ...:            ")" )
-    ...: obj = uDict()
-    ...: result = obj.from_yaml(yaml_str)
-    ...: assert result.__repr__() == expect
-
-In [15]: yaml_str = ( "!datajuggler.uDict "
-    ...:              "{April: 4, February: 2, January: 1, March: 3}\n" )
-    ...: expect = "uDict({})"
-    ...: obj = uDict()
-    ...: _ = obj.from_yaml(yaml_str)
-    ...: assert obj.__repr__() == expect
-
-In [16]: yaml_str = ( "!python/object:datajuggler.uDict "
-    ...:              "{January: 1, February: 2, March: 3, April: 4}\n" )
-    ...: expect = "uDict({})"
-    ...: obj = uDict()
-    ...: _ = obj.from_yaml(yaml_str)
-    ...: assert obj.__repr__() == expect
-
-In [17]: yaml_str = ( "!datajuggler.uDict "
-    ...:              "{April: 4, February: 2, January: 1, March: 3}\n" )
-    ...: expect = ( "uDict("
-    ...:            "{'April': 4, 'February': 2, 'January': 1, 'March': 3}"
-    ...:            ")" )
-    ...: obj = uDict()
-    ...: obj.from_yaml(yaml_str, inplace=True)
-    ...: assert obj.__repr__() == expect
-
-In [18]: yaml_str = ( "!python/object:datajuggler.uDict "
-    ...:              "{January: 1, February: 2, March: 3, April: 4}\n" )
-    ...: expect = ( "uDict("
-    ...:            "{'January': 1, 'February': 2, 'March': 3, 'April': 4}"
-    ...:            ")" )
-    ...: obj = uDict()
-    ...: obj.from_yaml(yaml_str, inplace=True)
-    ...: assert obj.__repr__() == expect
-
-In [19]:
-```
-
-
-
-### TOML
-
-if toml is installed or using Python 3.11 or later, enable `to_toml()` and `from_toml()` method.
-otherwise raise NotImplementedError.
-
-```python
-In [1]: from datajuggler import aDict,  uDict
-   ...:
-   ...: data = {'target': {'ip': 'xx.xx.xx.xx',
-   ...:   'os': {'os': 'win 10', 'Arch': 'x64'},
-   ...:   'ports': {'ports': ['1', '2'], '1': {'service': 'xxx', 'ver': '5.9'}}}
-   ...: }
-   ...:
-   ...: toml_str = ( '[target]\nip = "xx.xx.xx.xx"\n\n'
-   ...:              '[target.os]\nos = "win 10"\nArch = "x64"\n\n'
-   ...:              '[target.ports]\nports = [ "1", "2",]\n\n'
-   ...:              '[target.ports.1]\nservice = "xxx"\nver = "5.9"\n' )
-   ...:
-   ...: result = aDict(data).to_toml()
-   ...: assert result == toml_str
-
-In [2]: result = aDict().to_toml(data)
-   ...: assert result == toml_str
-
-In [3]: obj = aDict()
-   ...: result = obj.from_toml(toml_str)
-   ...: assert result == data
-
-In [4]: obj = aDict()
-   ...: obj.from_toml(toml_str, inplace=True)
-   ...: assert obj == data
-
-In [5]: result = uDict(data).to_toml()
-   ...: assert result == toml_str
-
-In [6]: result = uDict().to_toml(data)
-   ...: assert result == toml_str
-
-In [7]: obj = uDict()
-   ...: result = obj.from_toml(toml_str)
-   ...: assert result == data
-
-In [8]: obj = uDict()
-   ...: obj.from_toml(toml_str, inplace=True)
-   ...: assert obj == data
-
-```
 
 ## class aDict
 

@@ -1,2 +1,1 @@
-Lorem ipsum consectetur sint id aute officia sed excepteur consectetur labore laboris dolore in labore consequat ut in eu ut deserunt.
-Elit aliqua velit aliquip voluptate consequat reprehenderit occaecat dolor ut esse aute laboris cillum fugiat esse est laborum.
+We the People of the United States, in Order to form a more perfect Union, establish Justice, insure domestic Tranquility, provide for the common defense, promote the general Welfare, and secure the Blessings of Liberty to ourselves and our Posterity, do ordain and establish this Constitution for the United States of America.

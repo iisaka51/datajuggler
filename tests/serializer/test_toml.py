@@ -22,6 +22,9 @@ simple_toml_str = ( '[target]\nip = "xx.xx.xx.xx"\n\n'
              '[target.ports]\nports = [ "1", "2",]\n\n'
              '[target.ports.1]\nservice = "xxx"\nver = "5.9"\n' )
 
+invalid_expect = (
+    "Found invalid character in key name: 't'. "
+    "Try quoting the key name. (line 1 column 4 char 3)" )
 
 data = {
     'title': 'TOML Example',
@@ -52,13 +55,11 @@ toml_str = io.read_file('tests/serializer/valid-content.toml')
 class TestClass:
 
     def test_toml_decode(self):
-        s = io.TOMLSerializer()
-        result = s.decode(simple_toml_str)
+        result = io.loads(simple_toml_str, format='toml')
         assert result == simple_data
 
     def test_toml_encode(self):
-        s = io.TOMLSerializer()
-        result = s.encode(simple_data)
+        result = io.dumps(simple_data, format='toml')
         assert result == simple_toml_str
 
 
@@ -76,14 +77,9 @@ class TestClass:
 
     def test_toml_adict_decode_case03(self):
         filepath = 'tests/serializer/data/invalid-content.toml'
-        expect = (
-           "Invalid data or url or filepath argument: "
-           "tests/serializer/data/invalid-content.toml\n"
-           "Found invalid character in key name: 'i'. "
-           "Try quoting the key name. (line 1 column 7 char 6)" )
         with pytest.raises(ValueError) as e:
             d = aDict(filepath, format='toml')
-        assert str(e.value) == expect
+        assert str(e.value) == invalid_expect
 
     def test_toml_udict_decode_case01(self):
         filepath = 'tests/serializer/data/valid-content.toml'
@@ -99,11 +95,6 @@ class TestClass:
 
     def test_toml_udict_decode_case03(self):
         filepath = 'tests/serializer/data/invalid-content.toml'
-        expect = (
-           "Invalid data or url or filepath argument: "
-           "tests/serializer/data/invalid-content.toml\n"
-           "Found invalid character in key name: 'i'. "
-           "Try quoting the key name. (line 1 column 7 char 6)" )
         with pytest.raises(ValueError) as e:
             d = uDict(filepath, format='toml')
-        assert str(e.value) == expect
+        assert str(e.value) == invalid_expect

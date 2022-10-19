@@ -1,73 +1,77 @@
 # -*- coding: utf-8 -*-
 
-from datajuggler.serializer.abstract import AbstractSerializer
-from datajuggler.validator import TypeValidator as _type
-
+import base64
 from urllib.parse import unquote
 
-import base64
+from datajuggler.serializer.abstract import (
+    AbstractSerializer, register_serializer
+)
+from datajuggler.validator import TypeValidator as _type
 
-class Base64CoreSerializer(AbstractSerializer):
-    """
-    This class describes a base64 core serializer.
-    """
+_Encodable_SUBFORMAT = [ 'yaml_custom' ]
+_NotAllowBytesObject_SUBFORMAT = ['json']
 
+class Base64Serializer(AbstractSerializer):
     def __init__(self):
-        super().__init__()
+        super().__init__(format=['base64', 'b64'])
 
-    def _fix_url_encoding_and_padding(self, s):
-        # fix urlencoded chars
-        s = unquote(s)
-        # fix padding
-        m = len(s) % 4
-        if m != 0:
-            s += "=" * (4 - m)
-        return s
+    def loads(self, s, **kwargs):
+        """base64 encoder
+        if set 'encoding', encoding as string.
+        if set 'subformat', first decoding base64 then decoding subformat
+        """
+        def _decode(s, **kwargs):
+            def _fix_url_encoding_and_padding(s):
+                s = unquote(s)     # fix urlencoded chars
+                m = len(s) % 4     # fix padding
+                if m != 0:
+                    s += "=" * (4 - m)
+                return s
 
-    def decode(self, s, **kwargs):
-        value = self._fix_url_encoding_and_padding(s)
-        encoding = kwargs.pop("encoding", "utf-8")
-        if encoding:
-            value = value.encode(encoding)
-        value = base64.b64decode(value)
-        if encoding:
-            return value.decode(encoding)
-        return value
-
-    def encode(self, d, **kwargs):
-        value = d
-        encoding = kwargs.pop("encoding", "utf-8")
-        if encoding and _type.is_str(value):
-            value = value.encode(encoding)
-        value = base64.b64encode(value)
-        if encoding:
-            value = value.decode(encoding)
-        return value
+            value = _fix_url_encoding_and_padding(s)
+            value = base64.b64decode(value)
+            return value
 
 
-class Base64Serializer(Base64CoreSerializer):
-    def __init__(self):
-        super().__init__()
-
-    def _pop_options(self, options):
-        encoding = options.pop("encoding", "utf-8")
-        subformat = options.pop("subformat", None)
-        from datajuggler.serializer import get_serializer_by_format
-
-        serializer = get_serializer_by_format(subformat)
-        return (serializer, encoding)
-
-    def decode(self, s, **kwargs):
-        serializer, encoding = self._pop_options(kwargs)
-        value = super().decode(s, encoding=encoding)
+        serializer, subformat, encoding = self.parse_kwargs(**kwargs)
+        _ = kwargs.pop('subformat', None)
+        value = _decode(s)
         if serializer:
-            value = serializer.decode(value, **kwargs)
+            if subformat in _Encodable_SUBFORMAT:
+                kwargs.setdefault('encoding', encoding)
+            value = serializer.loads(value, **kwargs)
         return value
 
-    def encode(self, d, **kwargs):
-        serializer, encoding = self._pop_options(kwargs)
-        value = d
+    def dumps(self, d, **kwargs):
+        """base64 encoder
+        if set 'encoding', encoding as string.
+        if set 'subformat', first encoding subformat then encoding base64
+        """
+        def _encode(d, encoding, **kwargs):
+            value = d
+            encoding = kwargs.pop("encoding", "utf-8")
+            if encoding and _type.is_str(value):
+                value = value.encode(encoding)
+            value = base64.b64encode(value)
+            if _type.is_str(value) and encoding:
+                value = value.encode(encoding)
+            return value
+
+        serializer, subformat, encoding = self.parse_kwargs(**kwargs)
+        _ = kwargs.pop('subformat', None)
         if serializer:
-            value = serializer.encode(value, **kwargs)
-        value = super().encode(value, encoding=encoding)
+            if subformat in _NotAllowBytesObject_SUBFORMAT:
+                if encoding and _type.is_bytes(d):
+                    d = d.decode(encoding)
+            if subformat in _Encodable_SUBFORMAT:
+                kwargs.setdefault('encoding', encoding)
+            value = serializer.dumps(d, **kwargs)
+        else:
+            value = d
+        # value = base64.b64encode(value)
+        value = _encode(value, encoding)
         return value
+
+
+register_serializer(Base64Serializer)
+

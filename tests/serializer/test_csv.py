@@ -20,13 +20,11 @@ csv_str = ( 'age,height,id,name,weight\n'
 
 class TestClass:
     def test_csv_decode(self):
-        s = io.CSVSerializer()
-        result = s.decode(csv_str)
+        result = io.loads(csv_str, format='csv')
         assert result == list_of_dict
 
     def test_csv_encode(self):
-        s = io.CSVSerializer()
-        result = s.encode(list_of_dict)
+        result = io.dumps(list_of_dict, format='csv')
         assert result == csv_str
 
     def test_csv_decode_adict_case01(self):

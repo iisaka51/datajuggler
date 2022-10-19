@@ -1,6 +1,7 @@
 import datetime
 import pytest
 
+import xml
 from datajuggler import aDict, uDict
 from datajuggler import serializer as io
 
@@ -76,13 +77,11 @@ plist_xml = (
 
 class TestClass:
     def test_plist_decode(self):
-        s = io.PListSerializer()
-        result = s.decode(plist_data)
+        result = io.loads(plist_data, format='plist')
         assert result == data
 
     def test_plist_encode(self):
-        s = io.PListSerializer()
-        result = s.encode(data)
+        result = io.dumps(data, format='plist')
         assert result == plist_xml
 
 
@@ -100,10 +99,9 @@ class TestClass:
 
     def test_plist_adict_decode_case03(self):
         filepath = 'tests/serializer/data/invalid-content.plist'
-        expect = ( "Invalid data or url or filepath argument: "
-                   "tests/serializer/data/invalid-content.plist\n"
-                   "syntax error: line 1, column 0" )
-        with pytest.raises(ValueError) as e:
+        # xml.parsers.expat.ExpatError:
+        expect = "syntax error: line 1, column 0"
+        with pytest.raises(xml.parsers.expat.ExpatError) as e:
             d = aDict(filepath, format='plist')
         assert str(e.value) == expect
 
@@ -121,9 +119,7 @@ class TestClass:
 
     def test_plist_udict_decode_case03(self):
         filepath = 'tests/serializer/data/invalid-content.plist'
-        expect = ( "Invalid data or url or filepath argument: "
-                   "tests/serializer/data/invalid-content.plist\n"
-                   "syntax error: line 1, column 0" )
-        with pytest.raises(ValueError) as e:
+        expect = "syntax error: line 1, column 0"
+        with pytest.raises(xml.parsers.expat.ExpatError) as e:
             d = uDict(filepath, format='plist')
         assert str(e.value) == expect

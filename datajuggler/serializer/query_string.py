@@ -1,22 +1,20 @@
 # -*- coding: utf-8 -*-
 
-from datajuggler.serializer.abstract import AbstractSerializer
-
+import re
 from urllib.parse import urlencode
 from urllib.parse import parse_qs
 
-import re
-
+from datajuggler.serializer.abstract import (
+    AbstractSerializer, register_serializer
+)
 
 class QueryStringSerializer(AbstractSerializer):
-    """
-    This class describes a query-string serializer.
-    """
-
     def __init__(self):
-        super().__init__()
+        super().__init__(format=['querystring', 'qs'])
 
-    def decode(self, s, **kwargs):
+    def loads(self, s, **kwargs):
+        if isinstance(s, bytes):
+            s = s.decode('utf-8')
         flat = kwargs.pop("flat", True)
         qs_re = r"(?:([\w\-\%\+\.\|]+\=[\w\-\%\+\.\|]*)+(?:[\&]{1})?)+"
         qs_pattern = re.compile(qs_re)
@@ -27,6 +25,9 @@ class QueryStringSerializer(AbstractSerializer):
             return data
         raise ValueError(f"Invalid query string: {s}")
 
-    def encode(self, d, **kwargs):
+    def dumps(self, d, **kwargs):
         data = urlencode(d, **kwargs)
         return data
+
+
+register_serializer(QueryStringSerializer)

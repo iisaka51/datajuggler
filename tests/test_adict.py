@@ -157,11 +157,12 @@ class TestClass_Features:
 
     def test_adict_features_case06(self):
         data = { 'one': { 'two': { 'three': { 'four': 4 }}}}
+        expect = 'aDict frozen object cannot be modified.'
         d = aDict(data)
         d.freeze()
         with pytest.raises(AttributeError) as e:
             d.one.two.three.four = 10
-        assert str(e.value) == 'aDict frozen object cannot be modified.'
+        assert str(e.value) == expect
 
     def test_adict_features_case07(self):
         data = { 'one': { 'two': { 'three': { 'four': 4 }}}}
