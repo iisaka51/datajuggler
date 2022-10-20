@@ -7,7 +7,7 @@ from datajuggler.serializer.abstract import (
 from datajuggler.serializer.core import encode, decode
 from datajuggler.validator import TypeValidator as _type
 
-pretty = dict( sort_keys=True, indent=2, separators=(",", ": ") )
+pretty = dict( sort_keys=True, indent=4, separators=(",", ": ") )
 
 class Encoder(json.JSONEncoder):
     def default(self, obj):
