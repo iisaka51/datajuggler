@@ -27,6 +27,7 @@ except ImportError:
 
 FormatParse = namedtuple("FormatParse", "format subformat extension")
 _SERIALIZERS_SCHEMES = [ "sqlite", "mysql", "postgresql" ]
+Serializers = {}
 MISSING = object()
 
 def encode_by_format(s, format, encoding='utf-8'):

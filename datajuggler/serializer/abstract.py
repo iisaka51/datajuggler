@@ -1,13 +1,13 @@
 from datajuggler.serializer.core import (
     register_format, register_unavailable, register_class,
     get_serializer_by_format,
+    Serializers,
 )
 
 MISSING = object()
-__Serializers = {}
 
 def register_serializer(cls):
-    __Serializers[cls.__class__.__name__] = cls()
+    Serializers[cls.__name__] = cls()
 
 class AbstractClassSerializer(object):
     def __init__(self, cls):
