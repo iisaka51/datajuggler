@@ -12,6 +12,7 @@ def register_serializer(cls):
 class AbstractClassSerializer(object):
     def __init__(self, cls):
         register_class(cls, self.encode, self.decode)
+        self.format = cls.__name__
         super().__init__()
 
     def encode(self, obj):
@@ -36,6 +37,7 @@ class AbstractSerializer(object):
             super().__init__()
             return
 
+        self.format = format[0] if isinstance(format, list) else format
         format = [format] if isinstance(format, str) else format
 
 
