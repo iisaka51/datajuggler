@@ -85,7 +85,7 @@ class AbstractSerializer(object):
 
     def parse_kwargs(self, subformat='', **kwargs):
         encoding = kwargs.pop("encoding", "utf-8")
-        subformat = kwargs.pop("subformat", "utf-8")
+        subformat = kwargs.pop("subformat", subformat)
 
         serializer = get_serializer_by_format(subformat)
         return (serializer, subformat, encoding)

@@ -59,7 +59,7 @@ simple_json_indent2_sorted_encode = (
     b'  "April": 4,\n'
     b'  "February": 2,\n'
     b'  "January": 1,\n'
-    b'  "March": 3\n
+    b'  "March": 3\n'
     b'}'
 )
 
@@ -68,7 +68,7 @@ simple_json_indent2_sorted = (
     '  "April": 4,\n'
     '  "February": 2,\n'
     '  "January": 1,\n'
-    '  "March": 3\n
+    '  "March": 3\n'
     '}'
 )
 
@@ -90,12 +90,12 @@ class TestClass:
 
     def test_json_encode_case04(self):
         options = dict(indent=2, sort_keys=True, separators=(",", ": "))
-        result = io.dumps(data, format='json:custom', options=options)
+        result = io.dumps(simple_data, format='json:custom', options=options)
         assert result == simple_json_indent2_sorted_encode
 
     def test_json_encode_case05(self):
         options = dict(indent=2, sort_keys=True, separators=(",", ": "))
-        result = io.dumps(data, format='json:custom',
+        result = io.dumps(simple_data, format='json:custom',
                                 encoding='utf-8', options=options)
         assert result == simple_json_indent2_sorted
 

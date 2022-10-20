@@ -6,6 +6,7 @@ from urllib.parse import unquote
 from datajuggler.serializer.abstract import (
     AbstractSerializer, register_serializer
 )
+from datajuggler.serializer.core import encode_by_format
 from datajuggler.validator import TypeValidator as _type
 
 _Encodable_SUBFORMAT = [ 'yaml_custom' ]
@@ -34,11 +35,9 @@ class Base64Serializer(AbstractSerializer):
 
 
         serializer, subformat, encoding = self.parse_kwargs(**kwargs)
-        del kwargs['subformat']
+        _ = kwargs.pop('subformat', None)
         value = _decode(s)
         if serializer:
-            if subformat in _Encodable_SUBFORMAT:
-                kwargs.setdefault('encoding', encoding)
             value = serializer.loads(value, **kwargs)
         return value
 
@@ -47,29 +46,23 @@ class Base64Serializer(AbstractSerializer):
         if set 'encoding', encoding as string.
         if set 'subformat', first encoding subformat then encoding base64
         """
-        def _encode(d, encoding, **kwargs):
-            value = d
-            encoding = kwargs.pop("encoding", "utf-8")
-            if encoding and _type.is_str(value):
-                value = value.encode(encoding)
-            value = base64.b64encode(value)
-            if _type.is_str(value) and encoding:
-                value = value.encode(encoding)
-            return value
+        def _b64encode(s, encoding):
+            if encoding and _type.is_str(s):
+                s = s.encode(encoding)
+            s = base64.b64encode(s)
+            if _type.is_str(s) and encoding:
+                s = s.encode(encoding)
+            return s
 
         serializer, subformat, encoding = self.parse_kwargs(**kwargs)
-        del kwargs['subformat']
+        _ = kwargs.pop('subformat', None)
         if serializer:
-            if subformat in _NotAllowBytesObject_SUBFORMAT:
-                if encoding and _type.is_bytes(d):
-                    d = d.decode(encoding)
-            if subformat in _Encodable_SUBFORMAT:
-                kwargs.setdefault('encoding', encoding)
+            d = encode_by_format(d, subformat)
             value = serializer.dumps(d, **kwargs)
         else:
             value = d
-        # value = base64.b64encode(value)
-        value = _encode(value, encoding)
+
+        value = _b64encode(value, encoding)
         return value
 
 
