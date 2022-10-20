@@ -10,6 +10,7 @@ try:
     msgpack_enable = True
 except ImportError:  # pragma: no cover
     msgpack_enable = False
+    msgpack = AbstractSerializer()
 
 class MsgpackSerializer(AbstractSerializer):
     def __init__(self):
