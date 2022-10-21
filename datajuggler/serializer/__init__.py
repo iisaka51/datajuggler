@@ -26,6 +26,7 @@ __modules__ = [
     "yaml",
     "json",
     "msgpack",
+    "cloudpickle",
 ]
 
 for mod in __modules__:

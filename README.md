@@ -26,10 +26,11 @@ This project is inspired by follow greate projects.
  - uDict and many helper functions parse methods to retrieve data as needed.
  - iList support immutable and hashable of list.
  - iList support hold attributes using aDict.
- - serializer support 16 different formats:
+ - serializer support 17 different formats:
    - bson, dill, json, msgpack, phpserialize, pickle, serpent, yaml
    - json:cusom, yaml:cusom, msgpack:custom, toml, xml
-   - querystring, ini, csv, base64
+   - querystring, ini, csv, cloudpickle,
+   - base64(support encrypt/decrypt)
 
 ## classes
 
@@ -360,7 +361,7 @@ IODict is subclass of BaseDict.
  - `from_toml(cls, s, **kwargs)`
  - `from_xml(cls, s, **kwargs)`
  - `from_yaml(cls, s, **kwargs)`
- - `from_serializer(cls, s, **kwargs)`
+ - `from_serializer(cls, s, format, **kwargs)`
 
  - `to_base64(cls, s, subformat="json", encoding="utf-8", **kwargs)`
  - `to_csv(cls, s, columns=None, columns_row=True, **kwargs)`
@@ -372,13 +373,23 @@ IODict is subclass of BaseDict.
  - `to_toml(cls, s, **kwargs)`
  - `to_xml(cls, s, **kwargs)`
  - `to_yaml(cls, s, **kwargs)`
- - `to_serializer(cls, s, **kwargs)`
+ - `to_serializer(cls, s, format, **kwargs)`
 
 
 ## Serialization
 
 datajuggler keep compatibitily for [serialize](https://github.com/hgrecco/serialize).
 and more easy add customaize serializer and class serializer.
+
+datajuggler detect following serialization library, and it is automaticaly enable.
+
+ - cloudpickle
+ - bson
+ - dill
+ - msgpack
+ - serpent
+ - PyYAML
+ - xmllibtodict
 
 ```python
 In [1]: from datajuggler import serializer as io
@@ -424,87 +435,35 @@ In [11]:
 
 ### Custom Serializer
 
-in case of yaml of datajuggler.
+following exmaple is cloudpickle of datajuggler.
 
 ```python
 from datajuggler.serializer.abstract import (
     AbstractSerializer, register_serializer
 )
-from datajgugler.serializer.core import encode, decode
 
 try:
-    import yaml
-    from yaml.constructor import MappingNode
-    yaml_enable = True
+    import cloudpickle
+    cloudpickle_enable = True
 except ImportError:  # pragma: no cover
-    yaml_enable = False
+    cloudpickle_enable = False
+    cloudpickle = AbstractSerializer()
 
-    class YAML_Pretender(AbstractSerializer):
-        """
-        This class pretender of yaml module
-        """
-        class constructor(object):
-            MappingNode = object
-
-        class Dumper(object):
-            def represent_mapping(self):
-                raise NotImplementedError
-
-        class Loader(object):
-            def construct_mapping(self):
-                raise NotImplementedError
-
-    yaml = YAML_Pretender()
-    MappingNode = yaml.constructor.MappingNode
-
-
-SERIALIZED_TAG = "tag:github.com/iisaka51/datajuggler,2022:python/datajuggler"
-
-class Dumper(yaml.Dumper):
-    def ignore_aliases(self, data):
-        """See Also:
-        https://github.com/yaml/pyyaml/issues/103
-        https://github.com/yaml/pyyaml/issues/104
-        """
-        return True
-
-    def represent_serialized(self, data, **kwargs):
-        return self.represent_mapping(SERIALIZED_TAG, encode(data, **kwargs))
-
-class Loader(yaml.Loader):
-    def construct_serialized(self, node, **kwargs):
-        assert node.tag == SERIALIZED_TAG
-        assert isinstance(node, MappingNode)
-        dct = self.construct_mapping(node, deep=True)
-        return decode(dct)
-
-
-class YAMLSerializer(AbstractSerializer):
+class CloudpickleSerializer(AbstractSerializer):
     def __init__(self):
-        super().__init__(format='yaml:custom', extension=['yaml', 'yml'],
-                          package='PyYAML', enable=yaml_enable,
-                          overwrite=True)
-        Loader.add_constructor(SERIALIZED_TAG, Loader.construct_serialized)
-        yaml.Dumper.ignore_aliases = lambda *args : True
+        super().__init__(format='cloudpickle', extension=['pickle', 'cpickle']
+                         package='cloudpickle', enable=cloudpickle_enable,
+                         overwrite=True)
 
     def loads(self, s, **kwargs):
-        encoding = kwargs.pop("encoding", None)
-        if encoding and isinstance(s, bytes):
-            s = s.decode('utf-8')
-        return yaml.load(s, Loader=Loader, **kwargs)
+        data = cloudpickle.loads(s, **kwargs)
+        return data
 
     def dumps(self, d, **kwargs):
-        encoding = kwargs.pop("encoding", None)
-        if encoding:
-            kwargs.setdefault('encoding', encoding)
-        return yaml.dump(d, Dumper=Dumper, **kwargs)
+        data = cloudpickle.dumps(d, **kwargs)
+        return data
 
-    def register_class(self, cls):
-        Dumper.add_representer(cls, Dumper.represent_serialized)
-        Loader.add_constructor(SERIALIZED_TAG, Loader.construct_serialized)
-
-
-register_serializer(YAMLSerializer)
+register_serializer(CloudpickleSerializer)
 ```
 
 
