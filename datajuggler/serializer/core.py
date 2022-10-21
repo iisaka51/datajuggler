@@ -489,10 +489,13 @@ def read_url(
     response.raise_for_status()
     contents = response.text
     if serialize:
-        format = pathlib.Path(url).suffix.lstrip('.')
-        if isinstance(contents, str):
-            contents = contents.encode(encoding)
-        contents = loads(contents, format)
+        try:
+            format = pathlib.Path(url).suffix.lstrip('.')
+            if isinstance(contents, str):
+                contents = contents.encode(encoding)
+            contents = loads(contents, format)
+        except:
+            contents = response.text
     return contents
 
 def read_database(
