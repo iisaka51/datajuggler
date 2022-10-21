@@ -8,7 +8,8 @@ from collections import namedtuple
 
 import serialize
 from serialize.all import (
-    FORMATS, UNAVAILABLE_FORMATS, FORMAT_BY_EXTENSION, Format,
+    FORMATS, UNAVAILABLE_FORMATS, FORMAT_BY_EXTENSION,
+    Format, UnavailableFormat,
     CLASSES, CLASSES_BY_NAME, register_class
 )
 
