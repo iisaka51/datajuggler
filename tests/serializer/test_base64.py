@@ -45,18 +45,17 @@ nest_base64_json = (
 )
 
 nest_base64_pickle = (
-    b'gASVuwEAAAAAAABdlChOfZRdlChLAUsCSwNLBGV9lCiMAWGUSwGMAWKUjAhi'
-    b'dWlsdGluc5SMB2dldGF0dHKUk5SMJ2RhdGFqdWdnbGVyLnNlcmlhbGl6ZXIu'
-    b'Y2xhc3Nfc2VyaWFsaXplcpSMFkRlY2ltYWxDbGFzc1NlcmlhbGl6ZXKUk5Qp'
-    b'gZSMBmRlY29kZZSGlFKUfZQojAhfX3R5cGVfX5SMB0RlY2ltYWyUjAV2YWx1'
-    b'ZZSMATKUdYWUUpSMAWOUaAhoCYwXRGF0ZXRpbWVDbGFzc1NlcmlhbGl6ZXKU'
-    b'k5QpgZRoDYaUUpR9lChoEYwIZGF0ZXRpbWWUaBNdlChN5AdLBUsYSwhLFEsA'
-    b'ZXWFlFKUjAFklGgIaAmME0RhdGVDbGFzc1NlcmlhbGl6ZXKUk5QpgZRoDYaU'
-    b'UpR9lChoEYwEZGF0ZZRoE12UKE2qB0sBSw1ldYWUUpSMAWWUaAhoCYwTVGlt'
-    b'ZUNsYXNzU2VyaWFsaXplcpSTlCmBlGgNhpRSlH2UKGgRjAR0aW1llGgTXZQo'
-    b'SwtLDEsNZXWFlFKUjAFmlF2UKEsBSwJLA2gPfZQoaBFoEmgTjAE0lHWFlFKU'
-    b'ZXVlLg=='
-)
+ b'gASV/QEAAAAAAABdlChOfZRdlChLAUsCSwNLBGV9lCiMAWGUSwGMAWKUjAhidWlsdGluc5SMB2dl'
+ b'dGF0dHKUk5SMJ2RhdGFqdWdnbGVyLnNlcmlhbGl6ZXIuY2xhc3Nfc2VyaWFsaXplcpSMFkRlY2lt'
+ b'YWxDbGFzc1NlcmlhbGl6ZXKUk5QpgZR9lIwGZm9ybWF0lIwHRGVjaW1hbJRzYowGZGVjb2RllIaU'
+ b'UpR9lCiMCF9fdHlwZV9flIwHRGVjaW1hbJSMBXZhbHVllIwBMpR1hZRSlIwBY5RoCGgJjBdEYXRl'
+ b'dGltZUNsYXNzU2VyaWFsaXplcpSTlCmBlH2UaA6MCGRhdGV0aW1llHNiaBCGlFKUfZQoaBSMCGRh'
+ b'dGV0aW1llGgWXZQoTeQHSwVLGEsISxRLAGV1hZRSlIwBZJRoCGgJjBNEYXRlQ2xhc3NTZXJpYWxp'
+ b'emVylJOUKYGUfZRoDowEZGF0ZZRzYmgQhpRSlH2UKGgUjARkYXRllGgWXZQoTaoHSwFLDWV1hZRS'
+ b'lIwBZZRoCGgJjBNUaW1lQ2xhc3NTZXJpYWxpemVylJOUKYGUfZRoDowEdGltZZRzYmgQhpRSlH2U'
+ b'KGgUjAR0aW1llGgWXZQoSwtLDEsNZXWFlFKUjAFmlF2UKEsBSwJLA2gSfZQoaBRoFWgWjAE0lHWF'
+ b'lFKUZXVlLg==')
+
 
 nest_base64_yaml = (
     b'LSBudWxsCi0ge30KLSAtIDEKICAtIDIKICAtIDMKICAtIDQKLSBhOiAxCiAg'
@@ -126,18 +125,16 @@ nest_base64_serpent = (
 )
 
 nest_base64_dill = (
-    b'gASVuwEAAAAAAABdlChOfZRdlChLAUsCSwNLBGV9lCiMAWGUSwGMAWKUjAhi'
-    b'dWlsdGluc5SMB2dldGF0dHKUk5SMJ2RhdGFqdWdnbGVyLnNlcmlhbGl6ZXIu'
-    b'Y2xhc3Nfc2VyaWFsaXplcpSMFkRlY2ltYWxDbGFzc1NlcmlhbGl6ZXKUk5Qp'
-    b'gZSMBmRlY29kZZSGlFKUfZQojAhfX3R5cGVfX5SMB0RlY2ltYWyUjAV2YWx1'
-    b'ZZSMATKUdYWUUpSMAWOUaAhoCYwXRGF0ZXRpbWVDbGFzc1NlcmlhbGl6ZXKU'
-    b'k5QpgZRoDYaUUpR9lChoEYwIZGF0ZXRpbWWUaBNdlChN5AdLBUsYSwhLFEsA'
-    b'ZXWFlFKUjAFklGgIaAmME0RhdGVDbGFzc1NlcmlhbGl6ZXKUk5QpgZRoDYaU'
-    b'UpR9lChoEYwEZGF0ZZRoE12UKE2qB0sBSw1ldYWUUpSMAWWUaAhoCYwTVGlt'
-    b'ZUNsYXNzU2VyaWFsaXplcpSTlCmBlGgNhpRSlH2UKGgRjAR0aW1llGgTXZQo'
-    b'SwtLDEsNZXWFlFKUjAFmlF2UKEsBSwJLA2gPfZQoaBFoEmgTjAE0lHWFlFKU'
-    b'ZXVlLg=='
-)
+ b'gASV/QEAAAAAAABdlChOfZRdlChLAUsCSwNLBGV9lCiMAWGUSwGMAWKUjAhidWlsdGluc5SMB2dl'
+ b'dGF0dHKUk5SMJ2RhdGFqdWdnbGVyLnNlcmlhbGl6ZXIuY2xhc3Nfc2VyaWFsaXplcpSMFkRlY2lt'
+ b'YWxDbGFzc1NlcmlhbGl6ZXKUk5QpgZR9lIwGZm9ybWF0lIwHRGVjaW1hbJRzYowGZGVjb2RllIaU'
+ b'UpR9lCiMCF9fdHlwZV9flIwHRGVjaW1hbJSMBXZhbHVllIwBMpR1hZRSlIwBY5RoCGgJjBdEYXRl'
+ b'dGltZUNsYXNzU2VyaWFsaXplcpSTlCmBlH2UaA6MCGRhdGV0aW1llHNiaBCGlFKUfZQoaBSMCGRh'
+ b'dGV0aW1llGgWXZQoTeQHSwVLGEsISxRLAGV1hZRSlIwBZJRoCGgJjBNEYXRlQ2xhc3NTZXJpYWxp'
+ b'emVylJOUKYGUfZRoDowEZGF0ZZRzYmgQhpRSlH2UKGgUjARkYXRllGgWXZQoTaoHSwFLDWV1hZRS'
+ b'lIwBZZRoCGgJjBNUaW1lQ2xhc3NTZXJpYWxpemVylJOUKYGUfZRoDowEdGltZZRzYmgQhpRSlH2U'
+ b'KGgUjAR0aW1llGgWXZQoSwtLDEsNZXWFlFKUjAFmlF2UKEsBSwJLA2gSfZQoaBRoFWgWjAE0lHWF'
+ b'lFKUZXVlLg==')
 
 nest_base64_bson = (
     b'5gIAAARfX2Jzb25fZm9sbG93X18A0AIAAAowAAMxAAUAAAAABDIAIQAAABAw'
@@ -204,6 +201,10 @@ class TestClass:
         result = io.dumps(nest_data, format='base64,bson')
         assert result == nest_base64_bson
 
+    def test_base64_encrypt_descrypt(self):
+        s = io.dumps(nest_data, format='base64,json', password='python123')
+        result = io.loads(s, format='base64,json', password='python123')
+        assert result == nest_data
 
 
     def test_base64_loads_01(self):

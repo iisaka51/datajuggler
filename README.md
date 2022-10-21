@@ -662,6 +662,15 @@ if pass 'base64,json' to `format`,  recognaized as 'format, subformat'.
  - dumps: if set 'subformat', first encoding subformat then encoding base64
  - loads: if set 'subformat', first decoding base64 then decoding subformat
 
+### base64 and crypt/decrypt.
+base64 serializer accept password.
+If set 'password', perform operation encrypt/decrypt for dumps()/loads().
+
+ - dumps()
+   - raw_data -> subformat encode -> decrypt -> base64 encode
+ - loads()
+   - base64 decode -> decrypt -> subformat encode -> raw_data
+
 
 ```pytho
 In [2]: from datajuggler import serializer as io
