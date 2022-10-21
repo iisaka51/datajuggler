@@ -16,11 +16,15 @@ class XMLSerializer(AbstractSerializer):
         super().__init__(format='xml', package='xmltodict', enable=xml_enable)
 
     def loads(self, s, **kwargs):
+        kwargs, _, _, encoding, options = self.parse_kwargs(**kwargs)
+        kwargs.update(options)
         kwargs.setdefault("dict_constructor", dict)
         data = xmltodict.parse(s, **kwargs)
         return data
 
     def dumps(self, d, **kwargs):
+        kwargs, _, _, encoding, options = self.parse_kwargs(**kwargs)
+        kwargs.update(options)
         if len(list(d.keys())) != 1:
             raise ValueError('dict must have exactly one root.')
         data = xmltodict.unparse(d, **kwargs)

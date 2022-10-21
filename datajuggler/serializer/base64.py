@@ -76,16 +76,13 @@ class Base64Serializer(AbstractSerializer):
             return value
 
 
-        serializer, subformat, encoding = self.parse_kwargs(**kwargs)
-        _ = kwargs.pop('subformat', None)
-        password = kwargs.pop('password', None)
+        kwargs, serializer, subformat, encoding, options = self.parse_kwargs(**kwargs)
         if _type.is_bytes(s):
                 s = s.decode('utf-8')
+        password = kwargs.pop('password', None)
         value = _decode(s, password)
-        options = kwargs.pop("options", dict())
-        if options:
-            kwargs.update(options)
         if serializer:
+            kwargs.update(options)
             value = serializer.loads(value, **kwargs)
         return value
 
@@ -106,14 +103,11 @@ class Base64Serializer(AbstractSerializer):
                 data = data.encode(encoding)
             return data
 
-        serializer, subformat, encoding = self.parse_kwargs(**kwargs)
-        _ = kwargs.pop('subformat', None)
+        kwargs, serializer, subformat, encoding, options = self.parse_kwargs(**kwargs)
         password = kwargs.pop('password', None)
-        options = kwargs.pop("options", dict())
-        if options:
-            kwargs.update(options)
         if serializer:
             objata = encode_by_format(obj, subformat)
+            kwargs.update(options)
             serialized_data = serializer.dumps(obj, **kwargs)
         else:
             serialized_data = obj

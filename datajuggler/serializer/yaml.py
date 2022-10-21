@@ -60,13 +60,15 @@ class YAMLSerializer(AbstractSerializer):
         yaml.Dumper.ignore_aliases = lambda *args : True
 
     def loads(self, s, **kwargs):
-        encoding = kwargs.pop("encoding", None)
+        kwargs, _, _, encoding, options = self.parse_kwargs(**kwargs)
+        kwargs.update(options)
         if encoding and isinstance(s, bytes):
-            s = s.decode('utf-8')
+            s = s.decode(encoding)
         return yaml.load(s, Loader=Loader, **kwargs)
 
     def dumps(self, d, **kwargs):
-        encoding = kwargs.pop("encoding", None)
+        kwargs, _, _, encoding, options = self.parse_kwargs(**kwargs)
+        kwargs.update(options)
         if encoding:
             kwargs.setdefault('encoding', encoding)
         return yaml.dump(d, Dumper=Dumper, **kwargs)

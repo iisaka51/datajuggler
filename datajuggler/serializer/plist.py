@@ -17,14 +17,18 @@ class PListSerializer(AbstractSerializer):
                          package='plistlib', enable=plist_enable)
 
     def loads(self, s, **kwargs):
+        kwargs, _, _, encoding, options = self.parse_kwargs(**kwargs)
         kwargs.setdefault("fmt", plistlib.FMT_XML)
-        encoding = kwargs.pop("encoding", "utf-8")
+        if options:
+            kwargs.update(options)
         if isinstance(s, str):
             s = s.encode(encoding)
         return plistlib.loads(s, **kwargs)
 
     def dumps(self, d, **kwargs):
-        encoding = kwargs.pop("encoding", "utf-8")
+        kwargs, _, _, encoding, options = self.parse_kwargs(**kwargs)
+        if options:
+            kwargs.update(options)
         return plistlib.dumps(d, **kwargs).decode(encoding)
 
 register_serializer(PListSerializer)

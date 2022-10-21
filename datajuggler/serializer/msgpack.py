@@ -19,11 +19,15 @@ class MsgpackSerializer(AbstractSerializer):
                          overwrite=True)
 
     def loads(self, content, **kwargs):
+        kwargs, _, _, encoding, options = self.parse_kwargs(**kwargs)
+        kwargs.update(options)
         raw = kwargs.pop('raw', False)
         kwargs.setdefault('raw', raw)
         return msgpack.unpackb(content, object_hook=decode, **kwargs)
 
     def dumps(self, obj, **kwargs):
+        kwargs, _, _, encoding, options = self.parse_kwargs(**kwargs)
+        kwargs.update(options)
         return msgpack.packb(obj, default=encode, **kwargs)
 
 register_serializer(MsgpackSerializer)

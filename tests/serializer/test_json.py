@@ -73,27 +73,27 @@ simple_json_indent2_sorted = (
 )
 
 class TestClass:
-    def test_json_encode_case01(self):
+    def test_json_dumps_case01(self):
         result = io.dumps(data, format='json')
         assert result == json_data_encode
 
-    def test_json_encode_case02(self):
+    def test_json_dumps_case02(self):
         result = io.dumps(data, format='json', encoding='utf-8')
         assert result == json_data
 
-    def test_json_encode_case03(self):
+    def test_json_dumps_case03(self):
         options = dict(indent=2, sort_keys=True, separators=(",", ": "))
         expect = "dumps() got an unexpected keyword argument 'indent'"
         with pytest.raises(TypeError) as e:
             result = io.dumps(data, format='json', options=options)
         assert str(e.value) == expect
 
-    def test_json_encode_case04(self):
+    def test_json_dumps_case04(self):
         options = dict(indent=2, sort_keys=True, separators=(",", ": "))
         result = io.dumps(simple_data, format='json:custom', options=options)
         assert result == simple_json_indent2_sorted_encode
 
-    def test_json_encode_case05(self):
+    def test_json_dumps_case05(self):
         options = dict(indent=2, sort_keys=True, separators=(",", ": "))
         result = io.dumps(simple_data, format='json:custom',
                                 encoding='utf-8', options=options)
@@ -101,50 +101,50 @@ class TestClass:
 
 
 
-    def test_json_decode_case01(self):
+    def test_json_loads_case01(self):
         result = io.loads(json_data_encode, format='json')
         assert result == data
 
-    def test_json_decode_case02(self):
+    def test_json_loads_case02(self):
         expect = "'str' object has no attribute 'decode'"
         with pytest.raises(AttributeError) as e:
             result = io.loads(json_data, format='json')
         assert str(e.value) == expect
 
-    def test_json_decode_case03(self):
+    def test_json_loads_case03(self):
         result = io.loads(json_data, format='json', encoding='utf-8')
         assert result == data
 
-    def test_json_decode_case04(self):
+    def test_json_loads_case04(self):
         result = io.loads(json_data, format='json:custom')
         assert result == data
 
-    def test_json_decode_case05(self):
+    def test_json_loads_case05(self):
         result = io.loads(json_data, format='json:custom', encoding='utf-8')
         assert result == data
 
 
 
-    def test_json_adict_decode_case01(self):
+    def test_json_adict_loads_case01(self):
         filepath = 'tests/serializer/data/valid-content.json'
         expect = aDict({'a': 1, 'b': 2, 'c': 3, 'x': 7, 'y': 8, 'z': 9})
         d = aDict(filepath, format='json')
         assert d == expect
 
-    def test_json_adict_decode_case02(self):
+    def test_json_adict_loads_case02(self):
         filepath = 'tests/serializer/data/valid-content.json'
         expect = aDict({'a': 1, 'b': 2, 'c': 3, 'x': 7, 'y': 8, 'z': 9})
         d = aDict(filepath)
         assert d == expect
 
-    def test_json_adict_decode_case03(self):
+    def test_json_adict_loads_case03(self):
         filepath = 'tests/serializer/data/invalid-content.json'
         expect = 'Expecting value: line 1 column 1 (char 0)'
         with pytest.raises(ValueError) as e:
             d = aDict(filepath, format='json')
         assert str(e.value) == expect
 
-    def test_json_adict_decode_case04(self):
+    def test_json_adict_loads_case04(self):
         filepath = 'tests/serializer/data/invalid-content.missing'
         expect = 'Expecting value: line 1 column 1 (char 0)'
         expect = ('Invalid data or url or filepath argument: '
@@ -155,26 +155,26 @@ class TestClass:
             d = aDict(filepath, format='json')
         assert str(e.value) == expect
 
-    def test_json_udict_decode_case01(self):
+    def test_json_udict_loads_case01(self):
         filepath = 'tests/serializer/data/valid-content.json'
         expect = uDict({'a': 1, 'b': 2, 'c': 3, 'x': 7, 'y': 8, 'z': 9})
         d = uDict(filepath, format='json')
         assert d == expect
 
-    def test_json_udict_decode_case02(self):
+    def test_json_udict_loads_case02(self):
         filepath = 'tests/serializer/data/valid-content.json'
         expect = uDict({'a': 1, 'b': 2, 'c': 3, 'x': 7, 'y': 8, 'z': 9})
         d = uDict(filepath)
         assert d == expect
 
-    def test_json_udict_decode_case03(self):
+    def test_json_udict_loads_case03(self):
         filepath = 'tests/serializer/data/invalid-content.json'
         expect = 'Expecting value: line 1 column 1 (char 0)'
         with pytest.raises(ValueError) as e:
             d = uDict(filepath, format='json')
         assert str(e.value) == expect
 
-    def test_json_udict_decode_case04(self):
+    def test_json_udict_loads_case04(self):
         filepath = 'tests/serializer/data/invalid-content.missing'
         expect = 'Expecting value: line 1 column 1 (char 0)'
         expect = ('Invalid data or url or filepath argument: '

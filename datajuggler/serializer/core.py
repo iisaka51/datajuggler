@@ -208,15 +208,15 @@ def register_format(
     # Here we generate dumper/dumpser if they are not present.
     if dumper and not dumpser:
 
-        def dumpser(obj):
+        def dumpser(obj, **kwargs):
             buf = BytesIO()
-            dumper(obj, buf)
+            dumper(obj, buf, **kwargs)
             return buf.getvalue()
 
     elif not dumper and dumpser:
 
-        def dumper(obj, fp):
-            fp.write(dumpser(obj))
+        def dumper(obj, fp, **kwargs):
+            fp.write(dumpser(obj, **kwargs))
 
     elif not dumper and not dumpser:
 
@@ -228,13 +228,13 @@ def register_format(
     # Here we generate loader/loadser if they are not present.
     if loader and not loadser:
 
-        def loadser(serialized):
-            return loader(BytesIO(serialized))
+        def loadser(serialized, **kwargs):
+            return loader(BytesIO(serialized), **kwargs)
 
     elif not loader and loadser:
 
-        def loader(fp):
-            return loadser(fp.read())
+        def loader(fp, **kwargs):
+            return loadser(fp.read(), **kwargs)
 
     elif not loader and not loadser:
 

@@ -304,7 +304,7 @@ class TestClass:
         assert str(e.value) == expect
 
     def test_yaml_custom_dumps_case01(self):
-        result = io.dumps(nest_data, format='yaml:custom')
+        result = io.dumps(nest_data, format='yaml:custom', encoding='utf-8')
         assert result == nest_yaml
 
     def test_yaml_custom_dumps_case02(self):
@@ -312,19 +312,21 @@ class TestClass:
         assert result == nest_yaml_custom
 
     def test_yaml_custom_dumps_case03(self):
-        result = io.dumps(simple_data, format='yaml:custom')
+        result = io.dumps(simple_data, format='yaml:custom', encoding='utf-8')
         assert result == yaml_data_sorted
 
     def test_yaml_custom_dumps_case04(self):
-        result = io.dumps(simple_data, format='yaml:custom', sort_keys=False)
+        result = io.dumps(simple_data, format='yaml:custom',
+                          sort_keys=False, encoding='utf-8')
         assert result == yaml_data
 
     def test_yaml_custom_dumps_case05(self):
-        result = io.dumps(unicode_data, format='yaml:custom')
+        result = io.dumps(unicode_data, format='yaml:custom', encoding='-utf-8')
         assert result == yaml_unicode_sort
 
     def test_yaml_custom_dumps_case06(self):
-        result = io.dumps(unicode_data, format='yaml:custom', allow_unicode=True)
+        result = io.dumps(unicode_data, format='yaml:custom',
+                          allow_unicode=True, encoding='utf-8')
         assert result == yaml_unicode
 
 

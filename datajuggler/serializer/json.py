@@ -19,17 +19,17 @@ class JSONSerializer(AbstractSerializer):
 
 
     def dumps(self, obj, **kwargs):
-        encoding = kwargs.pop('encoding', None)
-        options = kwargs.pop('options', None)
-        if options:
-            kwargs.update(options)
+        kwargs, _, _, encoding, options = self.parse_kwargs(**kwargs)
+        kwargs.update(options)
         data  =  json.dumps(obj, cls=Encoder, **kwargs)
-        if not encoding and isinstance(data, str):
+        if encoding and isinstance(data, str):
             data = data.encode("utf-8")
 
         return data
 
     def loads(self, content, **kwargs):
+        kwargs, _, _, encoding, options = self.parse_kwargs(**kwargs)
+        kwargs.update(options)
         if isinstance(content, bytes):
             content = content.decode("utf-8")
         return json.loads(content, object_hook=decode, **kwargs)

@@ -57,11 +57,17 @@ class AbstractSerializer(object):
         try:
             dumper = self.dumper
         except NotImplementedError:
-            dumper = None
+            try:
+                dumper = self.dump
+            except NotImplementedError:
+                dumper = None
         try:
             loader = self.loader
         except NotImplementedError:
-            loader = None
+            try:
+                loader = self.load
+            except NotImplementedError:
+                loader = None
         try:
             regist_cls = self.register_class
         except NotImplementedError:
@@ -88,9 +94,10 @@ class AbstractSerializer(object):
     def parse_kwargs(self, subformat='', **kwargs):
         encoding = kwargs.pop("encoding", "utf-8")
         subformat = kwargs.pop("subformat", subformat)
+        options = kwargs.pop("options", dict())
 
         serializer = get_serializer_by_format(subformat)
-        return (serializer, subformat, encoding)
+        return (kwargs, serializer, subformat, encoding, options)
 
     def __getattr__(self, k):
         if k not in dir(self):
