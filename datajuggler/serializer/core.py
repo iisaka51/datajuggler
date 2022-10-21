@@ -467,7 +467,7 @@ def read_contents(s,
     if is_data(s): # data
         return s
     elif is_url(s): # url
-        return read_url(s)
+        return read_url(s, serialize=serialize)
     elif is_dsn(s): # databse
         return list(read_database(s, **kwargs))
     elif validate_file(s, thrown_error=thrown_error):
@@ -478,6 +478,8 @@ def read_contents(s,
 
 def read_url(
         url: str,
+        encoding: str='utf-8',
+        serialize: bool=False,
         **options: Any
     ):
     if not requests_installed:
@@ -486,6 +488,11 @@ def read_url(
     response = requests.get(url, **options)
     response.raise_for_status()
     contents = response.text
+    if serialize:
+        format = pathlib.Path(url).suffix.lstrip('.')
+        if isinstance(contents, str):
+            contents = contents.encode(encoding)
+        contents = loads(contents, format)
     return contents
 
 def read_database(
