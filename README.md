@@ -669,7 +669,7 @@ If set 'password', perform operation encrypt/decrypt for dumps()/loads().
  - dumps()
    - raw_data -> subformat encode -> decrypt -> base64 encode
  - loads()
-   - base64 decode -> decrypt -> subformat encode -> raw_data
+   - base64 decode -> decrypt -> subformat decode -> raw_data
 
 
 ```pytho
