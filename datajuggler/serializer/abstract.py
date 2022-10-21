@@ -94,7 +94,7 @@ class AbstractSerializer(object):
 
     def __getattr__(self, k):
         if k not in dir(self):
-            raise NotImplementedError
+            raise NotImplementedError(f'{self.__class__.__name__}.{k}')
 
 
 __init__ = [
