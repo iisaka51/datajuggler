@@ -451,8 +451,10 @@ except ImportError:  # pragma: no cover
 
 class CloudpickleSerializer(AbstractSerializer):
     def __init__(self):
-        super().__init__(format='cloudpickle', extension=['pickle', 'cpickle']
-                         package='cloudpickle', enable=cloudpickle_enable,
+        super().__init__(format='cloudpickle',
+                         extension=['pickle', 'cpickle'],
+                         package='cloudpickle',
+                         enable=cloudpickle_enable,
                          overwrite=True)
 
     def loads(self, s, **kwargs):
