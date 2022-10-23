@@ -534,10 +534,10 @@ if dataset momdule installed and filepath is starts with
 'sqlite://' or 'mysql://', 'postgresql://' read contents form DATABASE.
 
 ```python
-In [1]: from datajuggler import serializer as io
+In [1]:  from datajuggler import serializer as io
 
 In [2]: io.read_contents('sqlite:///users.sqlite#users')
-Out[5]:
+Out[2]:
 [{'id': 1, 'name': 'Jack Bauer', 'age': 55, 'belongs': 'CTU'},
  {'id': 2, 'name': "Chloe O'Brian", 'age': 0, 'belongs': 'CTU'},
  {'id': 3, 'name': 'Anthony Tony', 'age': 29, 'belongs': 'CTU'},
@@ -545,14 +545,31 @@ Out[5]:
  {'id': 5, 'name': 'Ann Wilson', 'age': 71, 'belongs': 'Heart'},
  {'id': 6, 'name': 'Nacy Wilson', 'age': 67, 'belongs': 'Heart'}]
 
-In [3]: from datajuggler import uDict
+In [3]: from datajuggler import aDict
 
-In [4]: d = uDict('sqlite:///users.sqlite#users')
+In [4]: class User(aDict):
+   ...:     pass
+   ...:
 
-In [5]: d
-Out[5]: uDict({'values': [{'id': 1, 'name': 'Jack Bauer', 'age': 55, 'belongs': 'CTU'}, {'id': 2, 'name': "Chloe O'Brian", 'age': 0, 'belongs': 'CTU'}, {'id': 3, 'name': 'Anthony Tony', 'age': 29, 'belongs': 'CTU'}, {'id': 4, 'name': 'David Gilmour', 'age': 75, 'belongs': 'Pink Floyd'}, {'id': 5, 'name': 'Ann Wilson', 'age': 71, 'belongs': 'Heart'}, {'id': 6, 'name': 'Nacy Wilson', 'age': 67, 'belongs': 'Heart'}]})
+In [5]: users = io.read_contents('sqlite:///users.sqlite#users',row_type=User)
 
-In [6]:
+In [6]: users[0].name
+Out[6]: 'Jack Bauer'
+
+In [7]: del users
+
+In [8]: users = aDict('sqlite:///users.sqlite#users')['values']
+
+In [9]: users
+Out[9]:
+[aDict({'id': 1, 'name': 'Jack Bauer', 'age': 55, 'belongs': 'CTU'}),
+ aDict({'id': 2, 'name': "Chloe O'Brian", 'age': 0, 'belongs': 'CTU'}),
+ aDict({'id': 3, 'name': 'Anthony Tony', 'age': 29, 'belongs': 'CTU'}),
+ aDict({'id': 4, 'name': 'David Gilmour', 'age': 75, 'belongs': 'Pink Floyd'}),
+ aDict({'id': 5, 'name': 'Ann Wilson', 'age': 71, 'belongs': 'Heart'}),
+ aDict({'id': 6, 'name': 'Nacy Wilson', 'age': 67, 'belongs': 'Heart'})]
+
+In [10]:
 ```
 
 if you want filtering data, pass to kwargs as follows.
@@ -623,12 +640,12 @@ if pass 'base64,json' to `format`,  recognaized as 'format, subformat'.
  - dumps: if set 'subformat', first encoding subformat then encoding base64
  - loads: if set 'subformat', first decoding base64 then decoding subformat
 
-### base64 and crypt/decrypt.
+### base64 and encrypt/decrypt.
 base64 serializer accept password.
 If set 'password', perform operation encrypt/decrypt for dumps()/loads().
 
  - dumps()
-   - raw_data -> subformat encode -> decrypt -> base64 encode
+   - raw_data -> subformat encode -> encrypt -> base64 encode
  - loads()
    - base64 decode -> decrypt -> subformat decode -> raw_data
 

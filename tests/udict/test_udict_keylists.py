@@ -20,8 +20,7 @@ class TestClass:
                    ["b", "d"],
                    ["b", "d", "x"],
                    ["b", "d", "y"],
-               ]
-        result = uDict().keylists(data)
+               ] result = uDict().keylists(data)
         assert result == expect
 
         obj = uDict(data)
