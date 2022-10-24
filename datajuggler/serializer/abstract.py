@@ -16,10 +16,10 @@ class AbstractClassSerializer(object):
         super().__init__()
 
     def encode(self, obj):
-        pass
+        return obj
 
     def decode(self, obj):
-        pass
+        return obj
 
     def raise_error(self, obj):
         raise TypeError(f"Unserializable object {obj} of type {type(obj)}")

@@ -331,3 +331,50 @@ class TypeValidator(object):
     def is_bytes_not_empty(cls, obj: Any):
         return obj != '' and isinstance(obj, bytes)
 
+
+    @classmethod
+    def is_made_by_pydantic(cls, obj: Any):
+        try:
+            return "<class 'pydantic.main.BaseModel'>" in [
+                      str(c) for c in obj.__class__.__mro__ ]
+        except:
+            return False
+
+    @classmethod
+    def is_made_by_dataclass(cls, obj: Any):
+        if hasattr(obj, '__dataclass_fields__'):
+            return True
+        else:
+            return False
+
+    @classmethod
+    def is_made_by_namedtuple(cls, obj: Any):
+        """Return True, if collections.namedtuple or typing.NamedTuple,
+           otherwise, return False.
+        """
+        if ( isinstance(obj, tuple)
+             and hasattr(obj, '_fields')
+             and hasattr(obj, '_field_defaults')
+             and hasattr(obj, '_make')
+             and hasattr(obj, '_asdict') ):
+            return True
+        else:
+            return False
+
+    @classmethod
+    def is_made_by_typing_namedtuple(cls, obj: Any):
+        if isinstance(obj, tuple) and hasattr(obj, '__orig_bases__'):
+            return True
+        else:
+            return False
+
+    @classmethod
+    def is_made_by_collections_namedtuple(cls, obj: Any):
+        """Return True, if collections.namedtuple or typing.NamedTuple,
+           otherwise, return False.
+        """
+        if ( cls.is_made_by_namedtuple(obj)
+             and not hasattr(obj, '__orig_bases__') ):
+            return True
+        else:
+            return False

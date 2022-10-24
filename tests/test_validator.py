@@ -8,7 +8,9 @@
 import re
 
 from datetime import datetime
-from collections import OrderedDict
+from collections import OrderedDict, namedtuple
+from dataclasses import dataclass
+from typing import NamedTuple
 import pytest
 
 
@@ -280,3 +282,55 @@ class TestClass:
         assert ( _type.is_str_alnum('１２３')
                  == False )
 
+
+    def test_is_made_by_dataclass(self):
+        @dataclass
+        class User(object):
+            id: int
+            name: str
+        u1 = User(1, "jack")
+        assert  _type.is_made_by_dataclass(u1) == True
+
+
+    def test_is_made_by_namedtuple_case01(self):
+        User = namedtuple("user", "id name")
+        u1 = User(1, "jack")
+        assert  _type.is_made_by_namedtuple(u1) == True
+
+    def test_is_made_by_namedtuple_case02(self):
+        class User(NamedTuple):
+            id: int
+            name: str
+        u1 = User(1, "jack")
+        assert  _type.is_made_by_namedtuple(u1) == True
+
+
+    def test_is_made_by_typing_namedtuple_case01(self):
+        User = namedtuple("user", "id name")
+        u1 = User(1, "jack")
+        assert  _type.is_made_by_typing_namedtuple(u1) == False
+
+
+    def test_is_made_by_typing_namedtuple_case01(self):
+        class User(NamedTuple):
+            id: int
+            name: str
+        u1 = User(1, "jack")
+        assert  _type.is_made_by_typing_namedtuple(u1) == True
+
+    def test_is_made_by_collections_namedtuple(self):
+        User = namedtuple("user", "id name")
+        u1 = User(1, "jack")
+        assert  _type.is_made_by_collections_namedtuple(u1) == True
+
+
+    def test_is_made_by_typing_namedtuple_case01(self):
+        class User(NamedTuple):
+            id: int
+            name: str
+        u1 = User(1, "jack")
+        assert  _type.is_made_by_collections_namedtuple(u1) == False
+
+
+    def test_is_made_by_pydantic(self):
+        pass
