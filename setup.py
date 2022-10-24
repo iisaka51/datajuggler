@@ -16,7 +16,6 @@ LONG_DESCRIPTION = (this_directory / "README.md").read_text()
 SHORT_DESCRIPTION = "Utility for data juggling."
 
 requirements = [
-    "numpy",
     "multimethod>=1.8",
     "serialize>=0.2.1",
 ]

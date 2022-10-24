@@ -603,12 +603,15 @@ class aDict(IODict):
     def __init__(self,
             *args: Any,
             format: Optional[str]=None,
+            freeze: bool=False,
             **kwargs: Any
         ):
         object.__setattr__(self, '__parent', kwargs.pop('__parent', None))
         object.__setattr__(self, '__key', kwargs.pop('__key', None))
-        object.__setattr__(self, '__frozen', False)
+        object.__setattr__(self, '__frozen', None)
         super().__init__(*args, format=format, **kwargs)
+        if freeze:
+            object.__setattr__(self, '__frozen', True)
 
     def _check_frozen(self,
             thrown_error: bool=False,
