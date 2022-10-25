@@ -538,9 +538,9 @@ In [1]:  from datajuggler import serializer as io
 
 In [2]: io.read_contents('sqlite:///users.sqlite#users')
 Out[2]:
-[{'id': 1, 'name': 'Jack Bauer', 'age': 55, 'belongs': 'CTU'},
- {'id': 2, 'name': "Chloe O'Brian", 'age': 0, 'belongs': 'CTU'},
- {'id': 3, 'name': 'Anthony Tony', 'age': 29, 'belongs': 'CTU'},
+[{'id': 1, 'name': 'David Coverdale', 'age': 71, 'belongs': 'Whitesnake'},
+ {'id': 2, 'name': 'Neal Schon ', 'age': 68, 'belongs': 'Journey'},
+ {'id': 3, 'name': 'Tom Scholz', 'age': 75, 'belongs': 'Boston'},
  {'id': 4, 'name': 'David Gilmour', 'age': 75, 'belongs': 'Pink Floyd'},
  {'id': 5, 'name': 'Ann Wilson', 'age': 71, 'belongs': 'Heart'},
  {'id': 6, 'name': 'Nacy Wilson', 'age': 67, 'belongs': 'Heart'}]
@@ -554,7 +554,7 @@ In [4]: class User(aDict):
 In [5]: users = io.read_contents('sqlite:///users.sqlite#users',row_type=User)
 
 In [6]: users[0].name
-Out[6]: 'Jack Bauer'
+Out[6]: 'David Coverdale'
 
 In [7]: del users
 
@@ -562,9 +562,9 @@ In [8]: users = aDict('sqlite:///users.sqlite#users')['values']
 
 In [9]: users
 Out[9]:
-[aDict({'id': 1, 'name': 'Jack Bauer', 'age': 55, 'belongs': 'CTU'}),
- aDict({'id': 2, 'name': "Chloe O'Brian", 'age': 0, 'belongs': 'CTU'}),
- aDict({'id': 3, 'name': 'Anthony Tony', 'age': 29, 'belongs': 'CTU'}),
+[aDict({'id': 1, 'name': 'David Coverdale', 'age': 71, 'belongs': 'Whitesnake'}),
+ aDict({'id': 2, 'name': 'Neal Schon ', 'age': 68, 'belongs': 'Journey'}),
+ aDict({'id': 3, 'name': 'Tom Scholz', 'age': 75, 'belongs': 'Boston'}),
  aDict({'id': 4, 'name': 'David Gilmour', 'age': 75, 'belongs': 'Pink Floyd'}),
  aDict({'id': 5, 'name': 'Ann Wilson', 'age': 71, 'belongs': 'Heart'}),
  aDict({'id': 6, 'name': 'Nacy Wilson', 'age': 67, 'belongs': 'Heart'})]
@@ -579,27 +579,27 @@ In [1]: from datajuggler import serializer as io
 
 In [2]: io.read_contents('sqlite:///users.sqlite#users')
 Out[2]:
-[{'id': 1, 'name': 'Jack Bauer', 'age': 55, 'belongs': 'CTU'},
- {'id': 2, 'name': "Chloe O'Brian", 'age': 0, 'belongs': 'CTU'},
- {'id': 3, 'name': 'Anthony Tony', 'age': 29, 'belongs': 'CTU'},
+[{'id': 1, 'name': 'David Coverdale', 'age': 71, 'belongs': 'Whitesnake'},
+ {'id': 2, 'name': 'Neal Schon ', 'age': 68, 'belongs': 'Journey'},
+ {'id': 3, 'name': 'Tom Scholz', 'age': 75, 'belongs': 'Boston'},
  {'id': 4, 'name': 'David Gilmour', 'age': 75, 'belongs': 'Pink Floyd'},
  {'id': 5, 'name': 'Ann Wilson', 'age': 71, 'belongs': 'Heart'},
  {'id': 6, 'name': 'Nacy Wilson', 'age': 67, 'belongs': 'Heart'}]
 
 In [3]: io.read_contents('sqlite:///users.sqlite#users', id={'==': 2})
-Out[3]: [{'id': 2, 'name': "Chloe O'Brian", 'age': 0, 'belongs': 'CTU'}]
+Out[3]: [{'id': 2, 'name': 'Neal Schon ', 'age': 68, 'belongs': 'Journey'}]
 
 In [4]: io.read_contents('sqlite:///users.sqlite#users', id={'>=': 3})
 Out[4]:
-[{'id': 3, 'name': 'Anthony Tony', 'age': 29, 'belongs': 'CTU'},
+[{'id': 3, 'name': 'Tom Scholz', 'age': 75, 'belongs': 'Boston'},
  {'id': 4, 'name': 'David Gilmour', 'age': 75, 'belongs': 'Pink Floyd'},
  {'id': 5, 'name': 'Ann Wilson', 'age': 71, 'belongs': 'Heart'},
  {'id': 6, 'name': 'Nacy Wilson', 'age': 67, 'belongs': 'Heart'}]
 
 In [5]: io.read_contents('sqlite:///users.sqlite#users', id={'between': [2,4]})
 Out[5]:
-[{'id': 2, 'name': "Chloe O'Brian", 'age': 0, 'belongs': 'CTU'},
- {'id': 3, 'name': 'Anthony Tony', 'age': 29, 'belongs': 'CTU'},
+[{'id': 2, 'name': 'Neal Schon ', 'age': 68, 'belongs': 'Journey'},
+ {'id': 3, 'name': 'Tom Scholz', 'age': 75, 'belongs': 'Boston'},
  {'id': 4, 'name': 'David Gilmour', 'age': 75, 'belongs': 'Pink Floyd'}]
 
 In [6]: io.read_contents('sqlite:///users.sqlite#users', name={'like': '%WILSON'
@@ -619,10 +619,10 @@ In [17]: d = io.read_contents('sqlite:///users.sqlite#users', row_type=aDict)
 In [18]: users = list(d)
 
 In [19]: users[0]
-Out[19]: aDict({'id': 1, 'name': 'Jack Bauer', 'age': 55, 'belongs': 'CTU'})
+Out[19]: aDict({'id': 1, 'name': 'David Coverdale', 'age': 71, 'belongs': 'Whitesnake'})
 
 In [20]: users[0].name
-Out[20]: 'Jack Bauer'
+Out[20]: 'David Coverdale'
 
 In [21]:
 ```

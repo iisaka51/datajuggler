@@ -311,7 +311,7 @@ class IODict(BaseDict):
         ) ->dict:
         if  io.is_dsn(s):
             data = list(io.read_database(s, **kwargs))
-            return {"values": data}
+            return {"_values": data}
         elif io.validate_file(s):
             data = io.read_file(s, serialize=True, encoding='utf-8')
         else:
@@ -335,7 +335,7 @@ class IODict(BaseDict):
                 return data
             elif _type.is_list(data):
                 # force list to dict
-                return {"values": data}
+                return {"_values": data}
             else:
                 raise ValueError(
                     f"Invalid data type: {type(data)}, expected dict or list."
