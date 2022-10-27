@@ -791,10 +791,13 @@ class aDict(IODict):
 
     def freeze(self, shouldFreeze=True):
         """ Freeze this object.  """
-        object.__setattr__(self, '__frozen', shouldFreeze)
-        for key, val in self.items():
-            if _type.is_same_as(val, self):
-                val.freeze(shouldFreeze)
+        def _freeze(obj, k, v, shouldFreeze, *args, **kwargs):
+            if hasattr(obj, '__frozen'):
+                object.__setattr__(obj, '__frozen', shouldFreeze)
+
+        d.d_traverse(self, _freeze, shouldFreeze=shouldFreeze)
+        if hasattr(self, '__frozen'):
+            object.__setattr__(self, '__frozen', shouldFreeze)
 
     def unfreeze(self):
         """ Unfreeze this object.  """
