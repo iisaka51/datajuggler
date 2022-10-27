@@ -830,6 +830,8 @@ def d_traverse(
             callback(obj, key, value, *args, parents=parents, **kwargs)
             d_traverse(value, callback, *args, parents=parents, **kwargs)
             parents.pop()
+        else:
+            callback(obj, None, None, *args, parents=parents, **kwargs)
 
     def _traverse_list(
             obj: Union[list, tuple],
@@ -846,8 +848,8 @@ def d_traverse(
             parents.pop()
 
     if not _type.is_function(callback):
-            raise ValueError("callback argument must be a callable.")
-    if _type.is_mapping(obj):
+        raise ValueError("callback argument must be a callable.")
+    if _type.is_dict(obj):
         _traverse_dict(obj, callback, *args, parents=parents, **kwargs)
     elif _type.is_list_or_tuple(obj):
         _traverse_list(obj, callback, *args, parents=parents, **kwargs)

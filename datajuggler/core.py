@@ -796,8 +796,6 @@ class aDict(IODict):
                 object.__setattr__(obj, '__frozen', shouldFreeze)
 
         d.d_traverse(self, _freeze, shouldFreeze=shouldFreeze)
-        if hasattr(self, '__frozen'):
-            object.__setattr__(self, '__frozen', shouldFreeze)
 
     def unfreeze(self):
         """ Unfreeze this object.  """
