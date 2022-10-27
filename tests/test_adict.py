@@ -184,3 +184,11 @@ class TestClass_Features:
         assert d.a[1].b == 4
         d.one.two.three.four = 10
         assert d.one.two.three.four == 10
+
+    def test_adict_feature_case10(self):
+        data = { 'one': [ { 'two': 2 }, { 'three': 3 } ], 'next':{'four': 4 }}
+        d = aDict(data)
+        d.freeze()
+        assert d.one[0],_check_frozen() == True
+        assert d.one[1],_check_frozen() == True
+        assert d.next,_check_frozen() == True

@@ -812,8 +812,8 @@ def d_traverse(
     ):
     """Traverse dict or list and apply callback function.
     callback function will be called as follows.
-      `callback(obj, key, value, parents=parents, *args,  **kwargs)`
-      `callback(obj, index, value, parents=parents, *args,  **kwargs)`
+      `callback(obj, key, value, *args, parents=parents, **kwargs)`
+      `callback(obj, index, value, *args, parents=parents, **kwargs)`
     """
 
     def _traverse_dict(
