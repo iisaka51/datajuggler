@@ -5,8 +5,10 @@
 [![](https://img.shields.io/pypi/l/datajuggler.svg?color=blue)](https://github.com/iisaka51/datajuggler/blob/master/LICENSE.txt)
 
 <p align="center" style="margin-bottom: 0px !important;">
-  <img width="400" src="https://github.com/iisaka51/datajuggler/blob/main/datajuggler_logo.png" alt="Datajuggler logo" align="center">
-  io
+  <img width="400" src="https://user-images.githubusercontent.com/9247573/198170177-cbfb7cd3-a0c5-4d66-a944-27888e153351.png" align="center">
+  <!--
+  https://github.com/iisaka51/datajuggler/blob/main/datajuggler_logo.png" alt="Datajuggler logo" align="center">
+  -->
 </p>
 
 # DataJuggler
