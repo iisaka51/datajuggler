@@ -5,7 +5,7 @@
 [![](https://img.shields.io/pypi/l/datajuggler.svg?color=blue)](https://github.com/iisaka51/datajuggler/blob/master/LICENSE.txt)
 
 <p align="center" style="margin-bottom: 0px !important;">
-  <img width="300" src="/https://github.com/iisaka51/datajuggler/datajuggler.png" alt="Datajuggler logo" align="center">
+  <img width="300" src="https://github.com/iisaka51/datajuggler/datajuggler.png" alt="Datajuggler logo" align="center">
   <sub>sub>source: www.irasutoya.com<sub><sub>
 </p>
 
