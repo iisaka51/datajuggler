@@ -6,7 +6,7 @@
 
 <p align="center" style="margin-bottom: 0px !important;">
   <img width="400" src="https://github.com/iisaka51/datajuggler/blob/main/datajuggler_logo.png" alt="Datajuggler logo" align="center">
-  <sub>sub>source: www.irasutoya.com<sub><sub>
+  io
 </p>
 
 # DataJuggler
