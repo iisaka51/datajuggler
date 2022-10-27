@@ -28,13 +28,12 @@ class TestClass:
         assert result == csv_str
 
     def test_csv_decode_adict_case01(self):
-        expect  = {'value': [
+        expect  = [
  {'age':'20', 'height':'62', 'id':'1', 'name':'Alice', 'weight':'120.6'},
  {'age':'21', 'height':'74', 'id':'2', 'name':'Freddie', 'weight':'190.6'},
  {'age':'17', 'height':'68', 'id':'3', 'name':'Bob', 'weight':'120.0'},
  {'age':'32', 'height':'75', 'id':'4', 'name':'François', 'weight':'110.05'}
-        ] }
+        ]
         d = aDict(csv_str, format='csv' )
-        expect = aDict({'values': list_of_dict })
-        assert d == expect
+        assert d._values == expect
 
