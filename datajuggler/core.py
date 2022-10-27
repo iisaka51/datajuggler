@@ -611,7 +611,7 @@ class aDict(IODict):
         object.__setattr__(self, '__frozen', None)
         super().__init__(*args, format=format, **kwargs)
         if freeze:
-            object.__setattr__(self, '__frozen', True)
+            self.freeze(freeze)
 
     def _check_frozen(self,
             thrown_error: bool=False,
