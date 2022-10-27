@@ -82,13 +82,13 @@ otherwise raise NotImplementedError when function call it.
 
  or set required modules.
 
- - `pip install "datajuggler[database]"
- - `pip install "datajuggler[requests]"
- - `pip install "datajuggler[yaml]"
+ - `pip install "datajuggler[database]"`
+ - `pip install "datajuggler[requests]"`
+ - `pip install "datajuggler[yaml]"`
 
  and/or if you want to enable all serialzier.
 
- - `pip install "datajuggler[serializer]"
+ - `pip install "datajuggler[serializer]"`
 
 ...etc.
 
@@ -385,7 +385,7 @@ IODict is subclass of BaseDict.
 
 ## Serialization
 
-datajuggler keep compatibitily for [serialize](https://github.com/hgrecco/serialize).
+datajuggler keep compatibitily for [Serialize](https://github.com/hgrecco/serialize).
 and more easy add customaize serializer and class serializer.
 
 datajuggler detect following serialization library, and it is automaticaly enable.
@@ -395,6 +395,7 @@ datajuggler detect following serialization library, and it is automaticaly enabl
  - dill
  - msgpack
  - serpent
+ - phpserialize
  - PyYAML
  - xmllibtodict
 
@@ -536,8 +537,8 @@ and provide helper functions.
 ### read_contents()
 
 read contets from filepath.
-if requests module installed and filepath is starts with 'http://' or 'https://', read contents from URL.
-if dataset momdule installed and filepath is starts with
+if [requests](https://github.com/psf/requests) installed and filepath is starts with 'http://' or 'https://', read contents from URL.
+if [dataset](https://dataset.readthedocs.io/en/latest/) installed and filepath is starts with
 'sqlite://' or 'mysql://', 'postgresql://' read contents form DATABASE.
 
 ```python
@@ -565,7 +566,7 @@ Out[6]: 'David Coverdale'
 
 In [7]: del users
 
-In [8]: users = aDict('sqlite:///users.sqlite#users')['values']
+In [8]: users = aDict('sqlite:///users.sqlite#users')._values
 
 In [9]: users
 Out[9]:
@@ -647,15 +648,6 @@ if pass 'base64,json' to `format`,  recognaized as 'format, subformat'.
  - dumps: if set 'subformat', first encoding subformat then encoding base64
  - loads: if set 'subformat', first decoding base64 then decoding subformat
 
-### base64 and encrypt/decrypt.
-base64 serializer accept password.
-If set 'password', perform operation encrypt/decrypt for dumps()/loads().
-
- - dumps()
-   - raw_data -> subformat encode -> encrypt -> base64 encode
- - loads()
-   - base64 decode -> decrypt -> subformat decode -> raw_data
-
 
 ```pytho
 In [2]: from datajuggler import serializer as io
@@ -691,6 +683,47 @@ Out[9]: b"a: 1\nb: !<tag:github.com/iisaka51/datajuggler,2022:python/datajuggler
 In [10]:
 ```
 
+### base64 and encrypt/decrypt.
+base64 serializer accept password.
+If set 'password', perform operation encrypt/decrypt for dumps()/loads().
+
+ - dumps()
+   - raw_data -> subformat encode -> encrypt -> base64 encode
+ - loads()
+   - base64 decode -> decrypt -> subformat decode -> raw_data
+
+
+```python
+In [5]: from datajuggler import serializer as io
+
+In [6]: data = { 'January': 1, 'February': 2, 'March': 3, 'April': 4 }
+
+In [7]: s = io.dumps(data, format='base64, json')
+
+In [8]: io.loads(s, format='base64, json')
+Out[8]: {'January': 1, 'February': 2, 'March': 3, 'April': 4}
+
+In [9]: s = io.dumps(data, format='base64, json', password='python123')
+
+In [10]: io.loads(s, format='base64, json', password='python123')
+Out[10]: {'January': 1, 'February': 2, 'March': 3, 'April': 4}
+
+In [11]: s
+Out[11]: b'ra3xLVfJAfeEH3MTZ0FBQUFBQmpXZTl1WU1VU1Q2bDhWTG5iWF9oMEgtMjB2d1BNWUFhX2Y2cTZkcmgwZkFPQzhjV3Q2amY2QjlVbGFHODYzbUtYaHZPNjQ0N0J5OUY4R1oxSFBaVjV0VVFqY0tfbzgzVXBzQ2lCdWVORGpyMkhqVEhLRVMwNkxvbm5LbU5VZmlCWDR3QUlxekN6dGVYX2VwcUdWUHpvLVFwcXhBPT0='
+
+In [12]: import base64
+
+In [13]: base64.b64decode(s)
+Out[13]: b'\xad\xad\xf1-W\xc9\x01\xf7\x84\x1fs\x13gAAAAABjWe9uYMUST6l8VLnbX_h0H-20vwPMYAa_f6q6drh0fAOC8cWt6jf6B9UlaG863mKXhvO6447By9F8GZ1HPZV5tUQjcK_o83UpsCiBueNDjr2HjTHKES06LonnKmNUfiBX4wAIqzCzteX_epqGVPzo-QpqxA=='
+
+In [14]: io.loads(s, format='base64')
+Out[14]: b'\xad\xad\xf1-W\xc9\x01\xf7\x84\x1fs\x13gAAAAABjWe9uYMUST6l8VLnbX_h0H-20vwPMYAa_f6q6drh0fAOC8cWt6jf6B9UlaG863mKXhvO6447By9F8GZ1HPZV5tUQjcK_o83UpsCiBueNDjr2HjTHKES06LonnKmNUfiBX4wAIqzCzteX_epqGVPzo-QpqxA=='
+
+In [15]: io.loads(s, format='base64', password='python123')
+Out[15]: b'{"January": 1, "February": 2, "March": 3, "April": 4}'
+
+In [16]:
+```
 
 
 ## class aDict
