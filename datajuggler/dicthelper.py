@@ -830,8 +830,6 @@ def d_traverse(
             callback(obj, key, value, *args, parents=parents, **kwargs)
             d_traverse(value, callback, *args, parents=parents, **kwargs)
             parents.pop()
-        else:
-            callback(obj, None, None, *args, parents=parents, **kwargs)
 
     def _traverse_list(
             obj: Union[list, tuple],
