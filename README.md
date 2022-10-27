@@ -10,6 +10,9 @@
   https://github.com/iisaka51/datajuggler/blob/main/datajuggler_logo.png" alt="Datajuggler logo" align="center">
   -->
 </p>
+<p align="center" style="margin-bottom: 0px !important;">
+<sub><sub>source: www.irasutoya.com</sub></sub>
+</p>
 
 # DataJuggler
 
@@ -3265,6 +3268,13 @@ using TypeValidator not necessary including typing module.
  - `is_str_alpha(cls, obj: Any)`
  - `is_str_financial_number(cls, obj: Any)`
  - `is_str_emoji(cls, obj: Any)`
+ - `is_bytes(cls, obj: Any)`
+ - `is_bytes_not_empty(cls, obj: Any)`
+ - `is_made_by_pydantic(cls, obj: Any)`
+ - `is_made_by_dataclass(cls, obj: Any)`
+ - `is_made_by_namedtuple(cls, obj: Any)`
+ - `is_made_by_typing_namedtuple(cls, obj: Any)`
+ - `is_made_by_collections_namedtuple(cls, obj: Any)`
 
 Using TypeValidator class no need to include typing module compare with objects.
 
@@ -3300,10 +3310,10 @@ In [6]:
 ```python
 In [1]: from datajuggler import StrCase
 
-In [2]: c = StrCase()
+In [2]: c = StrCase('The sky is the limits')
 
 In [3]: c.show_supported_case()
-Out[3]:
+Out[4]:
 {'case': 'sample',
  'snake': 'convert_case',
  'kebab': 'convert-case',
@@ -3315,19 +3325,12 @@ Out[3]:
  'lower': 'convert case',
  'upper': 'CONVERT CASE'}
 
-In [5]: c.convert_case('The sky is the limits')
+In [4]: c.convert_case('snake')
 Out[4]: 'the_sky_is_the_limits'
 
-In [5]: c.convert_case('sentence', 'The sky is the limits')
-Out[5]: 'The sky is the limits'
+In [5]: c.convert_case('camel')
+Out[5]: 'theSkyIsTheLimits'
 
-In [6]: c.convert_case('const', 'The sky is the limits')
-Out[6]: 'THE_SKY_IS_THE_LIMITS'
-
-In [7]: c.convert_case('camel', ['Good Morning','Thank you'])
-Out[7]: ['goodMorning', 'thankYou']
-
-In [8]:
 ```
 
 `StrCase` class accept str, list, dict objects for inputs.
