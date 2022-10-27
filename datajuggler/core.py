@@ -791,7 +791,7 @@ class aDict(IODict):
 
     def freeze(self, shouldFreeze=True):
         """ Freeze this object.  """
-        def _freeze(obj, k, v, shouldFreeze, *args, **kwargs):
+        def _freeze(obj, *nargs, shouldFreeze=True, **kwargs):
             if hasattr(obj, '__frozen'):
                 object.__setattr__(obj, '__frozen', shouldFreeze)
 
