@@ -137,7 +137,8 @@ In [12]: try:
     ...:     hash(a)
     ...: except AttributeError as e:
     ...:     print(e)
-    ...: unhashable not frozen object.
+    ...:
+unhashable not frozen object.
 
 In [13]:
 ```
@@ -2615,8 +2616,8 @@ ef d_traverse(
 Traverse dict or list and apply callback function.
 callback function will be called as follows.
 
-  - `callback(obj, key, value, parents=parents, *args,  **kwargs)`
-  - `callback(obj, index, value, parents=parents, *args,  **kwargs)`
+  - `callback(obj, key, value, *args, parents=parents, **kwargs)`
+  - `callback(obj, index, value, *args, parents=parents, **kwargs)`
 
 `parantes` can pass to Keylist().
 
@@ -2643,8 +2644,9 @@ Out[3]:
  'b': {'x': 8, 'y': 12, 'z': {'ok': 14}},
  'c': {'x': 18, 'y': 20, 'z': {'ok': 24}}}
 
-In [4]: paths=[]
-   ...: def func(obj, key, val, parents, *args, **kwargs):
+In [4]: from datajuggler import Keylists
+   ...: paths=[]
+   ...: def func(obj, key, val, *args, parents, **kwargs):
    ...:     global paths
    ...:     if not isinstance(val, dict):
    ...:         obj[key] = val + 1
@@ -2660,7 +2662,7 @@ Out[5]:
 
 In [6]: data = [ 100, [200, [300, 310], 210], 110]
    ...:
-   ...: def func(obj, index, val, parents, *args, **kwargs):
+   ...: def func(obj, index, val, *args, parents, **kwargs):
    ...:     if not isinstance(val, list):
    ...:         obj[index] = val + 1000
    ...:
