@@ -7,8 +7,10 @@ from collections import OrderedDict
 from collections.abc import (
     Mapping, KeysView, ValuesView, ItemsView, Sequence
 )
+from functools import total_ordering
 
 import re
+import uuid
 from datetime import datetime, date, time
 from decimal import Decimal
 from datajuggler.keys import Keylist, Keypath
@@ -86,15 +88,204 @@ def validate_DictAction(
             available_args = [x.value for x in get_args(DictActionType)]
             raise ValueError(f"DictAction must be '{available_args}'.")
 
+@total_ordering
+class Min(object):
+    """
+    An object that is less than any other object (except itself).
+    Inspired by https://pypi.python.org/pypi/Extremes
+    Examples::
 
-class TypeValidator(object):
-    regex = re.compile("").__class__
+        >>> import sys
+
+        >>> Min < -sys.maxint
+        True
+
+        >>> Min < None
+        True
+
+        >>> Min < ''
+        True
+    """
+    def __lt__(self, other):
+        if other is Min:
+            return False
+        return True
+
+@total_ordering
+class Max(object):
+    """
+    An object that is greater than any other object (except itself).
+    Inspired by https://pypi.python.org/pypi/Extremes
+
+    Examples::
+
+        >>> import sys
+
+        >>> Max > Min
+        True
+
+        >>> Max > sys.maxint
+        True
+
+        >>> Max > 99999999999999999
+        True
+    """
+    def __gt__(self, other):
+        if other is Max:
+            return False
+        return True
+
+
+
+class ValueValidator(object):
+    """ Return whether or not given value is a valid hash.
+    currently, support hash are:
+    md5, sha1, sha224, sha256, sha512
+    """
+    Min = Min()
+    Max = Max()
+
     re_uuid = re.compile(
         "^([0-9a-f]{32}){1}$|^([0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}){1}$",
         flags=re.IGNORECASE,
     )
-    re_financial_number = re.compile(r"(?=\d+,\d+).*")
+    # See Also: https://jex.im/regulex/#!flags=&re=%5E%5B-%2B%5D%3F%5Cd*(%3F%3A(%5B.%2C%20%5D)(%3F%3A%5Cd%7B3%7D%5C1)*%5Cd%7B3%7D)%3F(%3F%3A%5B.%5D%5Cd*)%3F
+    re_financial_number = re.compile(
+        r'^[-+]?\d*(?:([., ])(?:\d{3}\1)*\d{3})?(?:[.]\d*)?'  )
 
+    re_md5 = re.compile(
+        r"^[0-9a-f]{32}$",
+        re.IGNORECASE
+    )
+    re_sha1 = re.compile(
+        r"^[0-9a-f]{40}$",
+        re.IGNORECASE
+    )
+    re_sha224 = re.compile(
+        r"^[0-9a-f]{56}$",
+        re.IGNORECASE
+    )
+    re_sha256 = re.compile(
+        r"^[0-9a-f]{64}$",
+        re.IGNORECASE
+    )
+    re_sha512 = re.compile(
+        r"^[0-9a-f]{128}$",
+        re.IGNORECASE
+    )
+
+    @classmethod
+    def is_md5(cls, value):
+        v =  ( value and isinstance(value, str)
+                 and cls.re_md5.match(value) )
+        return True if v else False
+
+    @classmethod
+    def is_sha1(cls, value):
+        v =  ( value and isinstance(value, str)
+                 and cls.re_sha1.match(value) )
+        return True if v else False
+
+    @classmethod
+    def is_sha224(cls, value):
+        v = ( value and isinstance(value, str)
+              and cls.re_sha224.match(value) )
+        return True if v else False
+
+    @classmethod
+    def is_sha256(cls, value):
+        v =  ( value and isinstance(value, str)
+               and cls.re_sha256.match(value) )
+        return True if v else False
+
+    @classmethod
+    def is_sha512(cls, value):
+        v = ( value and isinstance(value, str)
+              and cls.re_sha512.match(value) )
+        return True if v else False
+
+    @classmethod
+    def is_financial_number(cls, value: Any):
+        v =  ( value and isinstance(value, str)
+               and cls.re_financial_number.match(value) )
+        return True if v else False
+
+    @classmethod
+    def is_uuid(cls, value: Any):
+        value = str(value) if isinstance(value, uuid.UUID) else value
+        v =  ( value and isinstance(value, str)
+               and cls.re_uuid.match(value) )
+        return True if v else False
+
+    @classmethod
+    def is_truthy(cls,
+            value: Any,
+        ) ->bool:
+        """Validate that given value is not a falsey value."""
+        return value and (not isinstance(value, str) or value.strip())
+
+    @classmethod
+    def is_length(cls,
+            value: Any,
+            min: Optional[int]=None,
+            max: Optional[int]=None,
+            thrown_error: bool=False
+        ) ->bool:
+        """Validate that a the length of given objects
+            is within a specified range.
+        """
+
+        if (  (min is not None and min < 0)
+              or (max is not None and max < 0) ):
+            if thrown_error:
+                raise AssertionError(
+                    '`min` and `max` need to be greater than zero.'
+                )
+            else:
+                return False
+        try:
+            _len = len(value)
+        except TypeError as e:
+            if thrown_error:
+                raise TypeError(e)
+            else:
+                return False
+        return cls.is_between(_len, min=min, max=max,
+                              thrown_error=thrown_error)
+
+
+    @classmethod
+    def is_between(cls,
+            value: Any,
+            min: Optional[int]=None,
+            max: Optional[int]=None,
+            thrown_error: bool=False
+        ) ->bool:
+        """Validate that a number is between minimum and/or maximum value.
+        """
+        if min is None and max is None:
+            if thrown_error:
+                raise AssertionError(
+                    'At least one of `min` or `max` must be specified.'
+                )
+            else:
+                return False
+        if min is None:
+            min = cls.Min
+        if max is None:
+            max = cls.Max
+        try:
+            min_gt_max = min > max
+        except TypeError:
+            min_gt_max = max < min
+        if min_gt_max:
+            raise AssertionError('`min` cannot be more than `max`.')
+
+        return min <= value and max >= value
+
+
+class TypeValidator(object):
+    regex = re.compile("").__class__
 
     @classmethod
     def is_bool(cls, obj: Any):
@@ -295,7 +486,7 @@ class TypeValidator(object):
 
     @classmethod
     def is_uuid(cls, obj: Any):
-        return obj and isinstance(obj, str) and cls.re_uuid.match(obj)
+        return obj and isinstance(obj, uuid.UUID)
 
     @classmethod
     def is_str_alnum(cls, obj: Any):
@@ -315,9 +506,6 @@ class TypeValidator(object):
                 False
         return True if is_alpha(obj) else False
 
-    @classmethod
-    def is_str_financial_number(cls, obj: Any):
-        return obj and isinstance(obj, str) and cls.re_financial_number.match(obj)
 
     @classmethod
     def is_str_emoji(cls, obj: Any):

@@ -60,6 +60,8 @@ This project is inspired by follow greate projects.
    Convert case for object(s).
  - class TypeValidator
    drop in replace for isinstance() for convinient.
+ - class ValueValidator
+   validator for value.
  - class AbstractSerializer
    factory class for custom serializer
  - class AbstractClassSerializer
@@ -101,6 +103,7 @@ otherwise raise NotImplementedError when function call it.
 
 aDict allow to access using dot notation for values of dictionary.
 and support freeze/unfreeze object.
+  validator for value.
 
 ```python
 In [1]: from datajuggler import aDict, uDict, iList
@@ -3299,6 +3302,101 @@ In [5]: _type.is_dict_keys(keys)
 Out[5]: True
 
 In [6]:
+```
+
+## class ValueValidator
+
+ - `is_md5(cls, value: Any):
+ - `is_sha1(cls, value: Any):
+ - `is_sha224(cls, value: Any):
+ - `is_sha256(cls, value: Any):
+ - `is_sha512(cls, value: Any):
+ - `is_financial_number(cls, value: Any):
+ - `is_uuid(cls, value: Any):
+ - `is_truthy(cls, value: Any)
+ - `is_length(cls, value: Any, min=None, max=None, thrown_error=False)
+ - `is_between(cls, value: Any, min=None, max=None, thrown_error=False)
+
+```python
+In [1]: from datajuggler.validator import ValueValidator as _value
+
+In [2]: import hashlib
+
+In [3]: data = 'datajuggler'
+
+In [4]: hash_str = hashlib.md5(data.encode()).hexdigest()
+   ...: assert _value.is_md5(hash_str) == True
+   ...: assert _value.is_md5(data) == False
+
+In [5]: hash_str = hashlib.sha1(data.encode()).hexdigest()
+   ...: assert _value.is_sha1(hash_str) == True
+   ...: assert _value.is_sha1(data) == False
+
+In [6]: hash_str = hashlib.sha224(data.encode()).hexdigest()
+   ...: assert _value.is_sha224(hash_str) == True
+   ...: assert _value.is_sha224(data) == False
+
+In [7]: hash_str = hashlib.sha256(data.encode()).hexdigest()
+   ...: assert _value.is_sha256(hash_str) == True
+   ...: assert _value.is_sha256(data) == False
+
+In [8]: hash_str = hashlib.sha512(data.encode()).hexdigest()
+   ...: assert _value.is_sha512(hash_str) == True
+   ...: assert _value.is_sha512(data) == False
+
+In [9]: assert _value.is_between(10, 2, 10) == True
+   ...: assert _value.is_between(10, 2, 20) == True
+   ...: assert _value.is_between(10, None, 20) == True
+   ...: assert _value.is_between(10, None, None) == False
+   ...: assert _value.is_between(10, 1, None) == True
+   ...: assert _value.is_between(10, -1, None) == True
+   ...: assert _value.is_between(10, 10, None) == True
+
+In [10]: data = 'datajuggler'
+    ...: assert _value.is_length(data, 2, 10) == False
+    ...: assert _value.is_length(data, 2, 11) == True
+    ...: assert _value.is_length(data, None, 11) == True
+    ...: assert _value.is_length(data, None, None) == False
+    ...: assert _value.is_length(data, 1, None) == True
+    ...: assert _value.is_length(data, -1, None) == False
+    ...: assert _value.is_length(data, 11, None) == True
+    ...:
+
+In [11]: data = list([1,2,3,4,5,6,7,8,9,10,11])
+    ...: assert _value.is_length(data, 2, 10) == False
+    ...: assert _value.is_length(data, 2, 11) == True
+    ...: assert _value.is_length(data, None, 11) == True
+    ...: assert _value.is_length(data, None, None) == False
+    ...: assert _value.is_length(data, 1, None) == True
+    ...: assert _value.is_length(data, -1, None) == False
+    ...: assert _value.is_length(data, 11, None) == True
+
+In [12]: data = range(11)
+    ...: assert _value.is_length(data, 2, 10) == False
+    ...: assert _value.is_length(data, 2, 11) == True
+    ...: assert _value.is_length(data, None, 11) == True
+    ...: assert _value.is_length(data, None, None) == False
+    ...: assert _value.is_length(data, 1, None) == True
+    ...: assert _value.is_length(data, -1, None) == False
+    ...: assert _value.is_length(data, 11, None) == True
+
+In [13]: import uuid
+
+In [14]: data = uuid.uuid4()
+    ...: assert _value.is_uuid(data) == True
+    ...: assert _value.is_uuid('datajuggler') == False
+
+In [15]: assert _value.is_financial_number('1') == True
+    ...: assert _value.is_financial_number('12') == True
+    ...: assert _value.is_financial_number('123') == True
+    ...: assert _value.is_financial_number('1,234') == True
+    ...: assert _value.is_financial_number('-1,234') == True
+    ...: assert _value.is_financial_number('-1234') == True
+    ...: assert _value.is_financial_number('0.12') == True
+    ...: assert _value.is_financial_number('.12') == True
+    ...: assert _value.is_financial_number('12.') == True
+
+In [16]:
 ```
 
 

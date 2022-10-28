@@ -6,6 +6,8 @@
 # sys.stdin = codecs.getreader('utf_8')(sys.stdin)
 
 import re
+import hashlib
+import uuid
 
 from datetime import datetime
 from collections import OrderedDict, namedtuple
@@ -16,6 +18,7 @@ import pytest
 
 from datajuggler import Keylist, Keypath
 from datajuggler.validator import TypeValidator as _type
+from datajuggler.validator import ValueValidator as _value
 from datajuggler.validator import (
     validate_DictItem, validate_DictAction
 )
@@ -231,8 +234,10 @@ class TestClass:
         data = (1,2,3)
         assert _type.is_tuple_not_empty(data) == True
 
-    def test_is_uuid(self):
-        pass
+    def test_type_is_uuid(self):
+        data = uuid.uuid4()
+        assert _type.is_uuid(data) == True
+        assert _type.is_uuid('datajuggler') == False
 
     def test_is_str_alpha_case01(self):
         assert ( _type.is_str_alpha('iisaka')
@@ -334,3 +339,88 @@ class TestClass:
 
     def test_is_made_by_pydantic(self):
         pass
+
+    def test_is_md5(self):
+        data = 'datajuggler'
+        hash_str = hashlib.md5(data.encode()).hexdigest()
+        assert _value.is_md5(hash_str) == True
+        assert _value.is_md5(data) == False
+
+    def test_is_sha1(self):
+        data = 'datajuggler'
+        hash_str = hashlib.sha1(data.encode()).hexdigest()
+        assert _value.is_sha1(hash_str) == True
+        assert _value.is_sha1(data) == False
+
+    def test_is_sha224(self):
+        data = 'datajuggler'
+        hash_str = hashlib.sha224(data.encode()).hexdigest()
+        assert _value.is_sha224(hash_str) == True
+        assert _value.is_sha224(data) == False
+
+    def test_is_sha256(self):
+        data = 'datajuggler'
+        hash_str = hashlib.sha256(data.encode()).hexdigest()
+        assert _value.is_sha256(hash_str) == True
+
+    def test_is_sha512(self):
+        data = 'datajuggler'
+        hash_str = hashlib.sha512(data.encode()).hexdigest()
+        assert _value.is_sha512(hash_str) == True
+        assert _value.is_sha512(data) == False
+
+    def test_is_between(self):
+        assert _value.is_between(10, 2, 10) == True
+        assert _value.is_between(10, 2, 20) == True
+        assert _value.is_between(10, None, 20) == True
+        assert _value.is_between(10, None, None) == False
+        assert _value.is_between(10, 1, None) == True
+        assert _value.is_between(10, -1, None) == True
+        assert _value.is_between(10, 10, None) == True
+
+    def test_is_length_case01(self):
+        data = 'datajuggler'
+        assert _value.is_length(data, 2, 10) == False
+        assert _value.is_length(data, 2, 11) == True
+        assert _value.is_length(data, None, 11) == True
+        assert _value.is_length(data, None, None) == False
+        assert _value.is_length(data, 1, None) == True
+        assert _value.is_length(data, -1, None) == False
+        assert _value.is_length(data, 11, None) == True
+
+    def test_is_length_case02(self):
+        data = list([1,2,3,4,5,6,7,8,9,10,11])
+        assert _value.is_length(data, 2, 10) == False
+        assert _value.is_length(data, 2, 11) == True
+        assert _value.is_length(data, None, 11) == True
+        assert _value.is_length(data, None, None) == False
+        assert _value.is_length(data, 1, None) == True
+        assert _value.is_length(data, -1, None) == False
+        assert _value.is_length(data, 11, None) == True
+
+    def test_is_length_case03(self):
+        data = range(11)
+        assert _value.is_length(data, 2, 10) == False
+        assert _value.is_length(data, 2, 11) == True
+        assert _value.is_length(data, None, 11) == True
+        assert _value.is_length(data, None, None) == False
+        assert _value.is_length(data, 1, None) == True
+        assert _value.is_length(data, -1, None) == False
+        assert _value.is_length(data, 11, None) == True
+
+    def test_value_is_uuid(self):
+        data = uuid.uuid4()
+        assert _value.is_uuid(data) == True
+        assert _value.is_uuid('datajuggler') == False
+
+    def test_value_is_financial_number(self):
+        assert _value.is_financial_number('1') == True
+        assert _value.is_financial_number('12') == True
+        assert _value.is_financial_number('123') == True
+        assert _value.is_financial_number('1,234') == True
+        assert _value.is_financial_number('-1,234') == True
+        assert _value.is_financial_number('-1234') == True
+        assert _value.is_financial_number('+1234') == True
+        assert _value.is_financial_number('0.12') == True
+        assert _value.is_financial_number('.12') == True
+        assert _value.is_financial_number('12.') == True
