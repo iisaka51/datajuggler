@@ -9,7 +9,7 @@ from typing import (
     )
 import copy
 import json
-from datajuggler.strings import is_match_string, searchstr
+from datajuggler.strings import is_match_string, searchstr, copy_docstring
 
 from datajuggler.validator import (
     DictAction, DictActionType,
@@ -950,6 +950,7 @@ class uDict(IODict):
             doc = f"{obj.__doc__}"
         return doc
 
+    @copy_docstring(d.d_clean)
     def clean(self,
             obj: Optional[dict]=None,
             strings=True,
@@ -958,6 +959,8 @@ class uDict(IODict):
             inplace: bool=False,
             factory: Optional[Type[dict]]=None,
         ):
+        """If obj is omitted, self is used.  """
+
         obj = obj if obj or obj == {} else self
         factory = factory or type(self)
         new =  d.d_clean(obj, strings, collections,
@@ -968,21 +971,22 @@ class uDict(IODict):
         else:
             return factory(new)
 
-    clean.__doc__ = _get_docstring(d.d_clean, 'obj')
-
+    @copy_docstring(d.d_clone)
     def clone(self,
             obj: Optional[dict]=None,
             empty: bool=False,
             memo: Optional[dict]=None,
             factory: Optional[Type[dict]]=None,
         ):
+        """If obj is omitted, self is used.  """
+
         obj = obj if obj or obj == {} else self
         factory = factory or type(self)
         new = d.d_clone(obj, empty, memo)
         return factory(new)
 
-    clone.__doc__ = _get_docstring(d.d_clone, 'obj')
 
+    @copy_docstring(d.d_compare)
     def compare(self,
         d1: dict,
         d2: Optional[dict]=None,
@@ -990,11 +994,12 @@ class uDict(IODict):
         keys: Optional[Union[Hashable,list, Keylist, Keypath]]=None,
         thrown_error: bool=False,
         ):
+        """If d2 is omitted, self is used.  """
         d2 = d2 or self
         return d.d_compare(d1, d2, keys=keys, thrown_error=thrown_error)
 
-    compare.__doc__ = _get_docstring(d.d_compare, 'd2')
 
+    @copy_docstring(d.d_counts)
     def counts(self,
             pattern: Union[Pattern, Hashable, Sequence],
             obj: Optional[dict]=None,
@@ -1003,39 +1008,41 @@ class uDict(IODict):
             wild: bool=False,
             verbatim: bool=False,
         ) ->Union[int, dict]:
+        """If obj is omitted, self is used.  """
 
         obj = obj if obj or obj == {} else self
         return d.d_counts(obj, pattern, count_for=count_for,
                         wild=wild, verbatim=verbatim)
 
-    counts.__doc__ = _get_docstring(d.d_counts, 'obj')
-
-
+    @copy_docstring(d.d_filter)
     def filter(self,
             predicate: Callable,
             obj: Optional[dict]=None,
             *,
             factory: Optional[Type[dict]]=None,
         ):
+        """If obj is omitted, self is used.  """
+
         obj = obj if obj or obj == {} else self
         factory = factory or type(self)
         new = factory()
 
         return d.d_filter(predicate, obj, factory=factory)
 
-    filter.__doc__ = _get_docstring(d.d_filter, 'obj')
 
+    @copy_docstring(d.d_groupby)
     def groupby( self,
             seq: list,
             key: Hashable,
             *,
             factory: Optional[Type[dict]]=None,
         ) -> dict:
+        """If obj is omitted, self is used.  """
+
         factory = factory or type(self)
         return d.d_groupby(seq, key, factory=factory)
 
-    groupby.__doc__ = _get_docstring(d.d_groupby)
-
+    @copy_docstring(d.d_invert)
     def invert( self,
             obj: Optional[dict]=None,
             flat: bool=False,
@@ -1043,13 +1050,14 @@ class uDict(IODict):
             inplace: bool=False,
             factory: Optional[Type[dict]]=None,
         ) ->dict:
+        """If obj is omitted, self is used.  """
+
         obj = obj if obj or obj == {} else self
         factory = factory or type(self)
         return d.d_invert(obj, flat=flat,
                                inplace=inplace, factory=factory)
 
-    invert.__doc__ = _get_docstring(d.d_invert, 'obj')
-
+    @copy_docstring(d.d_map)
     def map(self,
             func: Callable,
             obj: Optional[dict]=None,
@@ -1058,6 +1066,7 @@ class uDict(IODict):
             inplace: bool=False,
             factory: Optional[Type[dict]]=None,
         ) ->dict:
+        """If obj is omitted, self is used.  """
 
         obj = obj if obj or obj == {} else self
         factory = factory or type(self)
@@ -1065,8 +1074,7 @@ class uDict(IODict):
         return d.d_map(func, obj, map_for=map_for,
                        inplace=inplace, factory=factory)
 
-    map.__doc__ = _get_docstring(d.d_map, 'obj')
-
+    @copy_docstring(d.d_merge)
     def merge(self,
             others: list,
             obj: Optional[dict]=None,
@@ -1076,6 +1084,7 @@ class uDict(IODict):
             inplace: bool=False,
             factory: Optional[Type[dict]]=None,
         ) ->dict:
+        """If obj is omitted, self is used.  """
 
         obj = obj if obj or obj == {} else self
         factory = factory or type(self)
@@ -1084,8 +1093,8 @@ class uDict(IODict):
                          overwrite=overwrite, concat=concat,
                          inplace=inplace, factory=factory)
 
-    merge.__doc__ = _get_docstring(d.d_merge, 'obj')
 
+    @copy_docstring(d.d_move)
     def move(self,
             key_src: Union[str, list],
             key_dest: Union[str, list],
@@ -1095,6 +1104,8 @@ class uDict(IODict):
             inplace: bool=False,
             factory: Optional[Type[dict]]=None,
         ) ->dict:
+        """If obj is omitted, self is used.  """
+
         obj = obj if obj or obj == {} else self
         factory = factory or type(self)
         new = d.d_move(obj, key_src, key_dest,
@@ -1102,9 +1113,8 @@ class uDict(IODict):
                         inplace=False, factory=dict)
         return d._dict_updator(obj, new, inplace=inplace, factory=factory)
 
-    move.__doc__ = _get_docstring(d.d_move, 'obj')
 
-
+    @copy_docstring(d.d_nest)
     def nest(self,
         items: tuple,
         id_key: Union[str, list],
@@ -1114,9 +1124,8 @@ class uDict(IODict):
 
        return d.d_nest(items, id_key, parent_id_key, children_key)
 
-    nest.__doc__ = _get_docstring(d.d_nest)
 
-
+    @copy_docstring(d.d_remove)
     def remove(self,
             keys: Union[list, Hashable],
             obj: Optional[dict]=None,
@@ -1124,13 +1133,15 @@ class uDict(IODict):
             inplace: bool=False,
             factory: Optional[Type[dict]]=None,
         ):
+        """If obj is omitted, self is used.  """
+
         obj = obj if obj or obj == {} else self
         factory = factory or type(self)
         return d.d_remove(obj, keys,
                       inplace=inplace, factory=factory)
 
-    remove.__doc__ = _get_docstring(d.d_remove, 'obj')
 
+    @copy_docstring(d.d_rename)
     def rename(self,
             key: Union[Hashable,dict],
             key_new: Optional[Hashable]=None,
@@ -1142,6 +1153,8 @@ class uDict(IODict):
             inplace: bool=False,
             factory: Optional[Type[dict]]=None,
         ) ->dict:
+        """If obj is omitted, self is used.  """
+
         obj = obj if obj or obj == {} else self
         factory = factory or type(self)
         new = d.d_rename(obj, key, key_new,
@@ -1150,9 +1163,8 @@ class uDict(IODict):
         return d._dict_updator(obj, new, inplace=inplace, factory=factory)
 
 
-    rename.__doc__ = _get_docstring(d.d_rename, 'obj')
 
-
+    @copy_docstring(d.get_keys)
     def get_keys(self,
             obj: Optional[dict]=None,
             *,
@@ -1160,22 +1172,25 @@ class uDict(IODict):
             output_as: Optional[DictKeyType]=None,
             separator: str=Default_Keypath_Separator,
         ) -> list:
+        """If obj is omitted, self is used.  """
+
         obj = obj if obj or obj == {} else self
         return d.get_keys(obj, indexes=indexes,
                                output_as=output_as,
                                separator=separator)
 
-    get_keys.__doc__ = _get_docstring(d.get_keys, 'obj')
-
+    @copy_docstring(d.get_values)
     def get_values(self,
             keys: Union[Hashable, Sequence],
             obj: Optional[Union[dict, Sequence]] = None,
         ) -> Union[list, dict]:
+        """If obj is omitted, self is used.  """
+
         obj = obj if obj or obj == {} else self
         return d.get_values(obj, keys)
 
-    get_values.__doc__ = _get_docstring(d.get_values, 'obj')
 
+    @copy_docstring(d.get_items)
     def get_items(self,
             loc: Union[Hashable, Keylist, Keypath],
             value: Optional[Any]=None,
@@ -1184,14 +1199,16 @@ class uDict(IODict):
             func: Optional[Callable]=None,
             factory: Optional[Type[dict]]=None,
         ):
+        """If obj is omitted, self is used.  """
+
         obj = obj if obj or obj == {} else self
         factory = factory or type(self)
         new = factory(obj)
         new = d.get_items(new, loc, value, func=func, factory=factory)
         return new
 
-    get_items.__doc__ = _get_docstring(d.get_items, 'obj')
 
+    @copy_docstring(d.pop_items)
     def pop_items(self,
             loc: Hashable,
             value: Optional[Any]=None,
@@ -1200,13 +1217,15 @@ class uDict(IODict):
             func: Optional[Callable]=None,
             factory: Optional[Type[dict]]=None,
         ):
+        """If obj is omitted, self is used.  """
+
         obj = obj if obj or obj == {} else self
         factory = factory or type(self)
         item = d.pop_items(obj, loc, value, func=func, factory=factory)
         return item
 
-    pop_items.__doc__ = _get_docstring(d.pop_items, 'obj')
 
+    @copy_docstring(d.del_items)
     def del_items(self,
             loc: Union[Hashable, Keylist, Keypath],
             obj: Optional[dict]=None,
@@ -1214,13 +1233,15 @@ class uDict(IODict):
             inplace: bool=False,
             factory: Optional[Type[dict]]=None,
         ):
+        """If obj is omitted, self is used.  """
+
         obj = obj if obj or obj == {} else self
         factory = factory or type(self)
 
         return d.del_items(obj, loc, inplace=inplace, factory=dict)
 
-    del_items.__doc__ = _get_docstring(d.del_items, 'obj')
 
+    @copy_docstring(d.set_items)
     def set_items( self,
             loc: Union[str, Sequence],
             value: Any,
@@ -1229,13 +1250,15 @@ class uDict(IODict):
             *,
             factory: Optional[Type[dict]]=None,
         ):
+        """If obj is omitted, self is used.  """
+
         obj = obj if obj or obj == {} else self
         factory = factory or type(self)
 
         d.set_items(obj, loc, value, func=func, factory=factory)
 
-    set_items.__doc__ = _get_docstring(d.set_items, 'obj')
 
+    @copy_docstring(d.d_find)
     def find( self,
             keys: Union[list,Hashable],
             default: Optional[Any]=None,
@@ -1243,12 +1266,13 @@ class uDict(IODict):
             *,
             first_one: bool=True
         ):
+        """If obj is omitted, self is used.  """
+
         obj = obj if obj or obj == {} else self
         return d.d_find(obj, keys, default, first_one)
 
 
-    find.__doc__ = _get_docstring(d.d_find, 'obj')
-
+    @copy_docstring(d.d_flatten)
     def flatten( self,
             obj: Optional[dict]=None,
             *,
@@ -1256,13 +1280,15 @@ class uDict(IODict):
             inplace: bool=False,
             factory: Optional[Type[dict]]=None,
         ) -> dict:
+        """If obj is omitted, self is used.  """
+
         obj = obj if obj or obj == {} else self
         factory = factory or type(self)
         new =  d.d_flatten(obj, separator, inplace=False, factory=factory)
         return d._dict_updator(obj, new, inplace=inplace, factory=factory)
 
-    flatten.__doc__ = _get_docstring(d.d_flatten, 'obj')
 
+    @copy_docstring(d.d_unflatten)
     def unflatten( self,
             obj: Optional[dict]=None,
             default: Optional[Any]=None,
@@ -1271,19 +1297,22 @@ class uDict(IODict):
             inplace: bool=False,
             factory: Optional[Type[dict]]=None,
         ) -> dict:
+        """If obj is omitted, self is used.  """
+
         obj = obj if obj or obj == {} else self
         factory = factory or type(self)
         new =  d.d_unflatten(obj, default, separator,
                                   inplace=False, factory=factory)
         return d._dict_updator(obj, new, inplace=inplace, factory=factory)
 
-    unflatten.__doc__ = _get_docstring(d.d_unflatten, 'obj')
 
-
+    @copy_docstring(d.keylists)
     def keylists( self,
             obj: Optional[dict]=None,
             indexes: bool=False,
         ) -> list:
+        """If obj is omitted, self is used.  """
+
         obj = obj if obj or obj == {} else self
         keylists = []
         for k in d.keylists(obj, indexes):
@@ -1291,14 +1320,15 @@ class uDict(IODict):
         return keylists
 
 
-    keylists.__doc__ = _get_docstring(d.keylists, 'obj')
-
+    @copy_docstring(d.keypaths)
     def keypaths( self,
             obj: Optional[dict]=None,
             indexes: bool=False,
             *,
             separator: Optional[str]=None,
         ) -> list:
+        """If obj is omitted, self is used.  """
+
         obj = obj if obj or obj == {} else self
         separator = separator or self.keypath_separator
         kps = []
@@ -1306,8 +1336,8 @@ class uDict(IODict):
             kps.append(Keypath(kp, separator=separator))
         return kps
 
-    keypaths.__doc__ = _get_docstring(d.keypaths, 'obj')
 
+    @copy_docstring(d.d_search)
     def search( self,
             query: Pattern,
             obj: Optional[dict]=None,
@@ -1317,14 +1347,16 @@ class uDict(IODict):
             ignore_case: bool=False,
             use_keypath: bool=True,
         ):
+        """If obj is omitted, self is used.  """
+
         obj = obj if obj or obj == {} else self
         return d.d_search(obj, query,
                           search_for=search_for,
                           exact=exact,
                           ignore_case=ignore_case)
 
-    search.__doc__ = _get_docstring(d.d_search, 'obj')
 
+    @copy_docstring(d.d_sort)
     def sort( self,
             obj: Optional[dict]=None,
             *,
@@ -1333,13 +1365,15 @@ class uDict(IODict):
             inplace: bool=False,
             factory: Optional[Type[dict]]=None,
         ):
+        """If obj is omitted, self is used.  """
+
         obj = obj if obj or obj == {} else self
         factory = factory or type(self)
         return d.d_sort(obj, sort_by, reverse=reverse,
                            inplace=inplace, factory=factory)
-    sort.__doc__ = _get_docstring(d.d_sort, 'obj')
 
 
+    @copy_docstring(d.d_subset)
     def subset( self,
             keys: Union[str, list, tuple, Hashable],
             default: Optional[Any]=None,
@@ -1350,6 +1384,8 @@ class uDict(IODict):
             inplace: bool=False,
             factory: Optional[Type[dict]]=None,
         ):
+        """If obj is omitted, self is used.  """
+
         obj = obj if obj or obj == {} else self
         factory = factory or type(self)
         separator = separator or self.keypath_separator
@@ -1358,8 +1394,7 @@ class uDict(IODict):
                         separator=separator,
                         inplace=inplace, factory=factory)
 
-    subset.__doc__ = _get_docstring(d.d_subset, 'obj')
-
+    @copy_docstring(d.d_swap)
     def swap( self,
             key1: Hashable,
             key2: Hashable,
@@ -1368,14 +1403,15 @@ class uDict(IODict):
             inplace: bool=False,
             factory: Optional[dict]=None
         ) ->Optional[dict]:
+        """If obj is omitted, self is used.  """
+
         obj = obj if obj or obj == {} else self
         factory = factory or type(self)
         return d.d_swap(obj, key1, key2,
                         inplace=inplace, factory=factory)
 
-    swap.__doc__ = _get_docstring(d.d_swap, 'obj')
 
-
+    @copy_docstring(d.d_traverse)
     def traverse( self,
             callback: Callable,
             obj: Optional[Union[dict, list, tuple]]=None,
@@ -1383,19 +1419,21 @@ class uDict(IODict):
             *args: Any,
             **kwargs: Any,
         ):
+        """If obj is omitted, self is used.  """
+
         obj = obj if obj or obj == {} else self
         return d.d_traverse(obj, callback, parents, *args, **kwargs)
 
-    traverse.__doc__ = _get_docstring(d.d_traverse, 'obj')
 
-
+    @copy_docstring(d.d_unique)
     def unique( self,
             obj: Optional[dict]=None,
         ) -> list:
+        """If obj is omitted, self is used.  """
+
         obj = obj if obj or obj == {} else self
         return d.d_unique(obj)
 
-    unique.__doc__ = _get_docstring(d.d_unique, 'obj')
 
 
 class iList(list):

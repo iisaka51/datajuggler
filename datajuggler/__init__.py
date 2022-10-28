@@ -10,6 +10,9 @@ from datajuggler.utils import (
 from datajuggler.strings import (
     searchstr, substr, is_match_string, remove_accents,
 )
+from datajuggler.checkdigit import (
+    validate_checkdigit,  calc_checkdigit
+)
 
 __all__ = [
     "aDict",
@@ -29,4 +32,7 @@ __all__ = [
     "substr",
     "is_match_string",
     "remove_accents",
+    "validate_checkdigit",
+    "calc_checkdigit",
+
 ]

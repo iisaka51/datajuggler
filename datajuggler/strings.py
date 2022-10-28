@@ -121,3 +121,19 @@ def remove_words(
     else:
         return " ".join([word for word in give_string.split(" ") if word not in stopwords_list])
 
+
+def copy_docstring(copy_func: Callable) -> Callable:
+    """Copying the docstring of function onto another function by name
+
+    Example:
+        copy_docstring(self.copy_func)(self.func)
+        or
+        used as @copy_docstring(copy_func)
+
+    See Also: https://stackoverflow.com/questions/68901049/
+    """
+    def wrapper(func: Callable) -> Callable:
+        save_doc = func.__doc__ or ''
+        func.__doc__ = copy_func.__doc__ + save_doc
+        return func
+    return wrapper

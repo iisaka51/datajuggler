@@ -14,6 +14,8 @@ import uuid
 from datetime import datetime, date, time
 from decimal import Decimal
 from datajuggler.keys import Keylist, Keypath
+from datajuggler.checkdigit import validate_checkdigit
+from datajuggler.strings import copy_docstring
 
 try:
     from emoji import is_emoji
@@ -88,6 +90,7 @@ def validate_DictAction(
             available_args = [x.value for x in get_args(DictActionType)]
             raise ValueError(f"DictAction must be '{available_args}'.")
 
+
 @total_ordering
 class Min(object):
     """
@@ -136,8 +139,17 @@ class Max(object):
         return True
 
 
+class BaseValidator(object):
+    @classmethod
+    def is_truthy(cls,
+            value: Any,
+        ) ->bool:
+        """Validate that given value is not a falsey value."""
+        v =  value and (not isinstance(value, str) or value.strip())
+        return True if v else False
 
-class ValueValidator(object):
+
+class ValueValidator(BaseValidator):
     """ Return whether or not given value is a valid hash.
     currently, support hash are:
     md5, sha1, sha224, sha256, sha512
@@ -211,18 +223,24 @@ class ValueValidator(object):
         return True if v else False
 
     @classmethod
+    @copy_docstring(validate_checkdigit)
+    def is_valid_checkdigit(cls,
+            number: Any,
+            num_digits: Optional[int]=None,
+            weights: Optional[list]=None,
+        ):
+        v = validate_checkdigit(number,
+                           num_digits=num_digits, weights=weights)
+        return True if v else False
+
+
+    @classmethod
     def is_uuid(cls, value: Any):
         value = str(value) if isinstance(value, uuid.UUID) else value
         v =  ( value and isinstance(value, str)
                and cls.re_uuid.match(value) )
         return True if v else False
 
-    @classmethod
-    def is_truthy(cls,
-            value: Any,
-        ) ->bool:
-        """Validate that given value is not a falsey value."""
-        return value and (not isinstance(value, str) or value.strip())
 
     @classmethod
     def is_length(cls,
@@ -284,7 +302,7 @@ class ValueValidator(object):
         return min <= value and max >= value
 
 
-class TypeValidator(object):
+class TypeValidator(BaseValidator):
     regex = re.compile("").__class__
 
     @classmethod

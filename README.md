@@ -74,6 +74,7 @@ utilities for string manupulate helper functions.
  -  `rename_duplicates()` - Rename duplicated strings to append a number at the end.
  -  `split_chunks()` - Split iterable object into chunks.
  -  `urange()` - Return an object that produces a sequence of integes.
+ -  `copy_docstring` - Copying the docstring of function onto another function by name
 
 if pandas installed, follows functions are enabled.
 otherwise raise NotImplementedError when function call it.
@@ -3273,6 +3274,7 @@ using TypeValidator not necessary including typing module.
  - `is_str_alpha(cls, obj: Any)`
  - `is_str_financial_number(cls, obj: Any)`
  - `is_str_emoji(cls, obj: Any)`
+ - `is_truthy(cls, value: Any)
  - `is_bytes(cls, obj: Any)`
  - `is_bytes_not_empty(cls, obj: Any)`
  - `is_made_by_pydantic(cls, obj: Any)`
@@ -3312,6 +3314,7 @@ In [6]:
  - `is_sha256(cls, value: Any):
  - `is_sha512(cls, value: Any):
  - `is_financial_number(cls, value: Any):
+ - `is_valid_checkdigit(cls, value: Any, num_digits=None, weights=None):
  - `is_uuid(cls, value: Any):
  - `is_truthy(cls, value: Any)
  - `is_length(cls, value: Any, min=None, max=None, thrown_error=False)
@@ -3380,13 +3383,12 @@ In [12]: data = range(11)
     ...: assert _value.is_length(data, -1, None) == False
     ...: assert _value.is_length(data, 11, None) == True
 
-In [13]: import uuid
-
-In [14]: data = uuid.uuid4()
+In [13]: import uuis
+    ...: data = uuid.uuid4()
     ...: assert _value.is_uuid(data) == True
     ...: assert _value.is_uuid('datajuggler') == False
 
-In [15]: assert _value.is_financial_number('1') == True
+In [14]: assert _value.is_financial_number('1') == True
     ...: assert _value.is_financial_number('12') == True
     ...: assert _value.is_financial_number('123') == True
     ...: assert _value.is_financial_number('1,234') == True
@@ -3396,7 +3398,22 @@ In [15]: assert _value.is_financial_number('1') == True
     ...: assert _value.is_financial_number('.12') == True
     ...: assert _value.is_financial_number('12.') == True
 
-In [16]:
+In [15]: assert _value.is_valid_checkdigit(261009) == True
+   ...: assert _value.is_valid_checkdigit(261008) == False
+   ...: assert _value.is_valid_checkdigit(26100, 5) == True
+   ...: assert _value.is_valid_checkdigit(1100, 5) == True
+
+In [16]: assert _value.is_valid_checkdigit('261009') == True
+   ...: assert _value.is_valid_checkdigit('261008') == False
+   ...: assert _value.is_valid_checkdigit('26100', 5) == True
+   ...: assert _value.is_valid_checkdigit('1100', 5) == True
+
+In [17]: assert _value.is_valid_checkdigit(261009,
+   ...:                           weights=[6,5,4,3,2]) == True
+   ...: assert _value.is_valid_checkdigit('261009',
+   ...:                           weights=[6,5,4,3,2]) == True
+
+In [18]:
 ```
 
 
@@ -3805,6 +3822,54 @@ In [13]: data = { 1: 'one', 2: 'two', 3: 'three', 4: 'four' }
     ...: assert result == expect
 
 In [14]:
+```
+
+
+## copy_docstring()
+
+Copying the docstring of function onto another function by name
+The following is an example of a method definition in uDict.
+
+```python
+from datajuggler.strings import copy_docstring
+from datajuggler import dicthelper as d
+# ...
+class uDic(IODict):
+    # ...
+    @copy_docstring(d.d_counts)
+    def counts(self,
+            pattern: Union[Pattern, Hashable, Sequence],
+            obj: Optional[dict]=None,
+            *,
+            count_for: DictItemType=DictItem.KEY,
+            wild: bool=False,
+            verbatim: bool=False,
+        ) ->Union[int, dict]:
+        """If obj is omitted, self is used.  """
+
+        obj = obj if obj or obj == {} else self
+        return d.d_counts(obj, pattern, count_for=count_for,
+                        wild=wild, verbatim=verbatim)
+```
+
+
+```python
+In [3]: from datajuggler import dicthelper as d
+
+In [4]: print(d.d_counts.__doc__)
+Counts of keys or values
+       if pass `wild=True`, match substr and ignore_case.
+       if pass `verbatim=True`, counts as it is.
+
+In [5]: from datajuggler import uDict
+
+In [6]: print(uDict.counts.__doc__)
+Counts of keys or values
+       if pass `wild=True`, match substr and ignore_case.
+       if pass `verbatim=True`, counts as it is.
+    If obj is omitted, self is used.
+
+In [7]
 ```
 
 ## KNOWN PROBLEMS

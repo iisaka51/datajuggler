@@ -424,3 +424,45 @@ class TestClass:
         assert _value.is_financial_number('0.12') == True
         assert _value.is_financial_number('.12') == True
         assert _value.is_financial_number('12.') == True
+
+    def test_value_is_valid_checkdigit_case01(self):
+        assert _value.is_valid_checkdigit(261009) == True
+        assert _value.is_valid_checkdigit(261008) == False
+        assert _value.is_valid_checkdigit(26100, 5) == True
+        assert _value.is_valid_checkdigit(1100, 5) == True
+
+    def test_value_is_valid_checkdigit_case02(self):
+        assert _value.is_valid_checkdigit('261009') == True
+        assert _value.is_valid_checkdigit('261008') == False
+        assert _value.is_valid_checkdigit('26100', 5) == True
+        assert _value.is_valid_checkdigit('1100', 5) == True
+
+    def test_value_is_valid_checkdigit_case03(self):
+        assert _value.is_valid_checkdigit(261009,
+                                  weights=[6,5,4,3,2]) == True
+        assert _value.is_valid_checkdigit('261009',
+                                  weights=[6,5,4,3,2]) == True
+
+    def test_value_is_truthy(self):
+        assert _value.is_truthy(' ') == False
+        assert _value.is_truthy('datajuggler') == True
+        assert _value.is_truthy(1) == True
+        assert _value.is_truthy(0.2) == True
+        assert _value.is_truthy(-1) == True
+        assert _value.is_truthy(None) == False
+        assert _value.is_truthy(list()) == False
+        assert _value.is_truthy(dict()) == False
+        assert _value.is_truthy(dict(a=2)) == True
+        assert _value.is_truthy(list([1,2,3])) == True
+
+    def test_type_is_truthy(self):
+        assert _type.is_truthy(' ') == False
+        assert _type.is_truthy('datajuggler') == True
+        assert _type.is_truthy(1) == True
+        assert _type.is_truthy(0.2) == True
+        assert _type.is_truthy(-1) == True
+        assert _type.is_truthy(None) == False
+        assert _type.is_truthy(list()) == False
+        assert _type.is_truthy(dict()) == False
+        assert _type.is_truthy(dict(a=2)) == True
+        assert _type.is_truthy(list([1,2,3])) == True
