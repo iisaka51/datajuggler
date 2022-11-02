@@ -18,7 +18,7 @@
 
 This library provides utility classes and helper functions for data processing.
 This is spin-off project from [scrapinghelper](https://github.com/iisaka51/scrapinghelper).
-This project is inspired by follow greate projects.
+This project is inspired by follow great projects.
 
  - [python-benedict](https://github.com/fabiocaccamo/python-benedict)
  - [munch](https://github.com/Infinidat/munch)
