@@ -1183,7 +1183,7 @@ helper functions are defined in datajuggler.dicthelper for normal dict objects.
  - `d_counts()`
  - `d_filter()`
  - `d_groupby()`
-  - d_invert()`
+ - `d_invert()`
  - `d_map()`
  - `d_merge()`
  - `d_move()`
