@@ -18,6 +18,7 @@ SHORT_DESCRIPTION = "Utility for data juggling."
 requirements = [
     "multimethod>=1.8",
     "serialize>=0.2.1",
+    "cryptography>=36.0.0",
 ]
 
 setup(
