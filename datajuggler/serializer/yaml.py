@@ -22,6 +22,8 @@ except ImportError:  # pragma: no cover
         class Dumper(object):
             def represent_mapping(self):
                 raise NotImplementedError
+            def add_representer(self):
+                raise NotImplementedError
 
         class Loader(object):
             def construct_mapping(self):
