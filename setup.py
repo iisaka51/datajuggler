@@ -15,17 +15,14 @@ def get_version(rel_path):
 LONG_DESCRIPTION = (this_directory / "README.md").read_text()
 SHORT_DESCRIPTION = "Utility for data juggling."
 
-requirements = [
-    "multimethod>=1.8",
-    "serialize>=0.2.1",
-    "cryptography>=36.0.0",
-]
+def requires_from_file(filename):
+    return open(filename).read().splitlines()
 
 setup(
     name="datajuggler",
     version=get_version('datajuggler/versions.py'),
     license="MIT",
-    install_requirements=requirements,
+    install_requires=requires_from_file('requirements.txt'),,
     extras_require={
         'xml': ["xmltodict>=0.13.0"],
         'yaml': ["PyYAML>=6.0"],
