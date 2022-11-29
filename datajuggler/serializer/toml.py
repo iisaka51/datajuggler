@@ -12,7 +12,7 @@ try:
     toml_enable = True
 except ImportError:  # pragma: no cover
     toml_enable = False
-    toml = AbstractSerialiezr()
+    toml = AbstractSerializer()
 
 class TOMLSerializer(AbstractSerializer):
     def __init__(self):
