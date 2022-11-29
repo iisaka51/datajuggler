@@ -22,7 +22,7 @@ setup(
     name="datajuggler",
     version=get_version('datajuggler/versions.py'),
     license="MIT",
-    install_requires=requires_from_file('requirements.txt'),,
+    install_requires=requires_from_file('requirements.txt'),
     extras_require={
         'xml': ["xmltodict>=0.13.0"],
         'yaml': ["PyYAML>=6.0"],
