@@ -16,10 +16,11 @@ class CSVSerializer(AbstractSerializer):
         if kwargs.pop("quote", False):
             # TODO: add tests coverage
             kwargs.setdefault("quoting", csv.QUOTE_ALL)
+        encoding = kwargs.pop("encoding", None)
         columns = kwargs.pop("columns", None)
         columns_row = kwargs.pop("columns_row", True)
         if _type.is_bytes(s):
-            s = s.decode('utf-8')
+            s = s.decode(encoding)
         f = StringIO(s)
         r = csv.reader(f, **kwargs)
         ln = 0

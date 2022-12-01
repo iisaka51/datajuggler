@@ -471,7 +471,8 @@ def read_contents(s,
     elif is_dsn(s): # databse
         return list(read_database(s, **kwargs))
     elif validate_file(s, thrown_error=thrown_error):
-        return read_file(s, serialize=serialize, thrown_error=thrown_error)
+        return read_file(s, serialize=serialize,
+                             thrown_error=thrown_error, **kwargs)
     # one-line data?!
     return s
 
@@ -480,12 +481,13 @@ def read_url(
         url: str,
         encoding: str='utf-8',
         serialize: bool=False,
-        **options: Any
+        requests_options: dict={},
+        **kwargs: Any
     ):
     if not requests_installed:
         raise NotImplementedError("'requests' module is not installed.")
 
-    response = requests.get(url, **options)
+    response = requests.get(url, **requests_options)
     response.raise_for_status()
     contents = response.text
     if serialize:
@@ -493,7 +495,7 @@ def read_url(
             format = pathlib.Path(url).suffix.lstrip('.')
             if isinstance(contents, str):
                 contents = contents.encode(encoding)
-            contents = loads(contents, format)
+            contents = loads(contents, format, **kwargs)
         except:
             contents = response.text
     return contents
@@ -541,16 +543,14 @@ def read_file(
         encoding: Optional[str]=None,
         serialize: bool=False,
         thrown_error: bool=False,
-        **options: Any
+        **kwargs: Any
     ):
-    ops = dict(encoding=encoding)
-    ops.update(options)
 
     if serialize:
-        contents = load(filepath, encoding=encoding)
+        contents = load(filepath, encoding=encoding, **kwargs)
     else:
         if validate_file(filepath, thrown_error=thrown_error):
-            with open(filepath, 'rb', **options) as file:
+            with open(filepath, 'rb') as file:
                 contents = file.read()
         else:
             contents = None

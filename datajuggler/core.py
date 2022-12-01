@@ -313,7 +313,7 @@ class IODict(BaseDict):
             data = list(io.read_database(s, **kwargs))
             return {"_values": data}
         elif io.validate_file(s):
-            data = io.read_file(s, serialize=True, encoding='utf-8')
+            data = io.read_file(s, serialize=True, encoding='utf-8', **kwargs)
         else:
             try:
                 options = kwargs.pop("options", {})
