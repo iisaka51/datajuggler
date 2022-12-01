@@ -18,6 +18,8 @@ class CSVSerializer(AbstractSerializer):
             kwargs.setdefault("quoting", csv.QUOTE_ALL)
         columns = kwargs.pop("columns", None)
         columns_row = kwargs.pop("columns_row", True)
+        if _type.is_bytes(s):
+            s = s.decode('utf-8')
         f = StringIO(s)
         r = csv.reader(f, **kwargs)
         ln = 0
