@@ -92,7 +92,7 @@ class AbstractSerializer(object):
         super().__init__()
 
     def parse_kwargs(self, subformat='', **kwargs):
-        encoding = kwargs.pop("encoding", "utf-8")
+        encoding = kwargs.pop("encoding", None)
         subformat = kwargs.pop("subformat", subformat)
         options = kwargs.pop("options", dict())
 
